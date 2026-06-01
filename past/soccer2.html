@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>サッカーフォーメーション</title>
+  <style>
+    body {
+      background-color: #006600;
+      margin: 0;
+      font-family: sans-serif;
+      color: white;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .form-container {
+      background: #004400;
+      text-align: center;
+      padding: 10px;
+    }
+
+    input, select {
+      margin: 5px;
+      padding: 5px;
+    }
+
+    .submit-btn {
+      padding: 10px 20px;
+      background-color: #00cc00;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #field {
+      position: relative;
+      width: 80%;
+      height: 600px;
+      background: linear-gradient(#228822, #006600);
+      margin: 20px auto;
+      border: 5px solid white;
+      border-radius: 10px;
+    }
+    .player {
+      position: absolute;
+      width: 70px;
+      height: 50px;
+      background-color: rgba(255,255,255,0.9);
+      color: #000;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 1.2;
+      font-size: 12px;
+      padding-top: 8px;
+      box-shadow: 0 0 5px #000;
+      transition: left 0.8s ease, top 0.8s ease;
+    }
+    .main {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .form-container {
+      background: #004400;
+      padding: 10px;
+      width: 30%;
+      min-width: 250px;
+    }
+
+    #field {
+      position: relative;
+      width: 600px;
+      height: 600px;
+      background: linear-gradient(#228822, #006600);
+      border: 5px solid white;
+      border-radius: 10px;
+    }
+
+    input, select {
+      margin: 5px;
+      padding: 5px;
+    }
+
+    input[type="number"] {
+      width: 30px; /* お好みで調整可 */
+    }
+
+
+
+  </style>
+</head>
+<body>
+  <h1>スタメン配置（オブジェクトベース）</h1>
+
+  <div class="main">
+    <div class="form-container">
+      <!-- 正しいフォームはここに1つだけ -->
+      <form id="playerForm">
+        <div id="inputs"></div>
+        <select id="formationSelect">
+          <option value="442">4-4-2</option>
+          <option value="433">4-3-3</option>
+          <option value="4231">4-2-3-1</option>
+          <option value="343_diamond">3-4-3_dia</option>
+          <option value="343">3-4-3</option>
+          <option value="3421">3-4-2-1</option>
+          <option value="3412">3-4-1-2</option>
+          <option value="3322">3-3-2-2</option>
+        </select>
+        <br>
+        <button class="submit-btn" type="submit">表示する</button>
+      </form>
+    </div>
+
+    <!-- フィールドはここに1つだけ -->
+    <div id="field"></div>
+  </div>
+
+
+  <script>
+    // グローバルにプレイヤー要素を保持（再利用用）
+    let playerElements = [];
+
+    document.getElementById("playerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+    
+      const formData = new FormData(e.target);
+      const players = [];
+    
+      for (let i = 1; i <= 11; i++) {
+        players.push({
+          number: formData.get(`number${i}`),
+          name: formData.get(`name${i}`)
+        });
+      }
+    
+      const selectedFormation = document.getElementById("formationSelect").value;
+      const positions = formations[selectedFormation];
+      const field = document.getElementById("field");
+    
+      // 初回：要素を作成、それ以降は移動のみ
+      if (playerElements.length === 0) {
+        for (let i = 0; i < players.length; i++) {
+          const player = document.createElement("div");
+          player.className = "player";
+          player.style.left = `${positions[i][0]}%`;
+          player.style.top = `${positions[i][1]}%`;
+          player.style.transform = "translate(-50%, -50%)";
+          player.innerHTML = `<strong>#${players[i].number}</strong><br>${players[i].name}`;
+          field.appendChild(player);
+          playerElements.push(player);
+        }
+      } else {
+        // すでにある場合は位置と名前・番号のみ更新
+        for (let i = 0; i < players.length; i++) {
+          const player = playerElements[i];
+          player.style.left = `${positions[i][0]}%`;
+          player.style.top = `${positions[i][1]}%`;
+          player.innerHTML = `<strong>#${players[i].number}</strong><br>${players[i].name}`;
+        }
+      }
+    });
+
+    const defaultNames = [
+      "前川", "飯野", "トゥーレル", "山川", "永戸",
+      "扇原", "井手口", "広瀬", "宮代", "佐々木", "エリキ"
+    ];
+
+    // プレイヤー入力欄生成
+    const inputArea = document.getElementById("inputs");
+    for (let i = 1; i <= 11; i++) {
+      inputArea.innerHTML += `
+        <div>
+          背番号 <input type="number" name="number${i}" value="${i}" required>
+          名前 <input type="text" name="name${i}" value="${defaultNames[i - 1]}" required>
+        </div>
+      `;
+    }
+
+    const anchor = [50, 50];
+
+    // 各フォーメーションに応じた座標指定（%）
+    const relativeFormations_442 = [
+      [0, 35],     // 1: GK
+      [30, 10],     // 2: 右SB
+      [10, 15],     // 3: CB
+      [-10, 15],     // 4: CB
+      [-30, 10],     // 5: 左SB or CB
+      [-15, -5],     // 6: 左ボランチ
+      [15, -5],     // 7: 右ボランチ
+      [-25, -18],     // 8: LWG
+      [-10, -30],     // 9: CF
+      [10, -30],     // 10: CF
+      [25, -18],     // 11: RWG
+    ];
+    // 他フォーメーションも同様に調整可能（希望あれば）
+    const relativeFormations_433 = [
+      [0, 35],     // 1: GK
+      [30, 10],     // 2: 右SB
+      [10, 15],     // 3: CB
+      [-10, 15],     // 4: CB
+      [-30, 10],     // 5: 左SB or CB
+      [0, 0],     // 6: アンカー
+      [15, -15],     // 7: 右ボランチ
+      [-25, -30],     // 8: LWG
+      [-15, -15],     // 9: OH
+      [0, -35],     // 10:CF
+      [25, -30]      // 11:RWG
+    ];
+    const relativeFormations_4231 = [
+      [0, 35],     // 1: GK
+      [30, 10],     // 2: 右SB
+      [10, 15],     // 3: CB
+      [-10, 15],     // 4: CB
+      [-30, 10],     // 5: 左SB or CB
+      [-15, -5],     // 6: 左ボランチ
+      [15, -5],     // 7: 右ボランチ
+      [-25, -20],     // 8: 
+      [0, -20],     // 9: OH
+      [0, -40],     // 10:CF
+      [25, -20]      // 11:
+    ];
+    const relativeFormations_343 = [
+      [0, 35],     // 1: GK
+      [45,-12],     // 2: 右WB
+      [0, 17],     // 3: CB
+      [25, 10],     // 4: CB
+      [-25, 10],     // 5: CB
+      [-15, -10],     // 6: 左ボランチ
+      [15, -10],     // 7: 右ボランチ
+      [-45, -12],     // 8: 左WB
+      [-25, -30],     // 9: LWG
+      [0, -35],     // 10:CF
+      [25, -30]      // 11:RWG
+    ];
+    const relativeFormations_343_diamond = [
+      [0, 35],     // 1: GK
+      [20,-10],     // 2: 右WB
+      [25, 10],     // 3: CB
+      [-25, 10],     // 4: CB
+      [-20, -10],     // 5: 左WB
+      [0, 17],     // 6: アンカー
+      [0, -3],     // 7: 右ボランチ
+      [-35, -35],     // 8: LWG
+      [0, -25],     // 9: OH
+      [0, -40],     // 10:CF
+      [35, -35]      // 11:RWG
+    ];
+    const relativeFormations_3421 = [
+      [0, 35],     // 1: GK
+      [42,-10],     // 2: 右WB
+      [0, 17],     // 3: CB
+      [25, 10],     // 4: CB
+      [-25, 10],     // 5: CB
+      [-13, -5],     // 6: 左ボランチ
+      [13, -5],     // 7: 右ボランチ
+      [-42, -10],     // 8: 左WB
+      [-17, -25],     // 9: OH
+      [0, -40],     // 10:CF
+      [17, -25]      // 11:OH
+    ];
+    const relativeFormations_3412 = [
+      [0, 35],     // 1: GK
+      [42,-10],     // 2: 右WB
+      [0, 17],     // 3: CB
+      [25, 10],     // 4: CB
+      [-25, 10],     // 5: CB
+      [-13, -5],     // 6: 左ボランチ
+      [13, -5],     // 7: 右ボランチ
+      [-42, -10],     // 8: 左WB
+      [0, -25],     // 9: OH
+      [-17, -40],     // 10:CF
+      [17, -40]      // 11:CH
+    ];
+    const relativeFormations_3322 = [
+      [0, 35],     // 1: GK
+      [42,-10],     // 2: 右WB
+      [0, 17],     // 3: CB
+      [25, 10],     // 4: CB
+      [-25, 10],     // 5: CB
+      [0, -5],     // 6: 左ボランチ
+      [20, -22],     // 7: 右ボランチ
+      [-42, -10],     // 8: 左WB
+      [-20, -22],     // 9: OH
+      [-10, -40],     // 10:CF
+      [10, -40]      // 11:CH
+    ];
+
+    function
+    toAbsolutePositions(relativeFormations, anchor){
+      return relativeFormations.map(([dx, dy]) => [
+        anchor[0] + dx ,
+        anchor[1] + dy
+      ]);
+    }
+    const formations = {
+      "442":
+      toAbsolutePositions(relativeFormations_442,
+      anchor),
+      "433":
+      toAbsolutePositions(relativeFormations_433,
+      anchor),
+      "4231":
+      toAbsolutePositions(relativeFormations_4231,
+      anchor),
+      "343":
+      toAbsolutePositions(relativeFormations_343,
+      anchor),
+      "343_diamond":
+      toAbsolutePositions(relativeFormations_343_diamond,
+      anchor),
+      "3421":
+      toAbsolutePositions(relativeFormations_3421,
+      anchor),
+      "3412":
+      toAbsolutePositions(relativeFormations_3412,
+      anchor),
+      "3322":
+      toAbsolutePositions(relativeFormations_3322,
+      anchor)
+    }
+
+    // submitイベント処理
+    document.getElementById("playerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const players = [];
+
+      for (let i = 1; i <= 11; i++) {
+        players.push({
+          number: formData.get(`number${i}`),
+          name: formData.get(`name${i}`)
+        });
+      }
+
+      const selectedFormation = document.getElementById("formationSelect").value;
+      const positions = formations[selectedFormation];
+      const field = document.getElementById("field");
+
+      const currentCount = playerElements.length;
+      const newCount = players.length;
+
+      // 1. 要素が足りなければ追加
+      for (let i = currentCount; i < newCount; i++) {
+        const player = document.createElement("div");
+        player.className = "player";
+        player.style.transform = "translate(-50%, -50%)";
+        field.appendChild(player);
+        playerElements.push(player);
+      }
+
+      // 2. 多すぎる要素は削除
+      while (playerElements.length > newCount) {
+        const removed = playerElements.pop();
+        removed.remove(); // DOMから削除
+      }
+
+      // 3. 全プレイヤー要素の位置とテキストを更新
+      for (let i = 0; i < newCount; i++) {
+        const player = playerElements[i];
+        player.style.left = `${positions[i][0]}%`;
+        player.style.top = `${positions[i][1]}%`;
+        player.innerHTML = `<strong>#${players[i].number}</strong><br>${players[i].name}`;
+      }
+
+//      function updateFormation() {
+//        const selectedFormation = document.getElementById("formationSelect").value;
+//        const positions = formations[selectedFormation];
+//        const field = document.getElementById("field");
+//        const currentCount = playerElements.length;
+//        const newCount = players.length;
+//      
+//        // フェードアウトさせる（削除は0.5秒後）
+//        playerElements.forEach((player) => {
+//          player.classList.add("fade-out");
+//        });
+//      
+//        // 0.5秒後に再構成
+//        setTimeout(() => {
+//          // 削除しすぎていたら追加
+//          for (let i = currentCount; i < newCount; i++) {
+//            const player = document.createElement("div");
+//            player.className = "player fade-in";
+//            field.appendChild(player);
+//            playerElements.push(player);
+//          }
+//        
+//          // 多すぎる要素は削除
+//          while (playerElements.length > newCount) {
+//            const removed = playerElements.pop();
+//            removed.remove();
+//          }
+//        
+//          // 残ったプレイヤーの位置とテキストを更新
+//          for (let i = 0; i < newCount; i++) {
+//            const player = playerElements[i];
+//            player.classList.remove("fade-out");
+//            player.classList.add("fade-in");
+//          
+//            player.style.left = `${positions[i][0]}%`;
+//            player.style.top = `${positions[i][1]}%`;
+//            player.innerHTML = `<strong>#${players[i].number}</strong><br>${players[i].name}`;
+//          }
+//        }, 500); // フェードアウト時間と一致
+//      }
+
+
+//      field.innerHTML = ""; // クリア
+
+      for (let i = 0; i < players.length; i++) {
+        const player = document.createElement("div");
+        player.className = "player";
+        player.style.left = `${positions[i][0]}%`;
+        player.style.top = `${positions[i][1]}%`;
+        player.style.transform = "translate(-50%, -50%)";
+        player.innerHTML = `<strong>#${players[i].number}</strong><br>${players[i].name}`;
+        field.appendChild(player);
+        playerElements.push(player);
+      }
+    });
+  </script>
+</body>
+</html>

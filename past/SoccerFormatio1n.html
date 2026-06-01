@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>フォーメーション</title>
+  <style>
+    body { background-color: #006600; margin: 0; font-family: sans-serif; color: white; }
+    h1 { text-align: center; padding: 16px 20px; }
+
+    .main { display: flex; flex-wrap: wrap; margin: 0 auto; justify-content: center; gap: 20px; padding: 20px; }
+    /* .main { display: flex; flex-wrap: wrap; flex-direction: column; align-items: center; gap: 20px; padding: 20px; } */
+    .form-container { background: #004400; padding: 12px; width: 340px; min-width: 280px; border-radius: 8px; }
+    .section-title { margin: 8px 0; font-size: 18px; }
+
+    input, select { margin: 4px; padding: 5px; }
+    input[type="number"] { width: 38px; }
+    input[type="text"] { width: 80px; }
+
+    .submit-btn { padding: 8px 100px; background-color: #00cc00; color: white; border: none; cursor: pointer; border-radius: 6px; }
+    .submit-btn:hover { filter: brightness(1.1); }
+
+    #field { position: relative; width: 777px; height: 1200px; background: linear-gradient(#228822, #006600); border: 5px solid rgb(255, 255, 255); border-radius: 10px; }
+    #info {text-align: center; 	margin: 15px;}
+    .infopart {margin: 15px;}
+    /* センターライン */
+    .center-line {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 0;
+      border-bottom: 3px solid white;
+    }
+    /* センターサークル */
+    .center-circle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200px;
+      height: 200px;
+      margin: -100px 0 0 -100px;
+      border: 3px solid white;
+      border-radius: 50%;
+    }
+    /* ペナルティエリア */
+    .penalty-box {
+      position: absolute;
+      width: 440px;
+      height: 180px;
+      left: 50%;
+      margin-left: -220px;
+      border: 3px solid white;
+    }
+    .penalty-box.top { bottom: 0; border-bottom: none; }
+    .penalty-box.bottom { top: 0; border-top: none; }
+
+    /* ゴールエリア */
+    .goal-box {
+      position: absolute;
+      width: 240px;
+      height: 60px;
+      left: 50%;
+      margin-left: -120px;
+      border: 3px solid white;
+    }
+    .goal-box.top { bottom: 0; border-bottom: none; }
+    .goal-box.bottom { top: 0; border-top: none; }
+
+    /* ペナルティスポット */
+    .penalty-spot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: white;
+      border-radius: 50%;
+      left: 50%;
+      margin-left: -5px;
+    }
+    .penalty-spot.top { top: 120px; }
+    .penalty-spot.bottom { bottom: 120px; }
+
+    /* センタースポット */
+    .center-spot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      margin: -5px 0 0 -5px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    /* コーナーアーク */
+    .corner {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border: 3px solid white;
+      border-radius: 50%;
+    }
+    .corner.tl { top: -20px; left: -20px; }
+    .corner.tr { top: -20px; right: -20px; }
+    .corner.bl { bottom: -20px; left: -20px; }
+    .corner.br { bottom: -20px; right: -20px; }
+
+    .player { 
+      position: absolute; 
+      width: 80px; 
+      height: 60px; 
+      background-color: #fff; 
+      color: #000; 
+      border-radius: 50%; 
+      text-align: center; 
+      line-height: 1.2; 
+      font-size: 20px;
+      font-weight: bold; 
+      padding-top: 8px; 
+      box-shadow: 0 0 5px #000; 
+      transform: translate(-50%, -50%); 
+      transition: left 0.7s ease, top 0.7s ease; 
+    }
+    .player.home {
+      background: 
+        linear-gradient(
+          40deg,                   /* 斜めの角度 */
+          transparent 0 45%,       /* 最初は透明 */
+          black 25% 65%,           /* 真ん中だけ白の帯 */
+          transparent 55% 100%     /* その後また透明 */
+        ),
+        crimson;                   /* ベース色 */
+      border: 2px solid #fff;
+      color: #fff;
+    }
+    
+    .opponent { background-color:  rgba(255,255,255,0.92); color: #000;}
+
+    .legend { margin-top: 12px; font-size: 12px; opacity: 0.9; }
+    .legend span { display: inline-block; padding: 2px 6px; border-radius: 12px; margin-right: 6px; }
+    .legend .home-chip { background: rgba(220, 20, 60, 0.92); }
+    .legend .away-chip { background: rgba(255,255,255,0.92); color: #000; }
+    .forms-wrapper {
+      background: #004400;
+      padding: 12px; width: 820px; min-width: 280px; border-radius: 8px; 
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+      align-items: flex-start;
+    }    
+    .sliderpart {
+      background: #004400;
+      padding: 12px; width: 820px; min-width: 280px; border-radius: 8px; 
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+      /* width: 100%; */
+      justify-content:space-around;	
+    }      
+    .form-block {
+        padding: 0 20px;
+    }
+
+    .home-block {
+        display: absolute;
+        justify-content: space-around;
+        /* border-right: 2px solid rgba(255,255,255,0.4); */
+    }
+
+    .away-block {
+        display: absolute;
+        justify-content: space-around;
+    }
+
+    .number-input {
+      width: 50px;
+    }
+    .name-input {
+      width: 100px;
+    }
+    .formation-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 20px;
+    }
+
+    .formation-buttons button {
+      background: #008800;
+      border: none;
+      padding: 20px 26px;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .formation-buttons button:hover {
+      filter: brightness(1.2);
+    }
+
+    .formation-buttons button.active {
+      background: #cc0000;
+    }
+    .para{
+        width: 200%;
+    }
+
+    .switch{
+      width: 20%
+    }
+    .tops{
+      width: 50%
+    }
+
+    .whichpara{
+      font-size: 150%;
+    }
+  </style>
+</head>
+<body>
+  <h1>スタメン配置</h1>
+
+  <div class="main">
+    <div id="field">
+      <div class="center-line"></div>
+      <div class="center-circle"></div>
+      <div class="center-spot"></div>
+
+      <div class="penalty-box top"></div>
+      <div class="penalty-box bottom"></div>
+      <div class="goal-box top"></div>
+      <div class="goal-box bottom"></div>
+
+      <div class="penalty-spot top"></div>
+      <div class="penalty-spot bottom"></div>
+
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+    </div>
+    <div id="info">
+      <div class="legend infopart">
+        <label>
+          ホームチーム:
+          <select id="homeTeamSelect">
+            <option value="kobe">神戸</option>
+            <option value="marinos">横浜FM</option>
+            <option value="antlers">鹿島</option>
+            <option value="kashiwa">柏</option>
+            <option value="gohsaka">G大阪</option>
+            <option value="hiroshima">広島</option>
+            <option value="kobe_AwayVer">神戸(A)</option>
+            <option value="kobe_30th">神戸(30th)</option>
+            <option value="marinos_AwayVer">横浜FM(A)</option>
+            <option value="antlers_AwayVer">鹿島(A)</option>
+            <option value="kashiwa_AwayVer">柏(A)</option>
+            <option value="gohsaka_AwayVer">G大阪(A)</option>
+            <option value="hiroshima_AwayVer">広島(A)</option>
+          </select>
+        </label>
+  
+        <label>
+          アウェイチーム:
+          <select id="awayTeamSelect">
+            <option value="kobe">神戸</option>
+            <option value="marinos">横浜FM</option>
+            <option value="antlers">鹿島</option>
+            <option value="kashiwa">柏</option>
+            <option value="gohsaka">G大阪</option>
+            <option value="hiroshima">広島</option>
+            <option value="kobe_AwayVer">神戸(A)</option>
+            <option value="kobe_30th">神戸(30th)</option>
+            <option value="marinos_AwayVer">横浜FM(A)</option>
+            <option value="antlers_AwayVer">鹿島(A)</option>
+            <option value="kashiwa_AwayVer">柏(A)</option>
+            <option value="gohsaka_AwayVer">G大阪(A)</option>
+            <option value="hiroshima_AwayVer">広島(A)</option>
+          </select>
+        </label>
+  
+        <span class="home-chip">神戸</span>
+        <span class="away-chip">Away: 奥側</span>
+      </div>
+      <!-- <div class="forms-wrapper  infopart">
+          <div class="formation-buttons home-formations home-block">
+            <button data-formation="4123">4123</button>
+            <button data-formation="4150">4150</button>
+            <button data-formation="442">442</button>
+            <button data-formation="4231">4231</button>
+            <button data-formation="3421">3421</button>
+            
+            <button data-formation="343_diamond">343◇</button>
+            <button data-formation="343">343</button>
+            <button data-formation="3412">3412</button>
+            <button data-formation="3322">3322</button>
+            <button data-formation="442block">442 bl</button>
+            <button data-formation="433">433</button>
+            <button data-formation="4312">4312</button>
+            <button data-formation="334">334</button>
+            <button data-formation="541">541</button>
+            <button data-formation="253">253</button>
+            <button data-formation="235">235</button>
+          </div>
+          
+          <div class="formation-buttons away-formations away-block">
+            <button data-formation="4123">4123</button>
+            <button data-formation="4150">4150</button>
+            <button data-formation="442">442</button>
+            <button data-formation="4231">4231</button>
+            <button data-formation="3421">3421</button>
+            
+            <button data-formation="343_diamond">343◇</button>
+            <button data-formation="343">343</button>
+            <button data-formation="3412">3412</button>
+            <button data-formation="3322">3322</button>
+            <button data-formation="442block">442 bl</button>
+            <button data-formation="433">433</button>
+            <button data-formation="4312">4312</button>
+            <button data-formation="334">334</button>
+            <button data-formation="541">541</button>
+            <button data-formation="253">253</button>
+            <button data-formation="235">235</button>
+          </div>
+      </div> -->
+      <div class="sliderpart  infopart">
+        <div>
+          <label class="whichpara">0-2 Top</label>          
+          <input type="range" id="topSlider" min="0" max="1" step="0.5" value="0.5" class="tops">
+        </div>
+        <div>
+            <label class="whichpara">1-2 volante</label>          
+            <input type="range" id="volanteSlider" min="0" max="1" step="1" value="0" class="switch">
+        </div>
+        <div>
+          <label class="whichpara">3-4 backs</label>          
+          <input type="range" id="backsSlider" min="0" max="1" step="1" value="1" class="switch">
+        </div>
+      </div>  
+      <div class="sliderpart  infopart">
+        <label class="whichpara">Anchor</label>          
+        <input type="range" id="systemSlider" min="0" max="1" step="0.165" value="0.33" class = "para">
+        [Low] <-> [High]
+      </div>  
+      <div class="forms-wrapper  infopart">
+        <div class="form-block home-block">      
+          <form id="playerFormHome">
+            <button class="submit-btn" type="submit">表示</button>            
+            <div id="inputsHome"></div>
+          </form>
+        </div>
+        <div class="form-block away-block">
+          <form id="playerFormAway">
+            <button class="submit-btn" type="submit">表示</button>              
+            <div id="inputsAway"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  <script>
+    const homeChip = document.querySelector('.home-chip');
+    const awayChip = document.querySelector('.away-chip');
+    const homeSelect = document.getElementById('homeTeamSelect');
+    const awaySelect = document.getElementById('awayTeamSelect');
+  
+    // チームごとの色設定
+    const teamColors = {
+        kobe:   { name: '神戸',    color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+        marinos:{ name: '横浜FM', color: 'rgba(0, 0, 200, 0.9)',     text: '#fff' },
+        antlers:{ name: '鹿島',   color: 'rgba(139, 0, 0, 0.9)',     text: '#fff' },
+        kashiwa:  { name: '柏',     color: 'rgba(255,255,0,0.92)',   text: '#fff' },
+        gohsaka:   { name: 'G大阪',     color: 'rgba(0, 0, 255, 0.92)',    text: '#fff' },
+        hiroshima:  { name: '広島',     color: 'rgba(81,48,143, 0.92)',      text: '#fff' },        
+        kobe_AwayVer:   { name: '神戸',    color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+        kobe_30th:   { name: '神戸',    color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+        marinos_AwayVer:{ name: '横浜FM', color: 'rgba(0, 0, 200, 0.9)',     text: '#fff' },
+        antlers_AwayVer:{ name: '鹿島',   color: 'rgba(139, 0, 0, 0.9)',     text: '#fff' },
+        kashiwa_AwayVer:  { name: '柏',     color: 'rgba(255,255,0,0.92)',   text: '#fff' },
+        gohsaka_AwayVer:   { name: 'G大阪',     color: 'rgba(0, 0, 255, 0.92)',    text: '#fff' },
+        hiroshima_AwayVer:  { name: '広島',     color: 'rgba(81,48,143, 0.92)',      text: '#fff' }        
+    };
+
+    //チームユニフォーム
+    const teamStyles = {
+      kobe: {
+        name: '神戸',
+        style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
+        text: '#fff'
+      },
+      marinos: {
+        name: '横浜FM',
+        style: 'linear-gradient(to bottom, blue 0%, blue 66%, white 66%, white 85%, red 85%, red 100%)',
+        text: '#bbb'
+      },
+      antlers:{ 
+        name: '鹿島',   
+        style: 'linear-gradient(140deg, black  20%, rgb(183, 24, 64) 50%, black 80% )',    
+        text: '#fff' 
+      },
+      kashiwa:  { 
+        name: '柏',     
+        style: 'linear-gradient(to bottom, black 20%, yellow 20%)', 
+        text: '#000' 
+      },
+      gohsaka:   { 
+        name: 'G大阪',     
+        style: 'repeating-linear-gradient(90deg, blue 0 10px, black 10px 20px)',   
+        text: '#fff' 
+      },
+      hiroshima:  { 
+        name: '広島',     
+        style:
+          'rgb(81,48,143)',
+          // 'repeating-linear-gradient(0deg, rgb(81,48,143) 0 20px, black 20px 40px),',    
+        text: '#fff' 
+      },
+      kobe_AwayVer: {
+        name: '神戸 ',
+        style: 'linear-gradient(40deg, white 0 45%, black 25% 65%, white 55% 100%)',
+        text: '#e6b422'
+      },
+      kobe_30th: {
+        name: '神戸 ',
+        style: 'repeating-linear-gradient(90deg, white 0 10px, black 10px 20px)',
+        text: '#e6b422'
+      },
+      marinos_AwayVer: {
+        name: '横浜FM ',
+        style: 'linear-gradient(to bottom, white 0%, white 66%, blue 66%, blue 85%, red 85%, red 100%)',
+        text: '#000'
+      },
+      antlers_AwayVer:{ 
+        name: '鹿島 ',   
+        style: 'linear-gradient(0deg, white  0 30%, black 30% 70%, white 70% )',    
+        text: '#cccccc' 
+      },
+      kashiwa_AwayVer:  { 
+        name: '柏 ',     
+        style: 'linear-gradient(to bottom, gray 20%, white 20%)', 
+        text: '#000' 
+      },
+      gohsaka_AwayVer:   { 
+        name: 'G大阪 ',     
+        style: 'linear-gradient(to bottom, white 60%, blue 60%)',   
+        text: '#000' 
+      },
+      hiroshima_AwayVer:  { 
+        name: '広島 ',     
+        style:
+          'linear-gradient(90deg, rgb(81,48,143) 0 10%, white 10% 90%, rgb(81,48,143) 90% 100%)',
+          // 'repeating-linear-gradient(0deg, rgb(81,48,143) 0 20px, black 20px 40px),',    
+        text: '#000'
+      }
+    };
+
+    // ホーム変更イベント
+    homeSelect.addEventListener('change', () => {
+      const t = teamColors[homeSelect.value];
+      homeChip.style.background = t.color;
+      homeChip.style.color = t.text;
+      homeChip.textContent = `${t.name}`;
+    });
+
+    // アウェイ変更イベント
+    awaySelect.addEventListener('change', () => {
+      const t = teamColors[awaySelect.value];
+      awayChip.style.background = t.color;
+      awayChip.style.color = t.text;
+      awayChip.textContent = `${t.name}`;
+    });
+    // ===== 入力欄生成 =====================================================
+    const defaultNamesHome = [
+      "前川", "永戸", "ﾄｩｰﾚﾙ", "山川", "広瀬",
+      "鍬先", "井手口", "大樹", "濱崎", "小松", "武藤"
+    ];
+    // const defaultNamesHome = [
+    //   "前川", "永戸", "ﾄｩｰﾚﾙ", "山川", "酒井",
+    //   "扇原", "井手口", "武藤", "井出", "大迫", "郷家"
+    // ];
+    // const defaultNamesHome = [
+    //   "権田", "ジエゴ", "ンドカ", "岩波", "飯野",
+    //   "山内", "鍬先", "広瀬", "濱崎", "大樹", "乾"
+    // ];
+    // const defaultNamesHome = [
+    //   "前川", "永戸", "ﾄｩｰﾚﾙ", "山川", "酒井",
+    //   "鍬先", "井手口", "武藤", "宮代", "大迫", "エリキ"
+    // ];
+//    const defaultNamesHome = [
+//      "前川", "永戸", "ﾄｩｰﾚﾙ", "山川", "酒井",
+//      "扇原", "井手口", "広瀬", "宮代", "佐々木", "エリキ"
+//    ];
+//    const defaultNamesAway = [
+//      "朴", "鈴木", "ｼﾞｪｲｿﾝ", "松原", "加藤",
+//      "渡辺", "喜田", "宮市", "植中", "谷村", "ｸﾙｰｸｽ"
+//    ];
+   const defaultNamesAway = [
+     "相手1", "相手2", "相手3", "相手4", "相手5",
+     "相手6", "相手7", "相手8", "相手9", "相手10", "相手11"
+   ];
+
+    function createInputs(containerId, defaultNames) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      let numbers;
+      if (containerId === "inputsHome") {
+        numbers = [1, 41, 3, 4, 23, 25, 7, 13, 28, 29, 11];
+        // numbers = [71, 15, 80, 31, 2, 30, 25, 23, 28, 13, 14];
+//        numbers = [1, 41, 3, 4, 24, 6, 7, 23, 9, 13, 27];
+      } else {
+        // アウェイは順番通り（例）
+        numbers = [1, 25, 13, 27, 16, 6, 8, 23, 14, 48, 37];
+//        numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+      }      
+      for (let i = 0; i <= 10; i++) {
+        container.innerHTML += `
+          <div>
+            背番号 <input type="number" name="number${i+1}" value="${numbers[i]}" required>
+            名前 <input type="text" name="name${i+1}" value="${defaultNames[i]}" required>
+          </div>
+        `;
+      }
+    }
+
+    createInputs("inputsHome", defaultNamesHome);
+    createInputs("inputsAway", defaultNamesAway);
+
+    // ===== 位置データ ===================
+    const anchor = [50, 50];
+    // const anchor = [50, 50+13];
+    
+    //GK, LSB?, LCB, RCB, RCB
+    const relativeFormations_442 = [
+      [0, 48], [-37, 25], [-13, 30], [13, 30], [37, 25],
+      [-15,8], [15, 8], [-28, -5], [-10, -22], [10, -22], [28, -5]
+    ];
+    const relativeFormations_424 = [
+      [0, 48], [-37, 25], [-13, 30], [13, 30], [37, 25],
+      [-19,0], [19, 0], [-32, -20], [-10, -22], [10, -22], [32, -20]
+    ];
+    const relativeFormations_4312 = [
+      [0, 48], [-37, 25], [-13, 30], [13, 30], [37, 25],
+      [0, 8], [0, -6], [-30, 3], [-15, -22], [15, -22], [30, 3]
+    ]; 
+    const relativeFormations_442block = [
+      [0, 48], [-37, 25], [-13, 30], [13, 30], [37, 25],
+      [-13, 8], [13, 8], [-37, 3], [-12, -22], [12, -22], [37, 3]
+    ];
+    const relativeFormations_4123 = [
+      [0, 48], [-37, 25], [-13, 30], [13, 30], [37, 25],
+      [0, 13], [15, -4], [-27, -17], [-15, -4], [0, -22], [27, -17]
+    ];
+    const relativeFormations_4150 = [
+      [0, 48], [-37, 25], [-13, 30], [13, 30], [37, 25],
+      [0, 15], [20, 2], [-27, -17], [-20, 2], [0, -10], [27, -17]
+    ];
+    const relativeFormations_433 = [
+      [0, 48], [-37, 25], [-13, 30], [13, 30], [37, 25],
+      [0, 3], [20, 1], [-27, -17], [-20, 1], [0, -22], [27, -17]
+    ];
+    const relativeFormations_4231 = [
+      [0, 48], [-37, 25], [-13, 30], [13, 30], [37, 25],
+      [-15, 8], [15, 8], [-27, -7], [0, -7], [0, -22], [27, -7]
+    ];
+    const relativeFormations_343 = [
+      [0, 48], [-25, 23], [0, 30], [25, 23], [40,3], 
+      [-15, 8], [15, 8], [-40, 3], [-25, -17], [0, -22], [25, -17]
+    ];
+    const relativeFormations_343_diamond = [
+      [0, 48], [-20, 3], [-25, 23],  [25, 23], [20,3],
+      [0, 30], [0, 10], [-35, -17], [0, -7], [0, -22], [35, -17]
+    ];
+    const relativeFormations_3421 = [
+      [0, 48], [-25, 23], [0, 30], [25, 23], [40,3], 
+      [-15, 8], [15, 8], [-40, 3], [-17, -12], [0, -22], [17, -12]
+    ];
+    const relativeFormations_3412 = [
+      [0, 48], [-25, 23], [0, 30], [25, 23], [40,3], 
+      [-15, 8], [15, 8], [-40, 3], [-17, -22], [17, -22], [0, -7]
+    ];
+    const relativeFormations_3322 = [
+      [0, 48], [-25, 23], [0, 30], [25, 23], [40,3], 
+      [0, 8], [15, -1], [-40, 3], [-15, -1], [-10, -22], [10, -22]
+    ];
+    const relativeFormations_334 = [
+      [0, 48], [-25, 23], [0, 30], [25, 23], [30,-12], 
+      [0, 3], [20, 1], [-30, -12], [-20, 1], [-10, -22], [10, -22]
+    ];
+    const relativeFormations_541 = [
+      [0, 48], [-20, 28], [0, 28], [20, 28], [40,28], 
+      [-10, 8], [10, 8], [-40, 28], [-28, 8], [0, -9], [28, 8]
+    ];
+    const relativeFormations_253 = [
+      [0, 48], [-40, 5], [-13, 30], [13, 30], [40, 5],
+      [0, 8], [17, -4], [-29, -19], [-17, -4], [0, -17], [29, -19]
+    ];
+    const relativeFormations_235 = [
+      [0, 48], [-23, -4], [-13, 30], [13, 30], [23, -4],
+      [0, 8], [19, -15], [-40, -24], [-19, -15], [0, -20], [40, -24]
+    ];
+
+    function toAbsolutePositions(relativeFormations, anchor) {
+      return relativeFormations.map(([dx, dy]) => [ anchor[0] + dx, anchor[1] + dy ]);
+    }
+
+    const formations = {
+      "442": toAbsolutePositions(relativeFormations_442, anchor),
+      "424": toAbsolutePositions(relativeFormations_424, anchor),
+      "442block": toAbsolutePositions(relativeFormations_442block, anchor),
+      "4123": toAbsolutePositions(relativeFormations_4123, anchor),
+      "433": toAbsolutePositions(relativeFormations_433, anchor),
+      "4312": toAbsolutePositions(relativeFormations_4312, anchor),
+      "4231": toAbsolutePositions(relativeFormations_4231, anchor),
+      "4150": toAbsolutePositions(relativeFormations_4150, anchor),
+      "343": toAbsolutePositions(relativeFormations_343, anchor),
+      "343_diamond": toAbsolutePositions(relativeFormations_343_diamond, anchor),
+      "3421": toAbsolutePositions(relativeFormations_3421, anchor),
+      "3412": toAbsolutePositions(relativeFormations_3412, anchor),
+      "3322": toAbsolutePositions(relativeFormations_3322, anchor),
+      "334": toAbsolutePositions(relativeFormations_334, anchor),
+      "541": toAbsolutePositions(relativeFormations_541, anchor),
+      "253": toAbsolutePositions(relativeFormations_253, anchor),
+      "235": toAbsolutePositions(relativeFormations_235, anchor)
+    };
+
+    // ===== 描画ロジック ====================================================
+    const homePlayers = []; // DOM要素
+    const awayPlayers = []; // DOM要素
+
+    function readPlayersFromForm(formEl) {
+      const fd = new FormData(formEl);
+      const arr = [];
+      for (let i = 1; i <= 11; i++) {
+        arr.push({ number: fd.get(`number${i}`), name: fd.get(`name${i}`) });
+      }
+      return arr;
+    }
+
+    function placePlayers(players, positions, isOpponent) {
+      const field = document.getElementById("field");
+      const arr = isOpponent ? awayPlayers : homePlayers;
+
+      // 要素数を合わせる
+      while (arr.length < players.length) {
+        const div = document.createElement("div");
+        div.className = isOpponent ? "player away" : "player home"; // ← home/awayクラスを付与
+        field.appendChild(div);
+        arr.push(div);
+      }
+      while (arr.length > players.length) {
+        const removed = arr.pop();
+        removed.remove();
+      }
+
+      // 位置とテキスト更新
+      for (let i = 0; i < players.length; i++) {
+        const el = arr[i];
+        // 念のためクラスを再設定（先に作った要素を流用するため）
+        el.className = isOpponent ? "player away" : "player home";
+        el.style.left = `${positions[i][0]}%`;
+        el.style.top = `${positions[i][1]}%`;
+        el.innerHTML = `<strong>#${players[i].number}</strong><br>${players[i].name}`;
+      }
+    }
+
+    // ===== イベントハンドラ ===============================================
+    document.getElementById("playerFormHome").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const players = readPlayersFromForm(e.target);
+      const f = document.getElementById("formationSelectHome").value;
+      const pos = formations[f];
+      if (!pos) return; // 念のため
+      placePlayers(players, pos, false);
+    });
+
+    document.getElementById("playerFormAway").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const players = readPlayersFromForm(e.target);
+      const f = document.getElementById("formationSelectAway").value;
+      const pos = formations[f];
+      if (!pos) return;
+      // 相手側は反転（ピッチ逆サイド）
+      const flipped = pos.map(([x, y]) => [100 - x, 100 - y]);
+      placePlayers(players, flipped, true);
+    });
+
+    // （任意）ページ読み込み時に仮表示
+    window.addEventListener('load', () => {
+      // 自チームだけ即時描画（好みでコメントアウト可）
+      const homeForm = document.getElementById('playerFormHome');
+      const players = readPlayersFromForm(homeForm);
+      placePlayers(players, formations['4123'], false);
+    });
+
+    function updateTeamColor(isHome, teamKey) {
+      const s = teamColors[teamKey];
+      const t = teamStyles[teamKey];      
+      const chip = isHome ? document.querySelector('.home-chip') : document.querySelector('.away-chip');
+    
+      // ラベル更新
+      chip.style.background = s.color;
+      chip.style.color = t.text;
+      chip.textContent = `${t.name} : ${isHome ? 'ホーム' : 'アウェイ'}`;
+    
+      // フィールド上の色更新
+      document.querySelectorAll(isHome ? '.player.home' : '.player.away')
+        .forEach(p => {
+          p.style.background = t.style;
+          p.style.color = t.text;
+        });
+    }
+
+    homeSelect.addEventListener('change', () => updateHomeColor(homeSelect.value));
+    awaySelect.addEventListener('change', () => updateAwayColor(awaySelect.value));
+
+    document.getElementById('homeTeamSelect').addEventListener('change', e => {
+      updateTeamColor(true, e.target.value);
+    });
+    document.getElementById('awayTeamSelect').addEventListener('change', e => {
+      updateTeamColor(false, e.target.value);
+    });
+
+    // ホーム側
+    document.querySelectorAll('.home-formations button').forEach(btn => {
+      btn.addEventListener('click', e => {
+        // ボタンの見た目更新
+        document.querySelectorAll('.home-formations button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+
+        // フォーメーション切り替え
+        const f = e.target.dataset.formation;
+        const players = readPlayersFromForm(document.getElementById("playerFormHome"));
+        const pos = formations[f];
+        if (pos) placePlayers(players, pos, false);
+      });
+    });
+
+    // アウェイ側
+    document.querySelectorAll('.away-formations button').forEach(btn => {
+      btn.addEventListener('click', e => {
+        document.querySelectorAll('.away-formations button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+
+        const f = e.target.dataset.formation;
+        const players = readPlayersFromForm(document.getElementById("playerFormAway"));
+        const pos = formations[f];
+        if (pos) {
+          const flipped = pos.map(([x, y]) => [100 - x, 100 - y]);
+          placePlayers(players, flipped, true);
+        }
+      });
+    });
+
+    // tは 0:433 1:3421
+    function interpolateFormation(f1, f2, t) {
+      const result = [];
+    
+      for (let i = 0; i < f1.length; i++) {
+        const x = f1[i][0] + (f2[i][0] - f1[i][0]) * t;
+        const y = f1[i][1] + (f2[i][1] - f1[i][1]) * t;
+        result.push([x, y]);
+      }
+    
+      return result;
+    }
+
+    const slider = document.getElementById("systemSlider");
+
+    slider.addEventListener("input", e => {
+      const t = parseFloat(e.target.value);
+      const f0 = formations["343_diamond"];
+      const f1 = formations["4123"];
+      const f2 = formations["253"];
+      const f3 = formations["235"];
+      
+      if(t>0.66){      
+        const interpolated = interpolateFormation(f2, f3, (t-0.66)*3);      
+        const players = readPlayersFromForm(document.getElementById("playerFormHome"));
+        placePlayers(players, interpolated, false);
+      }
+      else if(t>0.33){
+        const interpolated = interpolateFormation(f1, f2, (t-0.33)*3);      
+        const players = readPlayersFromForm(document.getElementById("playerFormHome"));
+        placePlayers(players, interpolated, false);
+      }
+      else{
+        const interpolated = interpolateFormation(f0, f1, t*3);      
+        const players = readPlayersFromForm(document.getElementById("playerFormHome"));
+        placePlayers(players, interpolated, false);
+      }
+    });
+
+    const sliderTop = document.getElementById("topSlider");
+
+    sliderTop.addEventListener("input", e => {
+      const t = parseFloat(e.target.value);
+      const f0 = formations["4150"];
+      const f1 = formations["4231"];
+      const f2 = formations["4123"];
+      const f3 = formations["442"];
+      const f4 = formations["424"];
+
+      if(t>=0.75){      
+        const interpolated = interpolateFormation(f3, f4, (t-0.75)*4);      
+        const players = readPlayersFromForm(document.getElementById("playerFormHome"));
+        placePlayers(players, interpolated, false);
+      }
+      else if(t>=0.50){      
+        const interpolated = interpolateFormation(f2, f3, (t-0.50)*4);      
+        const players = readPlayersFromForm(document.getElementById("playerFormHome"));
+        placePlayers(players, interpolated, false);
+      }
+      else if(t>=0.25){
+        const interpolated = interpolateFormation(f1, f2, (t-0.25)*4);      
+        const players = readPlayersFromForm(document.getElementById("playerFormHome"));
+        placePlayers(players, interpolated, false);
+      }
+      else{
+        const interpolated = interpolateFormation(f0, f1, t*4);      
+        const players = readPlayersFromForm(document.getElementById("playerFormHome"));
+        placePlayers(players, interpolated, false);
+      }
+    });
+    
+    // 初期色設定
+    updateHomeColor(homeSelect.value);
+    updateAwayColor(awaySelect.value);
+  </script>
+</body>
+</html>
