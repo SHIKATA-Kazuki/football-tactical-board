@@ -1,46 +1,67 @@
-import { teamColors, teamStyles , infomation } from './config.js';
-import { createInputs, redrawAllPlayers_if_team_changed, updateFormationButtons} from './ui-events.js';
+import { teamColors, teamStyles, infomation } from './config.js';
+import { createInputs, redrawAllPlayers_if_team_changed, updateFormationButtons } from './ui-events.js';
+import { placePlayers, resetManualPositions } from './players.js';
+
+// Away が一度でも選択されたか
+let awayInitialized = false;
 
 function updateTeamColor(isHome, teamKey) {
   const homeSelect = document.getElementById("homeTeamSelect");
   const awaySelect = document.getElementById("awayTeamSelect");
+  const select     = isHome ? homeSelect : awaySelect;
 
-  const select = isHome ? homeSelect : awaySelect;
+  const s    = teamColors[teamKey];
+  const t    = teamStyles[teamKey];
+  const chip = isHome
+    ? document.querySelector('.home-chip')
+    : document.querySelector('.away-chip');
 
-  const s = teamColors[teamKey];
-  const t = teamStyles[teamKey];      
-  const chip = isHome ? document.querySelector('.home-chip') : document.querySelector('.away-chip');
-
-  // ラベル更新
   chip.style.background = s.color;
-  chip.style.color = t.text;
-  chip.textContent = `${t.name} : ${isHome ? 'ホーム' : 'アウェイ'}`;
+  chip.style.color      = t.text;
+  chip.textContent      = `${t.name} : ${isHome ? 'ホーム' : 'アウェイ'}`;
 
-  createInputs("inputsHome", infomation[homeSelect.value]["BestMember"]);
-  createInputs("inputsAway", infomation[awaySelect.value]["BestMember"]);
+  // 入力欄更新（home のみ。away は awayInitialized 後）
+  createInputs("inputsHome", infomation[homeSelect.value]?.["BestMember"]);
+  if (awayInitialized) {
+    createInputs("inputsAway", infomation[awaySelect.value]?.["BestMember"]);
+  }
+
+  // ユニフォーム色更新
   document.querySelectorAll(isHome ? '.player.home' : '.player.away')
     .forEach(p => {
       p.style.background = t.style;
-      p.style.color = t.text;
-      // p.style.webkit-text-stroke = t.color;
-      // p.style.text-stroke = t.color;
+      p.style.color      = t.text;
     });
-    const formation = infomation[select.value]["formation_key"];
-    // console.log(formation);
+
+  const formation = infomation[select.value]?.["formation_key"];
+  if (!formation) return;
+
+  if (isHome) {
+    // Home: スライダー連動で再描画
     redrawAllPlayers_if_team_changed(formation);
-    updateFormationButtons(formation);
+    updateFormationButtons(formation, 'home');
+  } else {
+    // Away: awayInitialized フラグを立てて描画
+    awayInitialized = true;
+    redrawAllPlayers_if_team_changed(formation, 'away');
+    updateFormationButtons(formation, 'away');
+  }
 }
 
 export function initializeTeamSelects() {
-    const homeSelect = document.getElementById('homeTeamSelect');
-    const awaySelect = document.getElementById('awayTeamSelect');
+  const homeSelect = document.getElementById('homeTeamSelect');
+  const awaySelect = document.getElementById('awayTeamSelect');
 
-    homeSelect.addEventListener('change', e => updateTeamColor(true,  e.target.value));
-    awaySelect.addEventListener('change', e => updateTeamColor(false, e.target.value));
+  homeSelect.addEventListener('change', e => updateTeamColor(true,  e.target.value));
+  awaySelect.addEventListener('change', e => updateTeamColor(false, e.target.value));
 
-    // Initial setup
-    updateTeamColor(true,  homeSelect.value);
-    updateTeamColor(false, awaySelect.value);
-    // updateFormationButtons(infomation[homeSelect.value]["formation_key"]);
-    return { homeSelect, awaySelect };
+  // 初期描画: home のみ。away は「default」なので描画しない
+  updateTeamColor(true, homeSelect.value);
+  // away は未選択扱い → ノード描画しない
+
+  return { homeSelect, awaySelect };
+}
+
+export function isAwayInitialized() {
+  return awayInitialized;
 }

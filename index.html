@@ -6,133 +6,335 @@
   <link rel="stylesheet" href="sanitize.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="field.css">
-  <title>football strategy ver1.10</title>
+  <title>football strategy ver1.02</title>
+  <style>
+    /* =============================================
+       ハンバーガーボタン（SP のみ表示）
+    ============================================= */
+    #menu-toggle {
+      display: none;
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 200;
+      width: 44px;
+      height: 44px;
+      background: rgba(40,40,40,0.92);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      cursor: pointer;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+    }
+    #menu-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+      transition: transform 0.25s, opacity 0.25s;
+    }
+    /* × に変形 */
+    #menu-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    #menu-toggle.open span:nth-child(2) { opacity: 0; }
+    #menu-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* =============================================
+       ドロワー（SP のみ）
+    ============================================= */
+    #drawer {
+      display: none; /* SP のみ flex に切り替え */
+    }
+
+    /* =============================================
+       SP レスポンシブ
+    ============================================= */
+    @media (max-width: 600px) {
+      /* フィールドを画面幅いっぱい・縦横比固定 */
+      #field {
+        width: 100vw !important;
+        height: calc(100vw * 6 / 4) !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        max-height: 100svh;
+      }
+
+      /* フィールドを最前面に */
+      .main {
+        display: block;
+        padding: 0;
+        gap: 0;
+      }
+
+      /* PC 用の #info・.squadnum を非表示 */
+      #info,
+      .squadnum {
+        display: none !important;
+      }
+
+      /* ハンバーガーボタン表示 */
+      #menu-toggle {
+        display: flex;
+      }
+
+      /* ドロワー本体 */
+      #drawer {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        position: fixed;
+        top: 0;
+        right: -100%;      /* 初期状態：画面外 */
+        width: min(85vw, 340px);
+        height: 100svh;
+        background: rgba(24,24,24,0.97);
+        border-left: 1px solid rgba(255,255,255,0.15);
+        z-index: 150;
+        padding: 60px 12px 20px;
+        overflow-y: auto;
+        transition: right 0.3s ease;
+      }
+      #drawer.open {
+        right: 0;
+      }
+
+      /* ドロワー内の各パーツ */
+      #drawer .infopart {
+        width: 100%;
+        margin: 0;
+      }
+
+      /* オーバーレイ */
+      #drawer-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 140;
+      }
+      #drawer-overlay.open {
+        display: block;
+      }
+
+      /* legend はヘッダーに残す */
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: calc(100% - 56px); /* ハンバーガーボタン分を避ける */
+        z-index: 100;
+        background: rgba(24,24,24,0.9);
+        padding: 4px 0;
+      }
+      .legend {
+        flex-wrap: wrap;
+        font-size: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="bg_pattern Paper_v2"></div>
   <script type="module" src="js/main.js"></script>
-  <header>        
-    <div class="legend infopart">  
-        <div class="icon box">
-            <span class="home-chip">神戸</span>:
-            <select id="homeTeamSelect">
-                <option value="default">とりあえず神戸</option>
-                <option value="kobe">神戸</option>
-                <option value="yokohamaFM">横浜FM</option>
-                <option value="urawa">浦和</option>
-                <option value="antlers">鹿島</option>
-                <option value="kashiwa">柏</option>
-                <option value="gohsaka">G大阪</option>
-                <option value="hiroshima">広島</option>
-                <option value="shimizu">清水</option>
-                <option value="kobe_AwayVer">神戸(A)</option>
-                <option value="kobe_30th">神戸(30th)</option>
-                <option value="yokohamaFM_AwayVer">横浜FM(A)</option>
-                <option value="urawa_AwayVer">浦和(A)</option>
-                <option value="antlers_AwayVer">鹿島(A)</option>
-                <option value="kashiwa_AwayVer">柏(A)</option>
-                <option value="gohsaka_AwayVer">G大阪(A)</option>
-                <option value="hiroshima_AwayVer">広島(A)</option>
-            </select>
-        </div>        
-        <div class="icon box">
-            <span class="away-chip">Away: 奥側</span>:
-            <select id="awayTeamSelect">
-                <option value="default">選択してください</option>
-                <option value="kobe">神戸</option>
-                <option value="yokohamaFM">横浜FM</option>
-                <option value="urawa">浦和</option>
-                <option value="antlers">鹿島</option>
-                <option value="kashiwa">柏</option>
-                <option value="gohsaka">G大阪</option>
-                <option value="hiroshima">広島</option>
-                <option value="shimizu">清水</option>
-                <option value="kobe_AwayVer">神戸(A)</option>
-                <option value="kobe_30th">神戸(30th)</option>
-                <option value="yokohamaFM_AwayVer">横浜FM(A)</option>
-                <option value="urawa_AwayVer">浦和(A)</option>
-                <option value="antlers_AwayVer">鹿島(A)</option>
-                <option value="kashiwa_AwayVer">柏(A)</option>
-                <option value="gohsaka_AwayVer">G大阪(A)</option>
-                <option value="hiroshima_AwayVer">広島(A)</option>
-            </select>
+
+  <!-- ハンバーガーボタン -->
+  <button id="menu-toggle" aria-label="メニューを開く">
+    <span></span><span></span><span></span>
+  </button>
+
+  <!-- オーバーレイ -->
+  <div id="drawer-overlay"></div>
+
+  <!-- ドロワー（SP）：PC では非表示 -->
+  <div id="drawer">
+    <div class="forms-wrapper infopart">
+      <div class="formation-buttons home-formations home-block">
+        <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
+        <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
+        <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
+        <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
+        <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>
+        <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
+        <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
+        <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
+      </div>
+      <div class="formation-buttons away-formations away-block">
+        <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
+        <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
+        <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
+        <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
+        <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>
+        <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
+        <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
+        <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
+      </div>
+    </div>
+
+    <div class="sliderpart infopart">
+      <div class="whichpara">backs</div>
+      <input type="range" id="backsSlider-sp"    min="0" max="1" step="1"    value="1"   class="switch">
+      <div>|</div>
+      <div class="whichpara">DMF</div>
+      <input type="range" id="volanteSlider-sp"  min="0" max="1" step="1"    value="1"   class="switch">
+      <div>|</div>
+      <label class="whichpara">Top</label>
+      <input type="range" id="topSlider-sp"      min="0" max="1" step="1"    value="1"   class="switch">
+    </div>
+
+    <div class="sliderpart infopart">
+      <label class="whichpara">SBを上げる</label>
+      <input type="range" id="sidbackUpDown-sp"  min="0" max="1" step="0.02" value="0.3" class="tops">
+    </div>
+
+    <div class="sliderpart infopart">
+      <label class="whichpara">高さ</label>
+      <input type="range" id="lineSlider-sp"     min="0" max="1" step="0.02" value="0.5" class="tops">
+    </div>
+
+    <div class="sliderpart infopart">
+      <div id="controller-container-sp">
+        <p>Side player</p>
+        <div id="controller-sp">
+          <div><img src="figure/narrow.png" alt="絞る" class="narrow"></div>
+          <div id="joystick-area-sp"><div id="knob-sp"></div></div>
+          <div><img src="figure/wide.png" alt="幅をとる" class="wide"></div>
         </div>
+      </div>
+    </div>
+
+    <div class="squadnum infopart" style="flex-direction:column; width:100%;">
+      <div class="form-block home-block" style="width:100%;">
+        <form id="playerFormHome-sp">
+          <button class="submit-btn" type="submit">Home 表示</button>
+          <div id="inputsHome-sp"></div>
+        </form>
+      </div>
+      <div class="form-block away-block" style="width:100%; margin-top:10px;">
+        <form id="playerFormAway-sp">
+          <button class="submit-btn" type="submit">Away 表示</button>
+          <div id="inputsAway-sp"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="legend infopart">
+      <div class="icon box">
+        <span class="home-chip">神戸</span>:
+        <select id="homeTeamSelect">
+          <option value="default">とりあえず神戸</option>
+          <option value="kobe">神戸</option>
+          <option value="yokohamaFM">横浜FM</option>
+          <option value="urawa">浦和</option>
+          <option value="antlers">鹿島</option>
+          <option value="kashiwa">柏</option>
+          <option value="gohsaka">G大阪</option>
+          <option value="hiroshima">広島</option>
+          <option value="shimizu">清水</option>
+          <option value="kobe_AwayVer">神戸(A)</option>
+          <option value="kobe_30th">神戸(30th)</option>
+          <option value="yokohamaFM_AwayVer">横浜FM(A)</option>
+          <option value="urawa_AwayVer">浦和(A)</option>
+          <option value="antlers_AwayVer">鹿島(A)</option>
+          <option value="kashiwa_AwayVer">柏(A)</option>
+          <option value="gohsaka_AwayVer">G大阪(A)</option>
+          <option value="hiroshima_AwayVer">広島(A)</option>
+        </select>
+      </div>
+      <div class="icon box">
+        <span class="away-chip">Away: 奥側</span>:
+        <select id="awayTeamSelect">
+          <option value="default">選択してください</option>
+          <option value="kobe">神戸</option>
+          <option value="yokohamaFM">横浜FM</option>
+          <option value="urawa">浦和</option>
+          <option value="antlers">鹿島</option>
+          <option value="kashiwa">柏</option>
+          <option value="gohsaka">G大阪</option>
+          <option value="hiroshima">広島</option>
+          <option value="shimizu">清水</option>
+          <option value="kobe_AwayVer">神戸(A)</option>
+          <option value="kobe_30th">神戸(30th)</option>
+          <option value="yokohamaFM_AwayVer">横浜FM(A)</option>
+          <option value="urawa_AwayVer">浦和(A)</option>
+          <option value="antlers_AwayVer">鹿島(A)</option>
+          <option value="kashiwa_AwayVer">柏(A)</option>
+          <option value="gohsaka_AwayVer">G大阪(A)</option>
+          <option value="hiroshima_AwayVer">広島(A)</option>
+        </select>
+      </div>
     </div>
   </header>
+
   <div class="main">
     <div id="field" class="centering_item">
-      <!-- レーン -->
       <div class="lane lane-half-left"></div>
       <div class="lane lane-center-left"></div>
       <div class="lane lane-center-right"></div>
       <div class="lane lane-half-right"></div>
-
-      <!-- ゾーン -->
       <div class="zone-line zone-1"></div>
       <div class="zone-line zone-2"></div>
-
       <div class="center-line"></div>
       <div class="center-circle"></div>
       <div class="center-spot"></div>
-
       <div class="penalty-box top"></div>
       <div class="penalty-box bottom"></div>
       <div class="goal-box top"></div>
       <div class="goal-box bottom"></div>
-
       <div class="penalty-spot top"></div>
       <div class="penalty-spot bottom"></div>
-
       <div class="corner tl"></div>
       <div class="corner tr"></div>
       <div class="corner bl"></div>
       <div class="corner br"></div>
     </div>
+
+    <!-- PC 用コントロール -->
     <div id="info" class="centering_item">
       <div class="forms-wrapper infopart">
-          <div class="formation-buttons home-formations home-block">
-            <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
-            <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
-            <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
-            <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
-            <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>            
-            <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
-            <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
-            <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
-          </div>
-          
-          <div class="formation-buttons away-formations away-block">
-            <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
-            <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
-            <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
-            <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
-            <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>            
-            <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
-            <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
-            <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
-          </div>
+        <div class="formation-buttons home-formations home-block">
+          <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
+          <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
+          <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
+          <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
+          <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>
+          <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
+          <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
+          <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
+        </div>
+        <div class="formation-buttons away-formations away-block">
+          <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
+          <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
+          <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
+          <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
+          <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>
+          <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
+          <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
+          <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
+        </div>
       </div>
       <div class="sliderpart infopart">
-        <p>
-          <div class="whichpara">backs</div>          
-          <input type="range" id="backsSlider" min="0" max="1" step="1" value="1" class="switch">
-          <div>|</div>
-          <div class="whichpara">DMF</div>          
-          <input type="range" id="volanteSlider" min="0" max="1" step="1" value="1" class="switch">
-          <div>|</div>
-          <label class="whichpara">Top</label>          
-          <input type="range" id="topSlider" min="0" max="1" step="1" value="1" class="switch">
-        </p>
-      </div>  
-      <div class="sliderpart infopart"> 
-        <label class="whichpara">SBを上げる</label> 
-        <input type="range" id="sidbackUpDown" min="0" max="1" step="0.02" value="0.3" class="tops"> 
+        <div class="whichpara">backs</div>
+        <input type="range" id="backsSlider"   min="0" max="1" step="1"    value="1"   class="switch">
+        <div>|</div>
+        <div class="whichpara">DMF</div>
+        <input type="range" id="volanteSlider" min="0" max="1" step="1"    value="1"   class="switch">
+        <div>|</div>
+        <label class="whichpara">Top</label>
+        <input type="range" id="topSlider"     min="0" max="1" step="1"    value="1"   class="switch">
       </div>
-      <div class="sliderpart infopart"> 
-        <label class="whichpara">高さ</label> 
-        <input type="range" id="lineSlider" min="0" max="1" step="0.02" value="0.5" class="tops"> 
+      <div class="sliderpart infopart">
+        <label class="whichpara">SBを上げる</label>
+        <input type="range" id="sidbackUpDown" min="0" max="1" step="0.02" value="0.3" class="tops">
       </div>
-      <div class="sliderpart infopart"> 
+      <div class="sliderpart infopart">
+        <label class="whichpara">高さ</label>
+        <input type="range" id="lineSlider"    min="0" max="1" step="0.02" value="0.5" class="tops">
+      </div>
+      <div class="sliderpart infopart">
         <div id="controller-container">
           <p>Side player</p>
           <div id="controller">
@@ -144,20 +346,122 @@
         </div>
       </div>
     </div>
+
     <div class="squadnum infopart centering_item">
-      <div class="form-block home-block">      
+      <div class="form-block home-block">
         <form id="playerFormHome">
-          <button class="submit-btn" type="submit">表示</button>            
+          <button class="submit-btn" type="submit">表示</button>
           <div id="inputsHome"></div>
         </form>
       </div>
       <div class="form-block away-block">
         <form id="playerFormAway">
-          <button class="submit-btn" type="submit">表示</button>              
+          <button class="submit-btn" type="submit">表示</button>
           <div id="inputsAway"></div>
         </form>
       </div>
     </div>
   </div>
+
+  <script>
+    // =============================================
+    // ハンバーガーメニュー開閉
+    // =============================================
+    const toggle  = document.getElementById('menu-toggle');
+    const drawer  = document.getElementById('drawer');
+    const overlay = document.getElementById('drawer-overlay');
+
+    function openDrawer() {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-label', 'メニューを閉じる');
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-label', 'メニューを開く');
+    }
+
+    toggle.addEventListener('click', () => {
+      drawer.classList.contains('open') ? closeDrawer() : openDrawer();
+    });
+    overlay.addEventListener('click', closeDrawer);
+
+    // =============================================
+    // SP スライダーを PC スライダーに同期
+    // （実体は PC スライダー。SP スライダーは鏡）
+    // =============================================
+    const pairs = [
+      ['backsSlider',   'backsSlider-sp'],
+      ['volanteSlider', 'volanteSlider-sp'],
+      ['topSlider',     'topSlider-sp'],
+      ['sidbackUpDown', 'sidbackUpDown-sp'],
+      ['lineSlider',    'lineSlider-sp'],
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      pairs.forEach(([pcId, spId]) => {
+        const pc = document.getElementById(pcId);
+        const sp = document.getElementById(spId);
+        if (!pc || !sp) return;
+
+        // SP → PC に値を転送してから PC の input イベントを発火
+        sp.addEventListener('input', () => {
+          pc.value = sp.value;
+          pc.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        // PC → SP に値を反映
+        pc.addEventListener('input', () => { sp.value = pc.value; });
+      });
+
+      // SP フォーメーションボタン → PC ボタンをクリック
+      document.querySelectorAll('#drawer .formation-buttons button').forEach(spBtn => {
+        spBtn.addEventListener('click', () => {
+          const f       = spBtn.dataset.formation;
+          const isAway  = spBtn.closest('.away-formations') !== null;
+          const pcSel   = isAway
+            ? `#info .away-formations button[data-formation="${f}"]`
+            : `#info .home-formations button[data-formation="${f}"]`;
+          const pcBtn   = document.querySelector(pcSel);
+          if (pcBtn) pcBtn.click();
+
+          // SP 側のアクティブ状態も更新
+          const spGroup = isAway
+            ? '#drawer .away-formations button'
+            : '#drawer .home-formations button';
+          document.querySelectorAll(spGroup).forEach(b => b.classList.remove('active'));
+          spBtn.classList.add('active');
+        });
+      });
+
+      // PC フォーメーションボタンのアクティブ → SP にも反映
+      document.querySelectorAll('#info .formation-buttons button').forEach(pcBtn => {
+        pcBtn.addEventListener('click', () => {
+          const f      = pcBtn.dataset.formation;
+          const isAway = pcBtn.closest('.away-formations') !== null;
+          const spSel  = isAway
+            ? `#drawer .away-formations button[data-formation="${f}"]`
+            : `#drawer .home-formations button[data-formation="${f}"]`;
+          document.querySelectorAll(
+            isAway ? '#drawer .away-formations button' : '#drawer .home-formations button'
+          ).forEach(b => b.classList.remove('active'));
+          document.querySelector(spSel)?.classList.add('active');
+        });
+      });
+
+      // SP submit → PC form submit
+      document.getElementById('playerFormHome-sp')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        document.getElementById('playerFormHome')?.dispatchEvent(new Event('submit'));
+      });
+      document.getElementById('playerFormAway-sp')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        document.getElementById('playerFormAway')?.dispatchEvent(new Event('submit'));
+      });
+    });
+  </script>
 </body>
 </html>
