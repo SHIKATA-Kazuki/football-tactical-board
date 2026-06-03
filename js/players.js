@@ -82,17 +82,21 @@ export function resetManualPositions(side) {
 
 /** 1プレイヤーにドラッグ操作を付ける */
 function attachDrag(el, sideKey, index) {
-  el.style.cursor = 'grab';
+  el.style.cursor     = 'grab';
+  // ブラウザのスクロール待機を即座にキャンセルし、遅延なく反応させる
+  el.style.touchAction = 'none';
 
   el.onpointerdown = (e) => {
-    // スライダーや他UIとの競合を防ぐ
+    // タッチ時のスクロール・ページ移動を防ぐ
+    e.preventDefault();
     e.stopPropagation();
     el.setPointerCapture(e.pointerId);
-    el.style.cursor   = 'grabbing';
-    el.style.zIndex   = '100';
+    el.style.cursor     = 'grabbing';
+    el.style.zIndex     = '100';
     el.style.transition = 'none'; // ドラッグ中はアニメOFF
 
     el.onpointermove = (ev) => {
+      // setPointerCapture 済みなので指が外れても追従する
       const field = document.getElementById('field');
       const rect  = field.getBoundingClientRect();
       const x = Math.min(100, Math.max(0, (ev.clientX - rect.left)  / rect.width  * 100));
@@ -101,14 +105,13 @@ function attachDrag(el, sideKey, index) {
       el.style.left = `${x}%`;
       el.style.top  = `${y}%`;
 
-      // 手動位置を記録
       manualPositions[sideKey].set(index, { left: `${x}%`, top: `${y}%` });
     };
 
     el.onpointerup = () => {
       el.style.cursor     = 'grab';
       el.style.zIndex     = '';
-      el.style.transition = ''; // アニメ復元
+      el.style.transition = '';
       el.onpointermove    = null;
       el.onpointerup      = null;
     };
