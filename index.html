@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="sanitize.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="field.css">
-  <title>football strategy ver1.02</title>
+  <title>football strategy ver1.11</title>
   <style>
     /* =============================================
        ハンバーガーボタン（SP のみ表示）
@@ -189,8 +189,8 @@
         <p>Side player</p>
         <div id="controller-sp">
           <div><img src="figure/narrow.png" alt="絞る" class="narrow"></div>
-          <!-- <div id="joystick-area-sp"><div id="knob-sp"></div></div> -->
-          <div id="joystick-area"><div id="knob"></div></div>
+          <div id="joystick-area-sp"><div id="knob-sp"></div></div>
+          <!-- <div id="joystick-area"><div id="knob"></div></div> -->
           <div><img src="figure/wide.png" alt="幅をとる" class="wide"></div>
         </div>
       </div>
@@ -412,6 +412,8 @@
       ['topSlider',     'topSlider-sp'],
       ['sidbackUpDown', 'sidbackUpDown-sp'],
       ['lineSlider',    'lineSlider-sp'],
+      ['joystick-area', 'joystick-area-sp'],
+      ['knob', 'knob-sp'],
     ];
 
     window.addEventListener('DOMContentLoaded', () => {
