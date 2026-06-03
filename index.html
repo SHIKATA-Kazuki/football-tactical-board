@@ -28,7 +28,7 @@
       align-items: center;
       gap: 5px;
     }
-    #formation-buttons-touch {
+    #formation-buttons-touch{
       display: none;
     }
     #menu-toggle span {
@@ -189,7 +189,8 @@
         <p>Side player</p>
         <div id="controller-sp">
           <div><img src="figure/narrow.png" alt="絞る" class="narrow"></div>
-          <div id="joystick-area-sp"><div id="knob-sp"></div></div>
+          <!-- <div id="joystick-area-sp"><div id="knob-sp"></div></div> -->
+           <div id="joystick-area"><div id="knob"></div></div>
           <div><img src="figure/wide.png" alt="幅をとる" class="wide"></div>
         </div>
       </div>
@@ -282,7 +283,7 @@
       <div class="corner bl"></div>
       <div class="corner br"></div>
     </div>
-    <div class="forms-wrapper infopart formation-buttons-touch">
+    <div id = "formation-buttons-touch" class="forms-wrapper infopart">
       <div class="formation-buttons home-formations home-block">
         <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
         <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
