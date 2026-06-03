@@ -158,47 +158,76 @@ function requestRedraw() {
 
 
 // =====================================================
-// ジョイスティック（home のサイドプレイヤー位置調整）
+// ジョイスティック（PC / SP 共通初期化関数）
+// area と knob の ID を渡すだけで何個でも登録できる
 // =====================================================
-const area = document.getElementById('joystick-area');
-const knob = document.getElementById('knob');
-let isDragging = false;
+function initJoystick(areaId, knobId) {
+  const area = document.getElementById(areaId);
+  const knob = document.getElementById(knobId);
+  if (!area || !knob) return;
 
-function move(e) {
-  if (!isDragging) return;
+  // touch-action: none でブラウザスクロールをキャンセル
+  area.style.touchAction = 'none';
 
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  const rect    = area.getBoundingClientRect();
-  const centerX = rect.width  / 2;
-  const centerY = rect.height / 2;
+  let activePointerId = null;
 
-  let x = clientX - rect.left - centerX;
-  let y = clientY - rect.top  - centerY;
-
-  const distance  = Math.sqrt(x * x + y * y);
-  const maxRadius = rect.width / 2 - 20;
-
-  if (distance > maxRadius) {
-    const angle = Math.atan2(y, x);
-    x = Math.cos(angle) * maxRadius;
-    y = Math.sin(angle) * maxRadius;
+  function getXY(e) {
+    // Pointer / Mouse / Touch を統一して座標取得
+    if (e.pointerId !== undefined) return { x: e.clientX, y: e.clientY };
+    if (e.touches && e.touches.length) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    return { x: e.clientX, y: e.clientY };
   }
 
-  knob.style.left = `${centerX + x}px`;
-  knob.style.top  = `${centerY + y}px`;
+  function applyMove(clientX, clientY) {
+    const rect    = area.getBoundingClientRect();
+    const centerX = rect.width  / 2;
+    const centerY = rect.height / 2;
 
-  wingStick.x =  x / maxRadius;
-  wingStick.y = -y / maxRadius;
+    let x = clientX - rect.left - centerX;
+    let y = clientY - rect.top  - centerY;
 
-  requestRedraw(); // home のみ再描画
+    const distance  = Math.sqrt(x * x + y * y);
+    const maxRadius = rect.width / 2 - 20;
+
+    if (distance > maxRadius) {
+      const angle = Math.atan2(y, x);
+      x = Math.cos(angle) * maxRadius;
+      y = Math.sin(angle) * maxRadius;
+    }
+
+    knob.style.left = `${centerX + x}px`;
+    knob.style.top  = `${centerY + y}px`;
+
+    wingStick.x =  x / maxRadius;
+    wingStick.y = -y / maxRadius;
+
+    requestRedraw();
+  }
+
+  // Pointer Events で統一（Mouse / Touch / Pen すべて対応）
+  area.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    area.setPointerCapture(e.pointerId);
+    activePointerId = e.pointerId;
+    applyMove(e.clientX, e.clientY);
+  }, { passive: false });
+
+  area.addEventListener('pointermove', (e) => {
+    if (activePointerId !== e.pointerId) return;
+    applyMove(e.clientX, e.clientY);
+  });
+
+  area.addEventListener('pointerup', (e) => {
+    if (activePointerId !== e.pointerId) return;
+    activePointerId = null;
+  });
+
+  area.addEventListener('pointercancel', (e) => {
+    if (activePointerId !== e.pointerId) return;
+    activePointerId = null;
+  });
 }
 
-area.addEventListener('mousedown',  () => isDragging = true);
-window.addEventListener('mouseup',  () => isDragging = false);
-window.addEventListener('mousemove', move);
-area.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging = true; }, { passive: false });
-window.addEventListener('touchend', () => isDragging = false);
-window.addEventListener('touchmove', move, { passive: true });
-
-/* 終了 */
+// PC 版・SP 版どちらも同じ関数で初期化
+initJoystick('joystick-area',    'knob');
+initJoystick('joystick-area-sp', 'knob-sp');
