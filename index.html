@@ -125,7 +125,7 @@
         left: 0;
         width: calc(100% - 56px); /* ハンバーガーボタン分を避ける */
         z-index: 100;
-        background: rgba(24,24,24,0.9);
+        /* background: rgba(24,24,24,0.9); */
         padding: 4px 0;
       }
       .legend {
@@ -149,29 +149,6 @@
 
   <!-- ドロワー（SP）：PC では非表示 -->
   <div id="drawer">
-    <div class="forms-wrapper infopart">
-      <div class="formation-buttons home-formations home-block">
-        <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
-        <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
-        <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
-        <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
-        <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>
-        <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
-        <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
-        <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
-      </div>
-      <div class="formation-buttons away-formations away-block">
-        <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
-        <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
-        <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
-        <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
-        <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>
-        <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
-        <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
-        <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
-      </div>
-    </div>
-
     <div class="sliderpart infopart">
       <div class="whichpara">backs</div>
       <input type="range" id="backsSlider-sp"    min="0" max="1" step="1"    value="1"   class="switch">
@@ -291,7 +268,28 @@
       <div class="corner bl"></div>
       <div class="corner br"></div>
     </div>
-
+    <div class="forms-wrapper infopart">
+      <div class="formation-buttons home-formations home-block">
+        <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
+        <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
+        <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
+        <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
+        <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>
+        <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
+        <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
+        <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
+      </div>
+      <div class="formation-buttons away-formations away-block">
+        <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
+        <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
+        <button type="button" data-formation="442_diamond"><img src="figure/442_diamond.svg" alt="442◇"></button>
+        <button type="button" data-formation="4123"       ><img src="figure/4123.svg" alt="4123"></button>
+        <button type="button" data-formation="3421"       ><img src="figure/3421.svg" alt="3421"></button>
+        <button type="button" data-formation="352W"       ><img src="figure/352W.svg" alt="352W"></button>
+        <button type="button" data-formation="352M"       ><img src="figure/352M.svg" alt="352M"></button>
+        <button type="button" data-formation="343_diamond"><img src="figure/343_diamond.svg" alt="343◇"></button>
+      </div>
+    </div>
     <!-- PC 用コントロール -->
     <div id="info" class="centering_item">
       <div class="forms-wrapper infopart">

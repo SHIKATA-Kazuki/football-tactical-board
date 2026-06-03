@@ -117,17 +117,17 @@ export const teamStyles = {
 };
 
 export const playerRoles = { 
-     0:'GK        ',
-     1:'Back(R)   ',
-     2:'Back      ',
-     3:'Back      ',
-     4:'Back(L)   ',
-     5:'Anchor    ',
-     6:'Atack(R)  ',
-     7:'Box to Box',
-     8:'Striker   ',
-     9:'Ace       ',
-    10:'Atack(L)  '
+     0:'GK ',
+     1:'RB',
+     2:'CB',
+     3:'CB',
+     4:'LB',
+     5:'AC ',
+     6:'RWG',
+     7:'BtB',
+     8:'St',
+     9:'#10',
+    10:'LWG'
 };
 
 export const infomation ={
