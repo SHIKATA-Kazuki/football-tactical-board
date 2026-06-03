@@ -28,6 +28,9 @@
       align-items: center;
       gap: 5px;
     }
+    #formation-buttons-touch {
+      display: none;
+    }
     #menu-toggle span {
       display: block;
       width: 22px;
@@ -78,7 +81,9 @@
       #menu-toggle {
         display: flex;
       }
-
+      #formation-buttons-touch {
+        display: flex;
+      }
       /* ドロワー本体 */
       #drawer {
         display: flex;
@@ -89,7 +94,7 @@
         right: -100%;      /* 初期状態：画面外 */
         width: min(85vw, 340px);
         height: 100svh;
-        background: rgba(24,24,24,0.97);
+        background: rgba(24, 24, 24, 0.603);
         border-left: 1px solid rgba(255,255,255,0.15);
         z-index: 150;
         padding: 60px 12px 20px;
@@ -131,6 +136,15 @@
       .legend {
         flex-wrap: wrap;
         font-size: 12px;
+      }
+      img.narrow {
+      width: 15px;
+      height: 15px;
+      }
+
+      img.wide {
+      width: 15px;
+      height: 15px;
       }
     }
   </style>
@@ -268,7 +282,7 @@
       <div class="corner bl"></div>
       <div class="corner br"></div>
     </div>
-    <div class="forms-wrapper infopart">
+    <div class="forms-wrapper infopart formation-buttons-touch">
       <div class="formation-buttons home-formations home-block">
         <button type="button" data-formation="4231"       ><img src="figure/4231.svg" alt="4231"></button>
         <button type="button" data-formation="442"        ><img src="figure/442.svg" alt="442"></button>
