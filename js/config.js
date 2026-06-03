@@ -204,3 +204,5 @@ export const infomation ={
     BestMember: [25, 42, 4, 26, 2, 39, 24, 21, 10, 8, 16],
   },
 }
+
+/* 終了 */

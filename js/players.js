@@ -180,3 +180,5 @@ export function applyFormation(positions, resetManual = false) {
   const players = readPlayersFromForm(document.getElementById("playerFormHome"));
   placePlayers(players, positions, false, resetManual);
 }
+
+/* 終了 */

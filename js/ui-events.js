@@ -200,3 +200,5 @@ window.addEventListener('mousemove', move);
 area.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging = true; }, { passive: false });
 window.addEventListener('touchend', () => isDragging = false);
 window.addEventListener('touchmove', move, { passive: true });
+
+/* 終了 */

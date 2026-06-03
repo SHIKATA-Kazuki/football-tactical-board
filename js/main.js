@@ -34,3 +34,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   redrawAllPlayers();
 });
+
+/* 終了 */
