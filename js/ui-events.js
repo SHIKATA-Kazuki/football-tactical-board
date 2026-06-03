@@ -194,9 +194,45 @@ function move(e) {
   requestRedraw(); // home のみ再描画
 }
 
+const areaSP = document.getElementById('joystick-area-sp');
+const knobSP = document.getElementById('knob-sp');
+let isDragging = false;
+
+function move(e) {
+  if (!isDragging) return;
+
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const rect    = areaSP.getBoundingClientRect();
+  const centerX = rect.width  / 2;
+  const centerY = rect.height / 2;
+
+  let x = clientX - rect.left - centerX;
+  let y = clientY - rect.top  - centerY;
+
+  const distance  = Math.sqrt(x * x + y * y);
+  const maxRadius = rect.width / 2 - 20;
+
+  if (distance > maxRadius) {
+    const angle = Math.atan2(y, x);
+    x = Math.cos(angle) * maxRadius;
+    y = Math.sin(angle) * maxRadius;
+  }
+
+  knobSP.style.left = `${centerX + x}px`;
+  knobSP.style.top  = `${centerY + y}px`;
+
+  wingStick.x =  x / maxRadius;
+  wingStick.y = -y / maxRadius;
+
+  requestRedraw(); // home のみ再描画
+}
+
 area.addEventListener('mousedown',  () => isDragging = true);
+areaSP.addEventListener('mousedown',  () => isDragging = true);
 window.addEventListener('mouseup',  () => isDragging = false);
 window.addEventListener('mousemove', move);
 area.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging = true; }, { passive: false });
+areaSP.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging = true; }, { passive: false });
 window.addEventListener('touchend', () => isDragging = false);
 window.addEventListener('touchmove', move, { passive: true });
