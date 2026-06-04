@@ -77,11 +77,10 @@
     </div>
 
     <div class="sliderpart infopart sp">
-      <div id="controller-container-sp">
-        <p>Side player</p>
+      <div>
+        <!-- <p>Side player</p> -->
         <div id="controller-sp">
           <div class = "joystick-circle" id="joystick-area-sp"><div class="joystick-knob" id="knob-sp"></div></div>
-          <!-- <div id="joystick-area"><div id="knob"></div></div> -->
         </div>
       </div>
     </div>
@@ -238,18 +237,27 @@
         <input type="range" id="lineSlider"    min="0" max="1" step="0.02" value="0.5" class="tops">
       </div>
       <div class="sliderpart infopart">
-        <div id="controller-container">
-          <p>Side player</p>
+        <div>
+          <!-- <p>Side player</p> -->
           <div id="controller">
             <div><img src="figure/narrow.png" alt="絞る" class="narrow"></div>
             <div class="joystick-circle" id="joystick-area"><div class="joystick-knob" id="knob"></div></div>
             <div><img src="figure/wide.png" alt="幅をとる" class="wide"></div>
           </div>
-          <div id="status"></div>
+          <!-- <div id="status"></div> -->
+        </div>
+      </div>
+      <div class="sliderpart infopart">
+        <!-- 新機能。縦横圧縮コントローラー -->
+        <div>
+          <div id="controller-compress">
+            <div class="joystick-circle" id="joystick-area-compress"><div class="joystick-knob" id="knob-compress"></div></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
 
   <script>
     // =============================================

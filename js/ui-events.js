@@ -231,3 +231,4 @@ function initJoystick(areaId, knobId) {
 // PC 版・SP 版どちらも同じ関数で初期化
 initJoystick('joystick-area',    'knob');
 initJoystick('joystick-area-sp', 'knob-sp');
+initJoystick('joystick-area-compress', 'knob-compress');

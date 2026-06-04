@@ -1,5 +1,5 @@
 :root{
-  --pitch-height_: 65vh ;
+  --pitch-height_: 75vh ;
   --pitch-width_: calc(var(--pitch-height_) * (4/6));
   --fieldMargin: 40px;
   --fieldMarginLeft: 40px;
