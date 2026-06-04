@@ -18,42 +18,43 @@ export const teamColors = {
     hiroshima_AwayVer:  { name: '広島',     color: 'rgba(81,48,143, 0.92)',      text: '#fff' }        
 };
 
-export const teamStyles = {
+export const teamUniformColor = {
   kobe: {
     name: '神戸',
     style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
     text: '#fff',
-    color:'crimson'
+    // color:'crimson',
   },
   default: {
     name: '未選択',
     style: 'linear-gradient(40deg, #ccc 0 45%, #eee 25% 65%, #ccc 55% 100%)',
     text: '#4b4040',
-    color:'#eee'
+    color:'#eee',
   },
   yokohamaFM: {
     name: '横浜FM',
     style: 'linear-gradient(to bottom, blue 0%, blue 72%, white 72%, white 80%, red 80%, red 100%)',
     text: '#fff',
-    color:'blue'
+    color:'blue',
   },
   urawa: {
     name: '浦和',
     style: 'linear-gradient(to bottom, rgb(231, 0, 43) 0% 72%, white 72% 80%, black 80% 100%)',
     text: '#fff',
-    color:'rgb(231, 0, 43)'
+    color:'rgb(231, 0, 43)',
   },
   antlers:{ 
     name: '鹿島',   
     style: 'linear-gradient(140deg, black  20%, rgb(183, 24, 64) 50%, black 80% )',    
     style: 'linear-gradient(to bottom, rgb(23, 28, 45) 0% 30%, rgb(183, 24, 64) 30% 35%, rgb(23, 28, 45) 35% 55%, rgb(183, 24, 64) 55% 60%, rgb(23, 28, 45) 60% 80%, rgb(183, 24, 64) 80% 85%, rgb(23, 28, 45) 85% 100%)',    
     text: '#fff' ,
-    color:'rgb(183, 24, 64)'
+    color:'rgb(183, 24, 64)',
   },
   kashiwa:  { 
     name: '柏',     
     style: 'linear-gradient(90deg, yellow 30%, black 30%,black 35%,yellow 35%, yellow 40%, black 40%, black 60%, yellow 60%, yellow 65%, black 65%, black 70%, yellow 70%)', 
-    text: '#000' 
+    text: '#000',
+    color:'yellow',
   },
   gohsaka:   { 
     name: 'G大阪',     
@@ -65,7 +66,8 @@ export const teamStyles = {
     style:
       'rgb(81,48,143)',
       // 'repeating-linear-gradient(0deg, rgb(81,48,143) 0 20px, black 20px 40px),',    
-    text: '#fff' 
+    text: '#fff',
+    color:'rgb(81,48,143)',
   },
   kobe_AwayVer: {
     name: '神戸 ',
@@ -75,7 +77,8 @@ export const teamStyles = {
   shimizu: {
     name: '清水 ',
     style: 'rgb(240, 146, 5)',
-    text: '#003D6B'
+    text: '#003D6B',
+    color:'rgb(240, 146, 5)',
   },
   kobe_30th: {
     name: '神戸 ',
@@ -85,7 +88,8 @@ export const teamStyles = {
   yokohamaFM_AwayVer: {
     name: '横浜FM ',
     style: 'linear-gradient(to bottom, white 0%, white 66%, blue 66%, blue 85%, red 85%, red 100%)',
-    text: '#000'
+    text: 'blue',
+    color:'white',
   },
   urawa_AwayVer: {
     name: '浦和 ',

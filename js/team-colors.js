@@ -1,4 +1,4 @@
-import { teamColors, teamStyles, infomation } from './config.js';
+import { teamColors, teamUniformColor, infomation } from './config.js';
 import { createInputs, redrawAllPlayers_if_team_changed, updateFormationButtons } from './ui-events.js';
 import { placePlayers, resetManualPositions } from './players.js';
 
@@ -11,14 +11,15 @@ function updateTeamColor(isHome, teamKey) {
   const select     = isHome ? homeSelect : awaySelect;
 
   const s    = teamColors[teamKey];
-  const t    = teamStyles[teamKey];
+  const t    = teamUniformColor[teamKey];
   const chip = isHome
     ? document.querySelector('.home-chip')
     : document.querySelector('.away-chip');
 
   chip.style.background = s.color;
   chip.style.color      = t.text;
-  chip.textContent      = `${t.name} : ${isHome ? 'ホーム' : 'アウェイ'}`;
+  chip.textContent      = `${t.name}`;
+  // chip.textContent      = `${t.name} : ${isHome ? 'ホーム' : 'アウェイ'}`;
 
   // 入力欄更新（home のみ。away は awayInitialized 後）
   createInputs("inputsHome", infomation[homeSelect.value]?.["BestMember"]);
@@ -31,6 +32,16 @@ function updateTeamColor(isHome, teamKey) {
     .forEach(p => {
       p.style.background = t.style;
       p.style.color      = t.text;
+      if (t.color){
+        p.style.textShadow = `
+          -0.5px 0.5px 0 ${t.color},
+          -0.5px -0.5px 0 ${t.color},
+          0.5px 0.5px 0 ${t.color},
+          0.5px -0.5px 0 ${t.color}
+        `;
+      }
+      // p.style.border     = `2px solid ${t.color}`;
+      // ここ！！！枠線を付け加える
     });
 
   const formation = infomation[select.value]?.["formation_key"];

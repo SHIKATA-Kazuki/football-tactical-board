@@ -8,7 +8,7 @@
 
 @media (max-width: 600px){
   :root {
-    --pitch-width_: 50vw;
+    --pitch-width_: 90vw;
     --pitch-height_: calc(var(--pitch-width_) * (6/4));
     --size: 0.7;
     --fieldMarginLeft: 10px;
