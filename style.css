@@ -32,6 +32,8 @@
   .whichpara{
     font-size: 50%;
   }
+  .home-chip{width: 200px; height: 40px;}
+  .away-chip{width: 200px; height: 40px;}
 }
 
 
