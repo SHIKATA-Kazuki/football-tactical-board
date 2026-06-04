@@ -378,7 +378,7 @@ input[type="range"]::-webkit-slider-thumb {
   /* border: 2px solid #555; */
 }
 .joystick-square {
-  width: 300px;
+  width: 250px;
   height: 150px;
   background: linear-gradient(to right, #00ac897c, #0066ffc2);
   border-radius: 8px; /* 角を丸くする */
