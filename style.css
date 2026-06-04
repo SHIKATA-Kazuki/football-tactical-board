@@ -46,7 +46,8 @@ h1 { text-align: center; padding: 16px 20px; }
 .main { 
   display: flex; 
   flex-wrap: wrap;   /* 横並び固定 */
-  justify-content: space-around; 
+  /* justify-content: space-around;  */
+  justify-content: center;
   align-items: flex-start; 
   padding: 80px 0 0 0;
   gap: 10px; 
