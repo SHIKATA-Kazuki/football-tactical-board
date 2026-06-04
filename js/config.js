@@ -146,7 +146,7 @@ export const infomation ={
   },
   antlers :{
     formation_key: ["4231"],
-    BestMember: [1, 22, 55, 5, 16, 10, 27, 6, 9, 11, 40],
+    BestMember: [1, 22, 55, 5, 2, 10, 27, 6, 9, 40,71],
   },
   shimizu :{
     formation_key: ["4123"],
@@ -186,7 +186,7 @@ export const infomation ={
   },
   antlers_AwayVer :{
     formation_key: ["4231"],
-    BestMember: [1, 22, 55, 5, 16, 10, 27, 6, 9, 11, 40],
+    BestMember: [1, 22, 55, 5, 2, 10, 27, 6, 9, 40,71],
   },
   shimizu_AwayVer :{
     formation_key: ["4123"],

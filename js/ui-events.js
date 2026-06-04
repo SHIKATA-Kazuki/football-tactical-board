@@ -5,6 +5,7 @@ import {
   placePlayers,
   applyFormation,
   wingStick,
+  compressStick,
   resetManualPositions
 } from './players.js';
 
@@ -158,38 +159,28 @@ function requestRedraw() {
 
 
 // =====================================================
-// ジョイスティック（PC / SP 共通初期化関数）
-// area と knob の ID を渡すだけで何個でも登録できる
+// ジョイスティック汎用初期化
+// targetStick: 値の書き込み先オブジェクト（wingStick or compressStick）
 // =====================================================
-function initJoystick(areaId, knobId) {
+function initJoystick(areaId, knobId, targetStick) {
   const area = document.getElementById(areaId);
   const knob = document.getElementById(knobId);
   if (!area || !knob) return;
 
-  // touch-action: none でブラウザスクロールをキャンセル
   area.style.touchAction = 'none';
-
   let activePointerId = null;
 
-  function getXY(e) {
-    // Pointer / Mouse / Touch を統一して座標取得
-    if (e.pointerId !== undefined) return { x: e.clientX, y: e.clientY };
-    if (e.touches && e.touches.length) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    return { x: e.clientX, y: e.clientY };
-  }
-
   function applyMove(clientX, clientY) {
-    const rect    = area.getBoundingClientRect();
-    const centerX = rect.width  / 2;
-    const centerY = rect.height / 2;
+    const rect      = area.getBoundingClientRect();
+    const centerX   = rect.width  / 2;
+    const centerY   = rect.height / 2;
+    const maxRadius = rect.width  / 2 - 20;
 
     let x = clientX - rect.left - centerX;
     let y = clientY - rect.top  - centerY;
 
-    const distance  = Math.sqrt(x * x + y * y);
-    const maxRadius = rect.width / 2 - 20;
-
-    if (distance > maxRadius) {
+    const dist = Math.sqrt(x * x + y * y);
+    if (dist > maxRadius) {
       const angle = Math.atan2(y, x);
       x = Math.cos(angle) * maxRadius;
       y = Math.sin(angle) * maxRadius;
@@ -198,13 +189,13 @@ function initJoystick(areaId, knobId) {
     knob.style.left = `${centerX + x}px`;
     knob.style.top  = `${centerY + y}px`;
 
-    wingStick.x =  x / maxRadius;
-    wingStick.y = -y / maxRadius;
+    // 書き込み先に応じて値をセット
+    targetStick.x =  x / maxRadius;  // 左:-1 〜 右:+1
+    targetStick.y = -y / maxRadius;  // 下:-1 〜 上:+1
 
     requestRedraw();
   }
 
-  // Pointer Events で統一（Mouse / Touch / Pen すべて対応）
   area.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     area.setPointerCapture(e.pointerId);
@@ -228,7 +219,10 @@ function initJoystick(areaId, knobId) {
   });
 }
 
-// PC 版・SP 版どちらも同じ関数で初期化
-initJoystick('joystick-area',    'knob');
-initJoystick('joystick-area-sp', 'knob-sp');
-initJoystick('joystick-area-compress', 'knob-compress');
+// wing 用（PC / SP）
+initJoystick('joystick-area',    'knob',    wingStick);
+initJoystick('joystick-area-sp', 'knob-sp', wingStick);
+
+// 圧縮用（PC / SP で共用する場合は -sp 版も追加）
+initJoystick('joystick-area-compress',    'knob-compress',    compressStick);
+initJoystick('joystick-area-compress-sp', 'knob-compress-sp', compressStick);

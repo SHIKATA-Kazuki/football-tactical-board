@@ -1,7 +1,8 @@
 import { formations } from './formations.js';
 
 // ==========ジョイスティック状態===========
-export let wingStick = { x: 0, y: 0 };
+export let wingStick     = { x: 0, y: 0 };
+export let compressStick = { x: 0, y: 0 }; // 圧縮スティック（-1〜+1）
 
 // ==========スライダー参照ヘルパー===========
 function sliderVal(id) {
@@ -60,6 +61,72 @@ function applyTacticalAdjustments(squadNum, pos, isOpponent) {
     if ([2,3,4,5,6,7,8,9,10,11].includes(squadNum)) {
       if (isOpponent) { y += lineOffset; } else { y -= lineOffset; }
     }
+
+    // =====================
+    // 圧縮スティック処理
+    // =====================
+    // compressStick.x: -1=左圧縮, +1=右圧縮
+    // compressStick.y: -1=手前圧縮, +1=奥圧縮（縦コンパクト）
+    //
+    // 横圧縮の考え方:
+    //   右圧縮(cx > 0) のとき
+    //     → 右端(x=100)の選手は動かない、左端(x=0)の選手が最大移動
+    //     → offset_x = cx * MAX * (1 - x/100)   ※ x は現在の横位置
+    //   左圧縮(cx < 0) のとき
+    //     → 左端(x=0)の選手は動かない、右端の選手が最大左移動
+    //     → offset_x = cx * MAX * (x/100)
+    //
+    // 縦圧縮:
+    //   スティックY に比例して全員が一様に前後にシフト（ラインを上下）
+
+    const cx = compressStick.x; // -1〜+1
+    const cy = -compressStick.y; // -1〜+1
+    const COMPRESS_MAX = 30;    // 最大移動量（%）
+    const COMPRESS_Y   = 15;    // 縦の最大移動量（%）
+
+    if (cx !== 0 || cy !== 0) {
+      // --- 横圧縮 ---
+      let xOffset;
+      if (cx >= 0) {
+        // 右圧縮: 右にいるほど動かない
+        xOffset = cx * COMPRESS_MAX * (1 - x / 100);
+      } else {
+        // 左圧縮: 左にいるほど動かない
+        xOffset = cx * COMPRESS_MAX * (x / 100);
+      }
+      x += xOffset;
+
+      // --- 縦コンパクト（ライン全体の前後移動）---
+      // GK(squadNum===1) は縦圧縮に含めない
+      if (squadNum !== 1) {
+        let yOffset;
+        if (cy >= 0) {
+          yOffset = + cy * COMPRESS_Y * (1.7 - y / 60); //手前にノブを引く
+          // yOffset = + cy * COMPRESS_Y * (1 - (y-0.2)**(1.2) / 80); //手前にノブを引く
+        } else {
+          yOffset = + 2.5 * cy * COMPRESS_Y * (y / 100);
+        }
+        y += yOffset;
+      }
+    }
+    // if (cx !== 0 || cy !== 0) {
+    //   // --- 横圧縮 ---
+    //   let xOffset;
+    //   if (cx >= 0) {
+    //     // 右圧縮: 右にいるほど動かない
+    //     xOffset = cx * COMPRESS_MAX * (1 - x / 100);
+    //   } else {
+    //     // 左圧縮: 左にいるほど動かない
+    //     xOffset = cx * COMPRESS_MAX * (x / 100);
+    //   }
+    //   x += xOffset;
+
+    //   // --- 縦コンパクト（ライン全体の前後移動）---
+    //   // GK(squadNum===1) は縦圧縮に含めない
+    //   if (squadNum !== 1) {
+    //     y -= cy * COMPRESS_Y;
+    //   }
+    // }
   }
   return [x, y];
 }

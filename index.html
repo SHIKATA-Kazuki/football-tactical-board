@@ -38,6 +38,10 @@
       .sp{
         display: flex;
       }
+      .joystick-square {
+        margin: 0 1px 0 1px;
+        width: 50vw;
+      }
     }
   </style>
 </head>
@@ -83,6 +87,14 @@
           <div class = "joystick-circle" id="joystick-area-sp"><div class="joystick-knob" id="knob-sp"></div></div>
         </div>
       </div>
+    </div>
+    <div class="sliderpart infopart sp">
+        <!-- 新機能。縦横圧縮コントローラー -->
+        <div>
+          <div id="controller-compress-sp">
+            <div class="joystick-square" id="joystick-area-compress-sp"><div class="joystick-knob" id="knob-compress-sp"></div></div>
+          </div>
+        </div>
     </div>
 
     <div class="squadnum infopart">
@@ -251,7 +263,7 @@
         <!-- 新機能。縦横圧縮コントローラー -->
         <div>
           <div id="controller-compress">
-            <div class="joystick-circle" id="joystick-area-compress"><div class="joystick-knob" id="knob-compress"></div></div>
+            <div class="joystick-square" id="joystick-area-compress"><div class="joystick-knob" id="knob-compress"></div></div>
           </div>
         </div>
       </div>
