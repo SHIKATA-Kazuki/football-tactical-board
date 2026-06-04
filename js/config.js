@@ -125,7 +125,7 @@ export const playerRoles = {
      5:'AC ',
      6:'RWG',
      7:'BtB',
-     8:'St',
+     8:'ST',
      9:'#10',
     10:'LWG'
 };

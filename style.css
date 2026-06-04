@@ -59,8 +59,7 @@ input, select { margin: 4px; padding: 5px; }
 input[type="number"] { width: 40px; }
 input[type="text"] { width: 80px; }
 
-.submit-btn { padding: 8px 50px; background-color: #63a5a8; color: var(--borer_color); border: none; cursor: pointer; border-radius: 6px; }
-.submit-btn:hover { filter: brightness(1.1); }
+
 
 #inputsHome{display: flex; flex-wrap: wrap; justify-content: center;}
 #inputsAway{display: flex; flex-wrap: wrap; justify-content: center;}
@@ -132,15 +131,6 @@ input[type="text"] { width: 80px; }
     align-items: flex-start;
 }    
 
-.squadnum {
-    background: var(--filter_back_color);
-    padding: 5px; width: 400px; min-width: 280px; border-radius: 8px; 
-    /* padding: 12px; width: 820px; min-width: 280px; border-radius: 8px;  */
-    display: flex;
-    justify-content: space-around;
-    gap: 20px;
-    align-items: flex-start;
-}    
 .sliderpart {
   background: var(--filter_back_color);
   padding: 5px; min-width: 280px; border-radius: 10px; 
@@ -152,24 +142,7 @@ input[type="text"] { width: 80px; }
   flex-wrap: wrap;
   justify-content:space-around;	
 }      
-.form-block {
-    display: flex;
-    justify-content: center;
-    padding: 0 20px;
-}
 
-.home-block {
-    justify-content: space-around;
-    /* border-right: 2px solid rgba(255,255,255,0.4); */
-}
-
-.away-block {
-    justify-content: space-around;
-}
-
-.number-input {
-  width: 50px;
-}
 .name-input {
   width: 100px;
 }
@@ -503,4 +476,48 @@ width: 30px;
 height: 30px;
 }
 
+/* #squad-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1px;
+} */
+.squadnum {
+    background: var(--filter_back_color);
+    padding: 5px; min-width: 280px; border-radius: 8px; 
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    /* align-items: flex-start; */
+}    
+.squadnum-sp {
+    background: var(--filter_back_color);
+    padding: 5px; min-width: 280px; border-radius: 8px; 
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    /* align-items: flex-start; */
+}    
+
+.form-block {
+    padding: 0 0px;
+    width: calc(var(--info_width)*0.3);
+}
+
+.number-input {
+  width: 50px;
+}
+
+.squad-form{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.squad-zone{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.submit-btn { padding: 8px 25px; background-color: #63a5a8; color: var(--borer_color); border: none; cursor: pointer; border-radius: 6px; }
+.submit-btn:hover { filter: brightness(1.1); }
 /* 終了 */

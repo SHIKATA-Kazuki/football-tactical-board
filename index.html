@@ -51,6 +51,10 @@
       display: none; /* SP のみ flex に切り替え */
     }
 
+    .squadnum-sp {
+      display: none; /* SP のみ表示 */
+    }
+
     /* =============================================
        SP レスポンシブ
     ============================================= */
@@ -75,6 +79,9 @@
       #info,
       .squadnum {
         display: none !important;
+      }
+      .squadnum-sp {
+        display: flex;
       }
 
       /* ハンバーガーボタン表示 */
@@ -188,25 +195,23 @@
       <div id="controller-container-sp">
         <p>Side player</p>
         <div id="controller-sp">
-          <div><img src="figure/narrow.png" alt="絞る" class="narrow"></div>
           <div class = "joystick-circle" id="joystick-area-sp"><div class="joystick-knob" id="knob-sp"></div></div>
           <!-- <div id="joystick-area"><div id="knob"></div></div> -->
-          <div><img src="figure/wide.png" alt="幅をとる" class="wide"></div>
         </div>
       </div>
     </div>
 
-    <div class="squadnum infopart" style="flex-direction:column; width:100%;">
+    <div class="squadnum-sp infopart" style="flex-direction:column; width:100%;">
       <div class="form-block home-block" style="width:100%;">
-        <form id="playerFormHome-sp">
+        <form class="squad-form"  id="playerFormHome-sp">
           <button class="submit-btn" type="submit">Home 表示</button>
-          <div id="inputsHome-sp"></div>
+          <div class="squad-zone"  id="inputsHome-sp"></div>
         </form>
       </div>
       <div class="form-block away-block" style="width:100%; margin-top:10px;">
-        <form id="playerFormAway-sp">
+        <form class="squad-form"  id="playerFormAway-sp">
           <button class="submit-btn" type="submit">Away 表示</button>
-          <div id="inputsAway-sp"></div>
+          <div class="squad-zone"  id="inputsAway-sp"></div>
         </form>
       </div>
     </div>
@@ -360,17 +365,17 @@
       </div>
     </div>
 
-    <div class="squadnum infopart centering_item">
-      <div class="form-block home-block">
-        <form id="playerFormHome">
+    <div class="infopart centering_item squadnum">
+      <div class="form-block">
+        <form class="squad-form" id="playerFormHome">
           <button class="submit-btn" type="submit">表示</button>
-          <div id="inputsHome"></div>
+          <div class="squad-zone"  id="inputsHome"></div>
         </form>
       </div>
-      <div class="form-block away-block">
-        <form id="playerFormAway">
+      <div class="form-block">
+        <form class="squad-form" id="playerFormAway">
           <button class="submit-btn" type="submit">表示</button>
-          <div id="inputsAway"></div>
+          <div class="squad-zone"  id="inputsAway"></div>
         </form>
       </div>
     </div>
@@ -412,8 +417,6 @@
       ['topSlider',     'topSlider-sp'],
       ['sidbackUpDown', 'sidbackUpDown-sp'],
       ['lineSlider',    'lineSlider-sp'],
-      // ['joystick-area', 'joystick-area-sp'],
-      // ['knob', 'knob-sp'],
     ];
 
     window.addEventListener('DOMContentLoaded', () => {
