@@ -133,7 +133,8 @@ export const playerRoles = {
 export const infomation ={
   kobe :{
     formation_key: ["4123"],
-    BestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
+    BestMember: [1, 24, 3, 16, 15, 25, 11, 7, 10, 5, 41],
+    // BestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
   },
   hiroshima :{
     formation_key: ["3421"],

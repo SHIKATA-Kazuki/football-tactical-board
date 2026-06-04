@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
   ===================================================== */
   createInputs("inputsHome", infomation[homeSelect.value]?.["BestMember"]);
   createInputs("inputsAway", infomation[awaySelect.value]?.["BestMember"]);
+  createInputs("inputsHome-sp", infomation[homeSelect.value]?.["BestMember"]);
+  createInputs("inputsAway-sp", infomation[awaySelect.value]?.["BestMember"]);
 
   initializeTeamSelects();      // home を描画、away は描画しない
   initializeFormationButtons(); // ボタンにイベント付与
