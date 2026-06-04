@@ -23,44 +23,44 @@ function applyTacticalAdjustments(squadNum, pos, isOpponent) {
   let sbOffset = (sbValue - 0.22) * 20;
 
   const lineOffset = (lineValue - 0.5) * 20;
-
-  if (
-    (squadNum === 2 && backsVal > 0.5)
-    || (squadNum === 5 && backsVal + volante + top > 0.1)
-    || (squadNum === 7 && backsVal < 0.5 && backsVal + volante + top > 0.1)
-    || (squadNum === 3 && backsVal + volante + top < 0.1)
-    || (squadNum === 4 && backsVal + volante + top < 0.1)
-  ) {
-    if (backsVal < 0.5 && backsVal + volante + top > 0.1) {
-      sbOffset = (sbValue - 0.4) * 37;
+  if (isOpponent === false){
+    if (
+      (squadNum === 2 && backsVal > 0.5)
+      || (squadNum === 5 && backsVal + volante + top > 0.1)
+      || (squadNum === 7 && backsVal < 0.5 && backsVal + volante + top > 0.1)
+      || (squadNum === 3 && backsVal + volante + top < 0.1)
+      || (squadNum === 4 && backsVal + volante + top < 0.1)
+    ) {
+      if (backsVal < 0.5 && backsVal + volante + top > 0.1) {
+        sbOffset = (sbValue - 0.4) * 37;
+      }
+      if (isOpponent) { y += sbOffset; } else { y -= sbOffset; }
     }
-    if (isOpponent) { y += sbOffset; } else { y -= sbOffset; }
-  }
 
-  if (
-    (squadNum === 7  && backsVal > 0.5)
-    || (squadNum === 11 && backsVal > 0.5)
-    || (squadNum === 10 && backsVal < 0.5 && volante > 0.5 && top < 0.5)
-    || (squadNum === 11 && backsVal < 0.5 && volante > 0.5 && top < 0.5)
-    || (squadNum === 6  && backsVal < 0.5 && top > 0.5)
-    || (squadNum === 8  && backsVal < 0.5 && top > 0.5)
-    || (squadNum === 2  && backsVal + volante + top < 0.1)
-    || (squadNum === 5  && backsVal + volante + top < 0.1)
-  ) {
-    if (isOpponent) {
-      if ([7, 10, 8, 2].includes(squadNum)) x -= wingWidthOffset;
-      if ([11, 6, 5].includes(squadNum))    x += wingWidthOffset;
-    } else {
-      if ([7, 10, 8, 2].includes(squadNum)) x += wingWidthOffset;
-      if ([11, 6, 5].includes(squadNum))    x -= wingWidthOffset;
+    if (
+      (squadNum === 7  && backsVal > 0.5)
+      || (squadNum === 11 && backsVal > 0.5)
+      || (squadNum === 10 && backsVal < 0.5 && volante > 0.5 && top < 0.5)
+      || (squadNum === 11 && backsVal < 0.5 && volante > 0.5 && top < 0.5)
+      || (squadNum === 6  && backsVal < 0.5 && top > 0.5)
+      || (squadNum === 8  && backsVal < 0.5 && top > 0.5)
+      || (squadNum === 2  && backsVal + volante + top < 0.1)
+      || (squadNum === 5  && backsVal + volante + top < 0.1)
+    ) {
+      if (isOpponent) {
+        if ([7, 10, 8, 2].includes(squadNum)) x -= wingWidthOffset;
+        if ([11, 6, 5].includes(squadNum))    x += wingWidthOffset;
+      } else {
+        if ([7, 10, 8, 2].includes(squadNum)) x += wingWidthOffset;
+        if ([11, 6, 5].includes(squadNum))    x -= wingWidthOffset;
+      }
+      if (isOpponent) { y += wingHeightOffset; } else { y -= wingHeightOffset; }
     }
-    if (isOpponent) { y += wingHeightOffset; } else { y -= wingHeightOffset; }
-  }
 
-  if ([2,3,4,5,6,7,8,9,10,11].includes(squadNum)) {
-    if (isOpponent) { y += lineOffset; } else { y -= lineOffset; }
+    if ([2,3,4,5,6,7,8,9,10,11].includes(squadNum)) {
+      if (isOpponent) { y += lineOffset; } else { y -= lineOffset; }
+    }
   }
-
   return [x, y];
 }
 
