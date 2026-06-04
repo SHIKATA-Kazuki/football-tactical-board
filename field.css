@@ -92,6 +92,13 @@
   /* overflow: hidden; */
 }
 
+@media (max-width: 600px){
+#field {
+   margin-left: 5vw;
+   margin-right: 5vw;
+}
+}
+
 
 /* =========================
    センターライン

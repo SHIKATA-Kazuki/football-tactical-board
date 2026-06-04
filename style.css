@@ -32,9 +32,7 @@
   .whichpara{
     font-size: 50%;
   }
-  /* .home-chip{width: 200px; height: 40px;}
-  .away-chip{width: 200px; height: 40px;} */
-  .chip{width: 35vw;padding: 8px 8px;}
+  .legend span{width: 35vw;padding: 8px 8px;}
 }
 
 
@@ -119,7 +117,7 @@ input[type="text"] { width: 80px; }
 
 .box{ display: inline-block; }
 
-.legend span { 
+.chip{ 
   display: inline-block; 
   padding: 8px 8px; 
   border-radius: 12px;
