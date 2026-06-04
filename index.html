@@ -8,56 +8,9 @@
   <link rel="stylesheet" href="field.css">
   <title>football strategy ver1.11</title>
   <style>
-    /* =============================================
-       ハンバーガーボタン（SP のみ表示）
-    ============================================= */
-    #menu-toggle {
-      display: none;
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      z-index: 200;
-      width: 44px;
-      height: 44px;
-      background: rgba(40,40,40,0.92);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 8px;
-      cursor: pointer;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 5px;
-    }
-    #formation-buttons-touch{
+    .sp{
       display: none;
     }
-    #menu-toggle span {
-      display: block;
-      width: 22px;
-      height: 2px;
-      background: #fff;
-      border-radius: 2px;
-      transition: transform 0.25s, opacity 0.25s;
-    }
-    /* × に変形 */
-    #menu-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    #menu-toggle.open span:nth-child(2) { opacity: 0; }
-    #menu-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-    /* =============================================
-       ドロワー（SP のみ）
-    ============================================= */
-    /* #drawer {
-      display: none;
-    } */
-
-    .squadnum {
-      display: flex; /* SP のみ表示 */
-    }
-
-    /* =============================================
-       SP レスポンシブ
-    ============================================= */
     @media (max-width: 600px) {
       /* フィールドを画面幅いっぱい・縦横比固定 */
       #field {
@@ -70,7 +23,7 @@
       /* フィールドを最前面に */
       .main {
         display: block;
-        padding: 100px 0 0 0;
+        padding: 80px 0 0 0;
         gap: 0;
       }
 
@@ -80,6 +33,9 @@
       }
 
       #formation-buttons-touch {
+        display: flex;
+      }
+      .sp{
         display: flex;
       }
     }
@@ -99,7 +55,7 @@
 
   <!-- ドロワー（SP）：PC では非表示 -->
   <div id="drawer">
-    <div class="sliderpart infopart">
+    <div class="sliderpart infopart sp">
       <div class="whichpara">backs</div>
       <input type="range" id="backsSlider-sp"    min="0" max="1" step="1"    value="1"   class="switch">
       <div>|</div>
@@ -107,20 +63,20 @@
       <input type="range" id="volanteSlider-sp"  min="0" max="1" step="1"    value="1"   class="switch">
       <div>|</div>
       <label class="whichpara">Top</label>
-      <input type="range" id="topSlider-sp"      min="0" max="1" step="1"    value="1"   class="switch">
+      <input type="range" id="topSlider-sp" min="0" max="1" step="1"    value="1"   class="switch">
     </div>
 
-    <div class="sliderpart infopart">
+    <div class="sliderpart infopart sp">
       <label class="whichpara">SBを上げる</label>
       <input type="range" id="sidbackUpDown-sp"  min="0" max="1" step="0.02" value="0.3" class="tops">
     </div>
 
-    <div class="sliderpart infopart">
+    <div class="sliderpart infopart sp">
       <label class="whichpara">高さ</label>
       <input type="range" id="lineSlider-sp"     min="0" max="1" step="0.02" value="0.5" class="tops">
     </div>
 
-    <div class="sliderpart infopart">
+    <div class="sliderpart infopart sp">
       <div id="controller-container-sp">
         <p>Side player</p>
         <div id="controller-sp">

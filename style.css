@@ -48,7 +48,8 @@ h1 { text-align: center; padding: 16px 20px; }
   flex-wrap: wrap;   /* 横並び固定 */
   justify-content: space-around; 
   align-items: flex-start; 
-  gap: 20px; 
+  padding: 80px 0 0 0;
+  gap: 10px; 
   align-items: center; /* 縦中央 */
 }
 /* .main { display: flex; flex-wrap: wrap; margin: 0 auto; justify-content: center; gap: 20px; padding: 20px; } */
@@ -62,7 +63,41 @@ input[type="text"] { width: 80px; }
 
 #menu-toggle {
   display: flex;
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 200;
+  width: 44px;
+  height: 44px;
+  background: rgba(40,40,40,0.92);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 }
+#formation-buttons-touch{
+  display: none;
+}
+#menu-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+}
+/* × に変形 */
+#menu-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#menu-toggle.open span:nth-child(2) { opacity: 0; }
+#menu-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.squadnum {
+  display: flex; /* SP のみ表示 */
+}
+
 #drawer {
   display: flex;
   flex-direction: column;
@@ -562,7 +597,7 @@ height: 30px;
 }
 
 .TeamSelect{
-  width: 22vw;
+  width: 100px;
 }
 
 .number-input {
