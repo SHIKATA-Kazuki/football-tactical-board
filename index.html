@@ -47,12 +47,12 @@
     /* =============================================
        ドロワー（SP のみ）
     ============================================= */
-    #drawer {
-      display: none; /* SP のみ flex に切り替え */
-    }
+    /* #drawer {
+      display: none;
+    } */
 
-    .squadnum-sp {
-      display: none; /* SP のみ表示 */
+    .squadnum {
+      display: flex; /* SP のみ表示 */
     }
 
     /* =============================================
@@ -75,77 +75,12 @@
       }
 
       /* PC 用の #info・.squadnum を非表示 */
-      #info,
-      .squadnum {
+      #info {
         display: none !important;
       }
-      .squadnum-sp {
-        display: flex;
-      }
 
-      /* ハンバーガーボタン表示 */
-      #menu-toggle {
-        display: flex;
-      }
       #formation-buttons-touch {
         display: flex;
-      }
-      /* ドロワー本体 */
-      #drawer {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        position: fixed;
-        top: 0;
-        right: -100%;      /* 初期状態：画面外 */
-        width: min(85vw, 340px);
-        height: 100svh;
-        background: rgba(24, 24, 24, 0.603);
-        border-left: 1px solid rgba(255,255,255,0.15);
-        z-index: 150;
-        padding: 60px 12px 20px;
-        overflow-y: auto;
-        transition: right 0.3s ease;
-      }
-      #drawer.open {
-        right: 0;
-      }
-
-      /* ドロワー内の各パーツ */
-      #drawer .infopart {
-        width: 100%;
-        margin: 0;
-      }
-
-      /* オーバーレイ */
-      #drawer-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 140;
-      }
-      #drawer-overlay.open {
-        display: block;
-      }
-
-      /* legend はヘッダーに残す */
-      header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: calc(100% - 56px); /* ハンバーガーボタン分を避ける */
-        z-index: 100;
-        padding: 4px 0;
-      }
-      img.narrow {
-      width: 15px;
-      height: 15px;
-      }
-
-      img.wide {
-      width: 15px;
-      height: 15px;
       }
     }
   </style>
@@ -195,9 +130,9 @@
       </div>
     </div>
 
-    <div class="squadnum-sp infopart">
+    <div class="squadnum infopart">
       <div class="form-block">
-        <form class="squad-form"  id="playerFormHome-sp">
+        <form class="squad-form"  id="playerFormHome">
           <select class="TeamSelect" id="homeTeamSelect">
             <option value="default">表示中</option>
             <option value="kobe">神戸</option>
@@ -218,11 +153,11 @@
             <option value="hiroshima_AwayVer">広島(A)</option>
           </select>
           <button class="submit-btn" type="submit">表示</button>
-          <div class="squad-zone"  id="inputsHome-sp"></div>
+          <div class="squad-zone"  id="inputsHome"></div>
         </form>
       </div>
       <div class="form-block">
-        <form class="squad-form"  id="playerFormAway-sp">
+        <form class="squad-form"  id="playerFormAway">
           <select class="TeamSelect" id="awayTeamSelect">
             <option value="default">未選択</option>
             <option value="kobe">神戸</option>
@@ -243,7 +178,7 @@
             <option value="hiroshima_AwayVer">広島(A)</option>
           </select>
           <button class="submit-btn" type="submit">表示</button>
-          <div class="squad-zone"  id="inputsAway-sp"></div>
+          <div class="squad-zone"  id="inputsAway"></div>
         </form>
       </div>
     </div>
@@ -358,7 +293,7 @@
         </div>
       </div>
     </div>
-    <div class="infopart centering_item squadnum">
+    <!-- <div class="infopart centering_item squadnum">
       <div class="form-block">
         <form class="squad-form" id="playerFormHome">
           <select class="TeamSelect" id="homeTeamSelect">
@@ -409,7 +344,7 @@
           <div class="squad-zone"  id="inputsAway"></div>
         </form>
       </div>
-    </div>
+    </div> -->
   </div>
 
   <script>

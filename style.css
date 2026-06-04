@@ -60,7 +60,56 @@ input, select { margin: 4px; padding: 5px; }
 input[type="number"] { width: 50px; }
 input[type="text"] { width: 80px; }
 
+#menu-toggle {
+  display: flex;
+}
+#drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: fixed;
+  top: 0;
+  right: -100%;      /* 初期状態：画面外 */
+  width: min(85vw, 340px);
+  height: 100svh;
+  background: rgba(24, 24, 24, 0.603);
+  border-left: 1px solid rgba(255,255,255,0.15);
+  z-index: 150;
+  padding: 60px 12px 20px;
+  overflow-y: auto;
+  transition: right 0.3s ease;
+}
+#drawer.open {
+  right: 0;
+}
 
+/* ドロワー内の各パーツ */
+#drawer .infopart {
+  width: 100%;
+  margin: 0;
+}
+
+/* オーバーレイ */
+#drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 140;
+}
+#drawer-overlay.open {
+  display: block;
+}
+
+/* legend はヘッダーに残す */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: calc(100% - 56px); /* ハンバーガーボタン分を避ける */
+  z-index: 100;
+  padding: 4px 0;
+}
 
 #inputsHome{display: flex; flex-wrap: wrap; justify-content: center;}
 #inputsAway{display: flex; flex-wrap: wrap; justify-content: center;}
