@@ -1,9 +1,9 @@
-:root{
+/* :root{
   --pitch-height_: 75vh ;
   --pitch-width_: calc(var(--pitch-height_) * (4/6));
   --fieldMargin: 40px;
   --fieldMarginLeft: 40px;
-  /* --pitch-width: 500px; */
+
 }
 
 @media (max-width: 600px){
@@ -13,13 +13,111 @@
     --size: 0.7;
     --fieldMarginLeft: 10px;
     --fieldMargin: 10px;
+  }  
+}
+
+
+#field {
+  position: relative;
+
+  width: var(--pitch-width);
+  height: var(--pitch-height);
+
+  background:
+    linear-gradient(
+      rgba(9,49,41,0.7),
+      rgba(17,51,30,0.7)
+    );
+
+  border: calc(var(--line-size) * 1.7)
+          solid var(--borer_color);
+
+  border-radius: var(--border-radius);
+
+   margin-top: var(--fieldMargin);
+   margin-left: var(--fieldMarginLeft);
+   margin-right: var(--fieldMargin);
+   margin-bottom: var(--fieldMargin);
+
+}
+
+@media (max-width: 600px){
+  #field {
+     margin-left: 5vw;
+     margin-right: 5vw;
+  }
+  #field {
+    height: calc(100vw * 6 / 4) !important;
+    border-radius: 0 !important;
+    max-height: 100svh;
   }
 }
+
 :root {   
-  /* ピッチ寸法 */
   --pitch-width: var(--pitch-width_);
   --pitch-height: var(--pitch-height_);
+} */
+
+
+:root {
+  /* ピッチサイズ */
+  --pitch-width: calc(75vh * 4 / 6);
+  --pitch-height: 75vh;
+
+  /* 余白 */
+  --field-margin: 40px;
+  --field-margin-left: 40px;
 }
+
+@media (max-width: 600px) {
+  :root {
+    --pitch-width: 90vw;
+    --pitch-height: calc(90vw * 6 / 4);
+
+    --field-margin: 10px;
+    --field-margin-left: 10px;
+
+    --size: 0.7;
+  }
+}
+
+#field {
+  position: relative;
+
+  width: var(--pitch-width);
+  height: var(--pitch-height);
+
+  background: linear-gradient(
+    rgba(9, 49, 41, 0.7),
+    rgba(17, 51, 30, 0.7)
+  );
+
+  border: calc(var(--line-size) * 1.7) solid var(--borer_color);
+  border-radius: var(--border-radius);
+
+  margin:
+    var(--field-margin)
+    var(--field-margin)
+    var(--field-margin)
+    var(--field-margin-left);
+}
+
+@media (max-width: 600px) {
+  :root{
+    --pitch-height: calc(100vw * 6 / 4);
+  };
+  #field {
+    margin-left: 5vw;
+    margin-right: 5vw;
+
+    height: var(--pitch-height);
+    max-height: 100svh;
+
+    border-radius: 0;
+  }
+}
+
+
 :root {
   /* 色 */
   --filter_back_color: rgb(205 205 205 / 40%);
@@ -63,41 +161,6 @@
   --half-lane-width: var(--penalty-width);
 }
 
-
-/* =========================
-   ピッチ本体
-========================= */
-
-#field {
-  position: relative;
-
-  width: var(--pitch-width);
-  height: var(--pitch-height);
-
-  background:
-    linear-gradient(
-      rgba(9,49,41,0.7),
-      rgba(17,51,30,0.7)
-    );
-
-  border: calc(var(--line-size) * 1.7)
-          solid var(--borer_color);
-
-  border-radius: var(--border-radius);
-
-   margin-top: var(--fieldMargin);
-   margin-left: var(--fieldMarginLeft);
-   margin-right: var(--fieldMargin);
-   margin-bottom: var(--fieldMargin);
-  /* overflow: hidden; */
-}
-
-@media (max-width: 600px){
-#field {
-   margin-left: 5vw;
-   margin-right: 5vw;
-}
-}
 
 
 /* =========================
@@ -163,8 +226,8 @@
 }
 
 #knob-compress {
-  width: 40px;
-  height: 40px;
+  width: calc(0.95*var(--center-circle-size));
+  height: calc(0.95*var(--center-circle-size));
   background: #ffffff00;
   border-radius: 50%;
   position: absolute;
