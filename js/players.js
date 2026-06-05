@@ -33,9 +33,9 @@ function applyTacticalAdjustments(squadNum, pos, isOpponent) {
       || (squadNum === 3 && backsVal + volante + top < 0.1)
       || (squadNum === 4 && backsVal + volante + top < 0.1)
     ) {
-      if (backsVal < 0.5 && backsVal + volante + top > 0.1) {
-        sbOffset = sbValue;
-      }
+      // if (backsVal < 0.5 && backsVal + volante + top > 0.1) {
+      //   sbOffset = (sbValue-0.2)*20;
+      // }
       if (isOpponent) { y += sbOffset; } else { y -= sbOffset; }
     }
 
@@ -78,8 +78,6 @@ function applyTacticalAdjustments(squadNum, pos, isOpponent) {
       }
       x += xOffset;
 
-      // --- 縦コンパクト（ライン全体の前後移動）---
-      // GK(squadNum===1) は縦圧縮に含めない
       if (squadNum !== 1) {
         let yOffset;
         if (cy >= 0) {
@@ -186,7 +184,8 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
     el.className = isOpponent ? "player away" : "player home";
 
     // 手動移動済みのノードはフォーメーション計算をスキップ
-    if (manualPositions[sideKey].has(i)) {
+    // if (manualPositions[sideKey].has(i)) {
+    if (false) {
       const saved = manualPositions[sideKey].get(i);
       el.style.left = saved.left;
       el.style.top  = saved.top;
