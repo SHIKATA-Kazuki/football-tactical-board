@@ -1,5 +1,6 @@
 export const teamColors = {
     kobe:   { name: '神戸',    color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+    kobe25:   { name: '神戸',    color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
     default:   { name: '未選択',    color: 'rgba(255, 255, 255, 0.92)', text: '#4b4040' },
     yokohamaFM:{ name: '横浜FM', color: 'rgba(0, 0, 200, 0.9)',     text: '#fff' },
     urawa:  { name: '浦和',     color: 'rgb(231, 0, 43)',     text: '#fff' },
@@ -20,6 +21,12 @@ export const teamColors = {
 
 export const teamUniformColor = {
   kobe: {
+    name: '神戸',
+    style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
+    text: '#fff',
+    // color:'crimson',
+  },
+  kobe25: {
     name: '神戸',
     style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
     text: '#fff',
@@ -138,6 +145,11 @@ export const infomation ={
   kobe :{
     formation_key: ["4123"],
     BestMember: [1, 24, 3, 16, 15, 25, 11, 7, 10, 5, 41],
+    // BestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
+  },
+  kobe :{
+    formation_key: ["4123"],
+    BestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
     // BestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
   },
   hiroshima :{
