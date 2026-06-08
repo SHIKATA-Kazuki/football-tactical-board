@@ -1,43 +1,41 @@
-import { formations } from './formations.js';
-
 // ==========ジョイスティック状態===========
 export let wingStick     = { x: 0, y: 0 };
 export let compressStick = { x: 0, y: 0 }; // 圧縮スティック（-1〜+1）
 
 // ==========スライダー参照ヘルパー===========
-function sliderVal(id) {
+export function sliderVal(id) {
   return parseFloat(document.getElementById(id).value);
 }
 
 // ==========戦術調整===========
 function applyTacticalAdjustments(squadNum, pos, isOpponent) {
   let [x, y] = pos;
-  console.log(`Before adjustments: squad ${squadNum}, x=${x}, y=${y}`);
-  const sbValue   = sliderVal("sidbackUpDown");
-  const lineValue = sliderVal("lineSlider");
+  // console.log(`Before adjustments: squad ${squadNum}, x=${x}, y=${y}`);
+  // const sbValue   = sliderVal("sidbackUpDown");
+  // const lineValue = sliderVal("lineSlider");
   const backsVal  = sliderVal("backsSlider");
   const volante   = sliderVal("volanteSlider");
   const top       = sliderVal("topSlider");
 
   const wingWidthOffset  = wingStick.x * 15;
   const wingHeightOffset = wingStick.y * 15;
-  let sbOffset = (sbValue - 0.22) * 20;
+  // let sbOffset = (sbValue - 0.22) * 20;
 
-  const lineOffset = -lineValue * ((58-y)/30)*13;
+  // const lineOffset = -lineValue * ((58-y)/30)*13;
   // const lineOffset = (lineValue - 0.5) * 20;
   if (isOpponent === false){
-    if (
-      (squadNum === 2 && backsVal > 0.5)
-      || (squadNum === 5 && backsVal + volante + top > 0.1)
-      || (squadNum === 7 && backsVal < 0.5 && backsVal + volante + top > 0.1)
-      || (squadNum === 3 && backsVal + volante + top < 0.1)
-      || (squadNum === 4 && backsVal + volante + top < 0.1)
-    ) {
-      // if (backsVal < 0.5 && backsVal + volante + top > 0.1) {
-      //   sbOffset = (sbValue-0.2)*20;
-      // }
-      if (isOpponent) { y += sbOffset; } else { y -= sbOffset; }
-    }
+    // if (
+    //   (squadNum === 2 && backsVal > 0.5)
+    //   || (squadNum === 5 && backsVal + volante + top > 0.1)
+    //   || (squadNum === 7 && backsVal < 0.5 && backsVal + volante + top > 0.1)
+    //   || (squadNum === 3 && backsVal + volante + top < 0.1)
+    //   || (squadNum === 4 && backsVal + volante + top < 0.1)
+    // ) {
+    //   // if (backsVal < 0.5 && backsVal + volante + top > 0.1) {
+    //   //   sbOffset = (sbValue-0.2)*20;
+    //   // }
+    //   if (isOpponent) { y += sbOffset; } else { y -= sbOffset; }
+    // }
 
     if (
       (squadNum === 7  && backsVal > 0.5)
@@ -59,9 +57,9 @@ function applyTacticalAdjustments(squadNum, pos, isOpponent) {
       if (isOpponent) { y += wingHeightOffset; } else { y -= wingHeightOffset; }
     }
 
-    if ([2,3,4,5,6,7,8,9,10,11].includes(squadNum)) {
-      if (isOpponent) { y = y + lineOffset; } else { y = y - lineOffset; }
-    }
+    // if ([2,3,4,5,6,7,8,9,10,11].includes(squadNum)) {
+    //   if (isOpponent) { y = y + lineOffset; } else { y = y - lineOffset; }
+    // }
 
     const cx = compressStick.x; // -1〜+1
     const cy = -compressStick.y; // -1〜+1

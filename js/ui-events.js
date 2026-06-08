@@ -1,4 +1,4 @@
-import { formations, getFormationName, formationSliderMap } from './formations.js';
+import { formations, getFormationName, formationSliderMap } from './formations_new.js';
 import { playerRoles, team_member, infomation } from './config.js';
 import {
   readPlayersFromForm,
@@ -6,7 +6,8 @@ import {
   applyFormation,
   wingStick,
   compressStick,
-  resetManualPositions
+  resetManualPositions,
+  sliderVal
 } from './players.js';
 
 // away が初期化済みかを team-colors から参照（循環回避のため関数で遅延取得）
@@ -26,12 +27,17 @@ export function initializeFormationButtons() {
       document.querySelectorAll('.home-formations button').forEach(b => b.classList.remove('active'));
       e.currentTarget.classList.add('active');
 
-      const f   = e.currentTarget.dataset.formation;
-      const pos = formations[f];
+      const SBvalue   = sliderVal("sidbackUpDown");
+      const lineValue = sliderVal("lineSlider");
+      let DF_line = 26 - lineValue * 15;
+      let FW_line = -26 + lineValue * 15;
+
+      const key   = e.currentTarget.dataset.formation;
+      const pos = formations(key, {DF:DF_line, FW:FW_line, SB:SBvalue});
       if (!pos) return;
 
       // スライダーも連動させる
-      const config = formationSliderMap[f];
+      const config = formationSliderMap[key];
       if (config) {
         document.getElementById("backsSlider").value   = config.backs;
         document.getElementById("volanteSlider").value = config.volante;
@@ -49,8 +55,8 @@ export function initializeFormationButtons() {
       document.querySelectorAll('.away-formations button').forEach(b => b.classList.remove('active'));
       e.currentTarget.classList.add('active');
 
-      const f   = e.currentTarget.dataset.formation;
-      const pos = formations[f];
+      const key   = e.currentTarget.dataset.formation;
+      const pos = formations(key, {});
       if (!pos) return;
 
       const players = readPlayersFromForm(document.getElementById("playerFormAway"));
@@ -92,7 +98,6 @@ export function createInputs(containerId, squad_number, homeaway) {
     ? squad_number
     : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   document.getElementById
-  console.log("発火",team)
   for (let i = 10; i >= 0; i--) {
     container.innerHTML += `
       <div class="squad-input">
@@ -113,9 +118,14 @@ export function redrawAllPlayers({ resetManual = false } = {}) {
   const top     = parseFloat(document.getElementById("topSlider").value);
   const volante = parseFloat(document.getElementById("volanteSlider").value);
   const backs   = parseFloat(document.getElementById("backsSlider").value);
+  
+  const SBvalue   = sliderVal("sidbackUpDown");
+  const lineValue = sliderVal("lineSlider");
+  let DF_line = 26 - lineValue * 15;
+  let FW_line = -26 + lineValue * 15;
 
   const name     = getFormationName(backs, volante, top);
-  const formation = structuredClone(formations[name]);
+  const formation = structuredClone(formations(name,{DF:DF_line, FW:FW_line, SB:SBvalue}));
 
   applyFormation(formation, resetManual);  // home のみ
 }
@@ -125,8 +135,13 @@ export function redrawAllPlayers({ resetManual = false } = {}) {
 // チーム変更時の再描画（フォーメーション指定、サイド指定）
 // =====================================================
 export function redrawAllPlayers_if_team_changed(formation, side = 'home') {
+  const SBvalue   = sliderVal("sidbackUpDown");
+  const lineValue = sliderVal("lineSlider");
+  let DF_line = 26 - lineValue * 15;
+  let FW_line = -26 + lineValue * 15;
+  console.log("lineValue", lineValue, "DF_line", DF_line, "FW_line", FW_line, "SBvalue", SBvalue)
   const key       = Array.isArray(formation) ? formation[0] : formation;
-  const positions = structuredClone(formations[key]);
+  const positions = structuredClone(formations(key, {DF:DF_line, FW:FW_line, SB:SBvalue}));
   if (!positions) return;
 
   const config = formationSliderMap[key];
