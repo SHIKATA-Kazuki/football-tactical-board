@@ -1,5 +1,5 @@
 import { formations, getFormationName, formationSliderMap } from './formations.js';
-import { playerRoles } from './config.js';
+import { playerRoles, team_member, infomation } from './config.js';
 import {
   readPlayersFromForm,
   placePlayers,
@@ -80,20 +80,26 @@ export function updateFormationButtons(formation, side = 'home') {
 // =====================================================
 // 番号入力欄を生成
 // =====================================================
-export function createInputs(containerId, squad_number) {
-  const container = document.getElementById(containerId);
+export function createInputs(containerId, squad_number, homeaway) {
+    const container = document.getElementById(containerId)
+    let team = document.getElementById("homeTeamSelect").value;
+  if (!homeaway){
+      team = document.getElementById("awayTeamSelect").value;
+  }
   if (!container) return;
   container.innerHTML = "";
   const numbers = (squad_number && squad_number.length === 11)
     ? squad_number
     : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   document.getElementById
-  for (let i = 0; i <= 10; i++) {
+  console.log("発火",team)
+  for (let i = 10; i >= 0; i--) {
     container.innerHTML += `
       <div class="squad-input">
         ${playerRoles[i]}
+        ${team_member[team]?.[numbers[i]]}
         <input type="number" name="number${i + 1}" value="${numbers[i]}" required>
-      </div>
+        </div>
     `;
   }
 }

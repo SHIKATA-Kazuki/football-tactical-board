@@ -22,9 +22,9 @@ function updateTeamColor(isHome, teamKey) {
   // chip.textContent      = `${t.name} : ${isHome ? 'ホーム' : 'アウェイ'}`;
 
   // 入力欄更新（home のみ。away は awayInitialized 後）
-  createInputs("inputsHome", infomation[homeSelect.value]?.["BestMember"]);
+  createInputs("inputsHome", infomation[homeSelect.value]?.["BestMember"], true);
   if (awayInitialized) {
-    createInputs("inputsAway", infomation[awaySelect.value]?.["BestMember"]);
+    createInputs("inputsAway", infomation[awaySelect.value]?.["BestMember"], false);
   }
 
   // ユニフォーム色更新

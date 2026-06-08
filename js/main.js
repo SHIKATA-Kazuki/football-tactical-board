@@ -16,14 +16,17 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =====================================================
      初期化
   ===================================================== */
-  createInputs("inputsHome", infomation[homeSelect.value]?.["BestMember"]);
-  createInputs("inputsAway", infomation[awaySelect.value]?.["BestMember"]);
-  createInputs("inputsHome-sp", infomation[homeSelect.value]?.["BestMember"]);
-  createInputs("inputsAway-sp", infomation[awaySelect.value]?.["BestMember"]);
-
+  // const thevalue1 = "kobe"
+  // const thevalue2 = "kobe"
+  // console.log(thevalue) 
+  
   initializeTeamSelects();      // home を描画、away は描画しない
   initializeFormationButtons(); // ボタンにイベント付与
-
+  
+  createInputs("inputsHome", infomation[homeSelect.value]?.["BestMember"],true);
+  createInputs("inputsAway", infomation[awaySelect.value]?.["BestMember"],false);
+  createInputs("inputsHome-sp", infomation[homeSelect.value]?.["BestMember"],true);
+  createInputs("inputsAway-sp", infomation[awaySelect.value]?.["BestMember"],false);
   /* =====================================================
      スライダー変更 → home のみ再描画
   ===================================================== */
