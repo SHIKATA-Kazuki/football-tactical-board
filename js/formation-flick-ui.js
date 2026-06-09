@@ -60,7 +60,8 @@ const FLICK_KEYS = [
       { dir: "top",    name: "325", img: "figure/325.svg" },
       { dir: "bottom", name: "541",  img: "figure/541.svg"  },
       { dir: "left",   name: "343",  img: "figure/343.svg" },
-      { dir: "right",  name: null,   img: null               },
+      { dir: "right",   name: "3421R",  img: "figure/3421.svg" },
+      // { dir: "right",  name: null,   img: null               },
     ],
   },
   {
@@ -115,7 +116,6 @@ const FLICK_CSS = `
 /* ── フリックUI本体（.flick-ui 以下） ─────────────────────────── */
 
 `;
-
 function injectCSS() {
   if (document.getElementById("flick-ui-css")) return;
   const s = document.createElement("style");
@@ -123,14 +123,14 @@ function injectCSS() {
   s.textContent = FLICK_CSS;
   document.head.appendChild(s);
 }
-
+ 
 // ─── UI 構築 ────────────────────────────────────────────────────────────────
 function buildFlickUI(container, side) {
   console.log(`[FlickUI] buildFlickUI start: side=${side}`, container);
-
+ 
   // 既存の中身をリセット
   container.innerHTML = "";
-
+ 
   // ① 隠しボタン群（initializeFormationButtons の querySelectorAll に引っかかる）
   const hiddenWrap = document.createElement("div");
   hiddenWrap.setAttribute("aria-hidden", "true");
@@ -146,11 +146,11 @@ function buildFlickUI(container, side) {
   });
   container.appendChild(hiddenWrap);
   console.log(`[FlickUI] hidden buttons created: ${allNames.length}個`);
-
+ 
   // ② フリックUI本体
   const wrap = document.createElement("div");
   wrap.className = "flick-ui";
-
+ 
   // 選択バー
   const bar = document.createElement("div");
   bar.className = "flick-bar";
@@ -163,13 +163,13 @@ function buildFlickUI(container, side) {
   bar.appendChild(barLabel);
   bar.appendChild(barValue);
   wrap.appendChild(bar);
-
+ 
   // ヒント
   // const hint = document.createElement("p");
   // hint.className = "flick-hint";
   // hint.textContent = "キーを押したままドラッグ → 離して確定";
   // wrap.appendChild(hint);
-
+ 
   // グリッド
   const grid = document.createElement("div");
   grid.className = "flick-grid";
@@ -177,7 +177,7 @@ function buildFlickUI(container, side) {
     const key = document.createElement("div");
     key.className = "flick-key";
     key.dataset.idx = String(i);
-
+ 
     // centerフォーメーションのSVGを背景に薄く表示
     const centerFormation = k.formations.find(f => f.dir === "center");
     const imgSrc = toImgSrc(centerFormation);
@@ -189,7 +189,7 @@ function buildFlickUI(container, side) {
       img.draggable = false;
       key.appendChild(img);
     }
-
+ 
     const inner = document.createElement("div");
     inner.className = "flick-key-inner";
     const main = document.createElement("span");
@@ -205,25 +205,25 @@ function buildFlickUI(container, side) {
   });
   wrap.appendChild(grid);
   container.appendChild(wrap);
-
+ 
   // ③ ポップアップ（body 直下）
   const popup = document.createElement("div");
   popup.className = "flick-popup";
   document.body.appendChild(popup);
-
+ 
   console.log(`[FlickUI] DOM built for side=${side}`);
-
+ 
   // ④ インタラクション
   attachInteraction({ grid, popup, hiddenWrap, barValue, side });
 }
-
+ 
 // ─── インタラクション ────────────────────────────────────────────────────────
 function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
   const THRESHOLD = 18;
   let activeIdx = null;
   let flickDir  = null;
   let startX = 0, startY = 0;
-
+ 
   function onStart(idx, x, y) {
     activeIdx = idx;
     flickDir  = "center";
@@ -234,7 +234,7 @@ function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
     });
     renderPopup(idx, x, y, "center");
   }
-
+ 
   function onMove(x, y) {
     if (activeIdx === null) return;
     const dx = x - startX;
@@ -255,7 +255,7 @@ function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
       highlightPopup(dir);
     }
   }
-
+ 
   function onEnd() {
     if (activeIdx === null) return;
     const f = FLICK_KEYS[activeIdx].formations.find(f => f.dir === flickDir);
@@ -265,7 +265,7 @@ function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
     activeIdx = null;
     flickDir  = null;
   }
-
+ 
   function triggerFormation(name, keyIdx) {
     barValue.textContent = name;
     // 選択済みキーをハイライト
@@ -283,7 +283,7 @@ function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
       console.warn(`[FlickUI] hidden button not found: ${name}`);
     }
   }
-
+ 
   function renderPopup(idx, x, y, highlightDir) {
     const key = FLICK_KEYS[idx];
     popup.innerHTML = "";
@@ -319,7 +319,7 @@ function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
     popup.style.top  = (y - 80) + "px";
     popup.classList.add("is-visible");
   }
-
+ 
   function highlightPopup(dir) {
     popup.querySelectorAll(".flick-pcell").forEach(c => {
       c.classList.toggle(
@@ -328,7 +328,7 @@ function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
       );
     });
   }
-
+ 
   // ── イベント登録 ──
   // grid 上のポインター開始
   grid.addEventListener("mousedown", e => {
@@ -343,7 +343,7 @@ function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
     e.preventDefault();
     onStart(+key.dataset.idx, e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: false });
-
+ 
   // document 全体でポインター移動・終了を拾う
   // ※ side ごとに重複登録しないよう once フラグを使わず、
   //   activeIdx === null チェックで無効時は何もしない設計にしている
@@ -356,20 +356,20 @@ function attachInteraction({ grid, popup, hiddenWrap, barValue, side }) {
   document.addEventListener("mouseup",  onEnd);
   document.addEventListener("touchend", onEnd);
 }
-
+ 
 // ─── エントリポイント ────────────────────────────────────────────────────────
 export function initFlickFormationUI() {
   injectCSS();
-
+ 
   const homeEl = document.querySelector(".home-formations");
   const awayEl = document.querySelector(".away-formations");
-
+ 
   if (homeEl) {
     buildFlickUI(homeEl, "home");
   } else {
     console.warn("[FlickUI] .home-formations が見つかりません");
   }
-
+ 
   if (awayEl) {
     buildFlickUI(awayEl, "away");
   } else {
