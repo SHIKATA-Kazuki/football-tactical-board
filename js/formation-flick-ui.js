@@ -138,7 +138,7 @@ const FLICK_CSS = `
 .flick-key {
   box-sizing: border-box;
   width: 100%;
-  padding-top: 100%; /* aspect-ratio 代替 */
+  padding-top: 50%; /* aspect-ratio 代替 */
   position: relative;
   border-radius: 8px;
   border: 1px solid #ccc;
