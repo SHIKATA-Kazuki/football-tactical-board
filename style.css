@@ -471,35 +471,6 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
 .selected-label { font-size: 13px; color: #888; white-space: nowrap; }
 .selected-value  { font-size: 20px; font-weight: 600; color: #111; }
 
-.hint { font-size: 12px; color: #aaa; margin-bottom: 10px; }
-
-/* ---- 4×2 Key Grid ---- */
-.flick-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.flick-key {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  background: #fff;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  touch-action: none;
-  transition: background 0.1s;
-  overflow: visible;
-}
-.flick-key.active   { background: #eee; border-color: #999; z-index: 5; }
-.flick-key.selected-key { border-color: #185FA5; background: #e6f1fb; }
-
 .key-main {
   font-size: 12px;
   font-weight: 600;
@@ -571,5 +542,128 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   text-decoration: underline;
 }
 
+.flick-ui {
+  box-sizing: border-box;
+  width: 100%;
+  font-family: system-ui, sans-serif;
+  padding: 6px 0;
+}
+.flick-ui .flick-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin-bottom: 8px;
+  min-height: 36px;
+}
+.flick-ui .flick-bar-label { font-size: 12px; color: #888; white-space: nowrap; }
+.flick-ui .flick-bar-value { font-size: 16px; font-weight: 700; color: #111; }
+.flick-ui .flick-hint { font-size: 11px; color: #bbb; margin: 0 0 8px; }
+.flick-ui .flick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+.flick-ui .flick-key {
+  box-sizing: border-box;
+  /* width: 100%; */
+  width: 45px;
+  padding-top: 100%;
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.flick-ui .flick-key-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.flick-ui .flick-key.is-active   { background: #e8e8e8; border-color: #999; }
+.flick-ui .flick-key.is-selected { background: #b8dafd; border-color: #185FA5; }
+.flick-ui .flick-key-main {
+  font-size: 11px;
+  font-weight: 700;
+  color: #222;
+  text-align: center;
+  white-space: pre-line;
+  line-height: 1.35;
+}
+.flick-ui .flick-key-sub { font-size: 10px; color: #aaa; margin-top: 2px; }
+.flick-ui .flick-key-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.18;
+  pointer-events: none;
+  padding: 4px;
+  box-sizing: border-box;
+}
+.flick-ui .flick-key.is-selected .flick-key-img { opacity: 0.35; }
+.flick-ui .flick-key.is-active   .flick-key-img { opacity: 0.25; }
+
+/* ── ポップアップ（body直下、.flick-popup スコープ） ───────────── */
+.flick-popup {
+  position: fixed;
+  display: none;
+  width: 160px;
+  height: 160px;
+  pointer-events: none;
+  z-index: 99999;
+}
+.flick-popup.is-visible { display: block; }
+.flick-popup .flick-pcell {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 7px;
+  border: 1px solid #ccc;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #555;
+  box-sizing: border-box;
+}
+.flick-popup .flick-pcell[data-dir="center"] { left:56px; top:56px; background:#eee; color:#111; border-color:#aaa; }
+.flick-popup .flick-pcell[data-dir="top"]    { left:56px; top:4px; }
+.flick-popup .flick-pcell[data-dir="bottom"] { left:56px; top:108px; }
+.flick-popup .flick-pcell[data-dir="left"]   { left:4px;  top:56px; }
+.flick-popup .flick-pcell[data-dir="right"]  { left:108px; top:56px; }
+.flick-popup .flick-pcell.is-empty     { opacity: 0.3; }
+.flick-popup .flick-pcell.is-highlight { background: #185FA5; color: #fff; border-color: #185FA5; }
+.flick-popup .flick-pcell-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.flick-popup .flick-pcell.is-highlight .flick-pcell-img { filter: brightness(10); opacity: 0.85; }
+.flick-popup .flick-pcell-label {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 700;
+}
 
 /* 終了 */

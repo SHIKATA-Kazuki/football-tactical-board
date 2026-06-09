@@ -1,3 +1,17 @@
+/**
+ * formation-flick-ui.js
+ *
+ * 呼び出し順:
+ *   initFlickFormationUI();      // ← 先
+ *   initializeFormationButtons(); // ← 後
+ */
+
+// ─── フォーメーション定義 ───────────────────────────────────────────────────
+//
+// 各フォーメーションの img に表示したいSVGパスを直接指定してください。
+//   img: "figure/4231.svg"  → そのパスのSVGを表示
+//   img: null               → 画像なし
+//
 const FLICK_KEYS = [
   {
     label: "4231", sub: "バランス",
@@ -20,9 +34,9 @@ const FLICK_KEYS = [
     ],
   },
   {
-    label: "442ダイヤ", sub: "中央制圧",
+    label: "442◇", sub: "中央制圧",
     formations: [
-      { dir: "center", name: "442_diamond",      img: "figure/442_diamond.svg"      },
+      { dir: "center", name: "442◇",      img: "figure/442_diamond.svg"      },
       { dir: "top",    name: "4114", img: "figure/4114.svg" },
       { dir: "bottom", name: "451",     img: "figure/451.svg"     },
       { dir: "left", name: "4132",     img: "figure/4132.svg"     },
@@ -30,7 +44,7 @@ const FLICK_KEYS = [
     ],
   },
   {
-    label: "433", sub: "ポゼッション",
+    label: "433", sub: "保持",
     formations: [
       { dir: "center", name: "4123",        img: "figure/4123.svg"        },
       { dir: "top",    name: "235", img: "figure/235.svg" },
@@ -45,7 +59,7 @@ const FLICK_KEYS = [
       { dir: "center", name: "3421", img: "figure/3421.svg" },
       { dir: "top",    name: "325", img: "figure/325.svg" },
       { dir: "bottom", name: "541",  img: "figure/541.svg"  },
-      { dir: "left",   name: "343",         img: "figure/343.svg" },
+      { dir: "left",   name: "343",  img: "figure/343.svg" },
       { dir: "right",  name: null,   img: null               },
     ],
   },
@@ -60,9 +74,9 @@ const FLICK_KEYS = [
     ],
   },
   {
-    label: "343ダイヤ", sub: "超攻撃的",
+    label: "343◇", sub: "超攻撃的",
     formations: [
-      { dir: "center", name: "343_diamond",  img: "figure/343_diamond.svg"  },
+      { dir: "center", name: "343◇",  img: "figure/343_diamond.svg"  },
       { dir: "top",    name: null,  img: null },
       { dir: "bottom", name: null, img: null },
       { dir: "left",   name: null,   img: null },
@@ -95,128 +109,11 @@ function toLabel(name) {
 }
 
 // ─── CSS（<style> タグで一度だけ注入）─────────────────────────────────────
+// すべてのセレクタを .flick-ui / .flick-popup スコープで囲み
+// 既存CSSへの干渉をゼロにしています
 const FLICK_CSS = `
-.flick-wrap {
-  box-sizing: border-box;
-  width: 100%;
-  font-family: system-ui, sans-serif;
-  padding: 6px 0;
-}
-.flick-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f0f0f0;
-  border-radius: 8px;
-  padding: 7px 12px;
-  margin-bottom: 8px;
-  min-height: 36px;
-}
-.flick-bar-label { font-size: 12px; color: #888; white-space: nowrap; }
-.flick-bar-value { font-size: 16px; font-weight: 700; color: #111; }
-.flick-hint { font-size: 11px; color: #bbb; margin: 0 0 8px; }
-.flick-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  width: 100%;
-}
-.flick-key {
-  box-sizing: border-box;
-  width: 45px;
-  padding-top: 50%; /* aspect-ratio 代替 */
-  position: relative;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background: #fff;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
-  display:flex;
-}
-.flick-key-inner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-.flick-key.is-active   { background: #ff8585; border-color: #ffbbbb; }
-.flick-key.is-selected { background: #ffcccc; border-color: #5e0209; }
-.flick-key-main {
-  font-size: 11px;
-  font-weight: 700;
-  color: #222;
-  text-align: center;
-  white-space: pre-line;
-  line-height: 1.35;
-}
-.flick-key-sub { font-size: 10px; color: #aaa; margin-top: 2px; }
+/* ── フリックUI本体（.flick-ui 以下） ─────────────────────────── */
 
-/* ポップアップ */
-.flick-popup {
-  position: fixed;
-  display: none;
-  width: 160px;
-  height: 160px;
-  pointer-events: none;
-  z-index: 99999;
-}
-.flick-popup.is-visible { display: block; }
-.flick-pcell {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  border-radius: 7px;
-  border: 1px solid #ccc;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: #555;
-  box-sizing: border-box;
-}
-.flick-pcell[data-dir="center"] { left:56px; top:56px; background:#eee; color:#111; border-color:#aaa; }
-.flick-pcell[data-dir="top"]    { left:56px; top:4px; }
-.flick-pcell[data-dir="bottom"] { left:56px; top:108px; }
-.flick-pcell[data-dir="left"]   { left:4px;  top:56px; }
-.flick-pcell[data-dir="right"]  { left:108px; top:56px; }
-.flick-key-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  opacity: 0.18;
-  pointer-events: none;
-  padding: 4px;
-  box-sizing: border-box;
-}
-.flick-key.is-selected .flick-key-img { opacity: 0.35; }
-.flick-key.is-active   .flick-key-img { opacity: 0.25; }
-.flick-pcell-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 3px;
-  box-sizing: border-box;
-  position: absolute;
-  inset: 0;
-  opacity: 0.5;
-  pointer-events: none;
-}
-.flick-pcell.is-highlight .flick-pcell-img { filter: brightness(10); opacity: 0.85; }
-.flick-pcell-label {
-  position: relative;
-  z-index: 1;
-  font-size: 11px;
-  font-weight: 700;
-}
 `;
 
 function injectCSS() {
@@ -252,7 +149,7 @@ function buildFlickUI(container, side) {
 
   // ② フリックUI本体
   const wrap = document.createElement("div");
-  wrap.className = "flick-wrap";
+  wrap.className = "flick-ui";
 
   // 選択バー
   const bar = document.createElement("div");
@@ -268,10 +165,10 @@ function buildFlickUI(container, side) {
   wrap.appendChild(bar);
 
   // ヒント
-  const hint = document.createElement("p");
-  hint.className = "flick-hint";
-  hint.textContent = "キーを押したままドラッグ → 離して確定";
-  wrap.appendChild(hint);
+  // const hint = document.createElement("p");
+  // hint.className = "flick-hint";
+  // hint.textContent = "キーを押したままドラッグ → 離して確定";
+  // wrap.appendChild(hint);
 
   // グリッド
   const grid = document.createElement("div");

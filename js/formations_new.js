@@ -14,7 +14,7 @@ export function formations(
             [0, 48], [37, DF - sb], [13, DF], [-13, DF], [-37, DF - sb],
             [-15, DF*0.2], [28, FW*0.45], [15, DF*0.2], [10, FW], [-10, FW], [-28, FW*0.45],
         ],
-        "442_diamond":[
+        "442◇":[
             [0, 48], [37, DF - sb], [13, DF], [-13, DF], [-37, DF - sb],
             [0,  DF*0.5], [20, 0], [0,  FW*0.5], [15, FW], [-15, FW], [-20, 0]
         ], 
@@ -26,7 +26,7 @@ export function formations(
             [0, 48], [37, DF - sb], [13, DF], [-13, DF], [-37, DF - sb],
             [-15, DF*0.2], [27, FW*0.45], [15, DF*0.2], [0, FW], [0, FW*0.45], [-27, FW*0.45]
         ],
-        "343_diamond":[
+        "343◇":[
             [0, 48], [20, -sb], [25, DF-3],  [-25, DF-3], [-20, -sb],
             [0, DF], [35, FW*0.8], [0, DF*0.2], [0, FW], [0, FW*0.15], [-35, FW*0.8]
         ],
@@ -136,12 +136,12 @@ export function formations(
 export const formationSliderMap = {
     "4123":        {backs: 1,volante: 0,top: 0},
     "442":         {backs: 1,volante: 1,top: 1},
-    "442_diamond": {backs: 1,volante: 0,top: 1},
+    "442◇": {backs: 1,volante: 0,top: 1},
     "4231":        {backs: 1,volante: 1,top: 0},
     "3421":        {backs: 0,volante: 1,top: 0},
     "352W":        {backs: 0,volante: 1,top: 1},
     "352M":        {backs: 0,volante: 0,top: 1},
-    "343_diamond": {backs: 0,volante: 0,top: 0},
+    "343◇": {backs: 0,volante: 0,top: 0},
 // 派生formation(7)
     "460" :  {backs: 1,volante: 1,top: 0},
     "4213" :  {backs: 1,volante: 1,top: 0},
@@ -175,14 +175,14 @@ export function getFormationName(backs, volante, top) {
             else {return "442";}
         } else {
             if (top < 0.5) { return "4123";} 
-            else {return "442_diamond";}
+            else {return "442◇";}
         }
     } else {
         if (volante > 0.5) {
             if (top < 0.5) {return "3421";} 
             else {return "352W";}
         } else {
-            if (top < 0.5) {return "343_diamond";} 
+            if (top < 0.5) {return "343◇";} 
             else {return "352M";}
         }
     }
