@@ -8,22 +8,31 @@ import {
   createInputs,
   redrawAllPlayers
 } from './ui-events.js';
+import { initFlickFormationUI } from "./formation-flick-ui.js";
+
 
 document.addEventListener("DOMContentLoaded", () => {
-
   const homeSelect = document.getElementById("homeTeamSelect");
   const awaySelect = document.getElementById("awayTeamSelect");
 
+  // .forms-wrapper.infopart を表示するトリガーは何ですか？
+  // （ボタンクリック？タブ切り替え？）
+  document.querySelector('.forms-wrapper.infopart').style.display = 'block';
+  // ↑ これを実行するとフリックUIは表示されますか？
   /* =====================================================
      初期化
   ===================================================== */
   // const thevalue1 = "kobe"
   // const thevalue2 = "kobe"
   // console.log(thevalue) 
-  
   initializeTeamSelects();      // home を描画、away は描画しない
   initializeFormationButtons(); // ボタンにイベント付与
-  
+    // ① フリックUIを構築（隠しボタンも自動生成）
+
+  initFlickFormationUI();
+  // ② 既存のリスナー登録（隠しボタンに対して querySelectorAll が走る）
+  initializeFormationButtons();
+
   createInputs("inputsHome", infomation[homeSelect.value]?.["BestMember"],true);
   createInputs("inputsAway", infomation[awaySelect.value]?.["BestMember"],false);
   createInputs("inputsHome-sp", infomation[homeSelect.value]?.["BestMember"],true);
@@ -40,5 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   redrawAllPlayers();
 });
+
 
 /* 終了 */

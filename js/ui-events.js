@@ -141,7 +141,7 @@ export function redrawAllPlayers({ resetManual = false } = {}) {
 export function redrawAllPlayers_if_team_changed(formation, side = 'home') {
   const SBvalue   = sliderVal("sidbackUpDown");
   const lineValue = sliderVal("lineSlider");
-  let DF_line = 24 - (lineValue-0.33) * 15;
+  let DF_line = 26 - (lineValue-0.33) * 15;
   let FW_line = -22 + (lineValue-0.33) * 15;
   const cx = compressStick.x*5 + 50; // -1〜+1
   const cy = compressStick.y*(-5) + 50; // -1〜+1
