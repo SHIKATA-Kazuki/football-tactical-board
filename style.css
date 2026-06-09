@@ -80,8 +80,9 @@ input[type="text"] { width: 80px; }
   gap: 5px;
 }
 #formation-buttons-touch{
-  display: none;
+  display: flex;
 }
+
 #menu-toggle span {
   display: block;
   width: 22px;
@@ -516,8 +517,7 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   z-index: 9999;
   display: none;
 }
-.flick-popup.visible { display: block; }
-
+/* .flick-popup.visible { display: block; } */
 .flick-popup-inner {
   position: relative;
   width: 160px;
@@ -570,5 +570,6 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   padding: 0;
   text-decoration: underline;
 }
+
 
 /* 終了 */

@@ -15,10 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const homeSelect = document.getElementById("homeTeamSelect");
   const awaySelect = document.getElementById("awayTeamSelect");
 
-  // .forms-wrapper.infopart を表示するトリガーは何ですか？
-  // （ボタンクリック？タブ切り替え？）
-  document.querySelector('.forms-wrapper.infopart').style.display = 'block';
-  // ↑ これを実行するとフリックUIは表示されますか？
+  // document.querySelector('.forms-wrapper.infopart').style.display = 'block';
+  document.querySelector('.forms-wrapper.infopart').style.display = 'flex';
+
   /* =====================================================
      初期化
   ===================================================== */

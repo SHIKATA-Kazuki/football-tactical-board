@@ -1,17 +1,3 @@
-/**
- * formation-flick-ui.js
- *
- * 呼び出し順:
- *   initFlickFormationUI();      // ← 先
- *   initializeFormationButtons(); // ← 後
- */
-
-// ─── フォーメーション定義 ───────────────────────────────────────────────────
-//
-// 各フォーメーションの img に表示したいSVGパスを直接指定してください。
-//   img: "figure/4231.svg"  → そのパスのSVGを表示
-//   img: null               → 画像なし
-//
 const FLICK_KEYS = [
   {
     label: "4231", sub: "バランス",
@@ -137,7 +123,7 @@ const FLICK_CSS = `
 }
 .flick-key {
   box-sizing: border-box;
-  width: 100%;
+  width: 45px;
   padding-top: 50%; /* aspect-ratio 代替 */
   position: relative;
   border-radius: 8px;
@@ -147,6 +133,7 @@ const FLICK_CSS = `
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
+  display:flex;
 }
 .flick-key-inner {
   position: absolute;
@@ -231,7 +218,6 @@ const FLICK_CSS = `
   font-weight: 700;
 }
 `;
-
 
 function injectCSS() {
   if (document.getElementById("flick-ui-css")) return;
