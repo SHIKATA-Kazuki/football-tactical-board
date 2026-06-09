@@ -127,20 +127,6 @@ export const teamUniformColor = {
   }
 };
 
-export const playerRoles = { 
-     0:'GK ',
-     1:'RB',
-     2:'CB',
-     3:'CB',
-     4:'LB',
-     5:'AC ',
-     6:'RWG',
-     7:'BtB',
-     8:'ST',
-     9:'#10',
-    10:'LWG'
-};
-
 export const infomation ={
   kobe :{
     formation_key: ["4123"],
@@ -223,6 +209,19 @@ export const infomation ={
 };
 
 export const team_member = {
+  default:{
+     1:'GK ',
+     2:'RB',
+     3:'CB',
+     4:'CB',
+     5:'LB',
+     6:'AC ',
+     7:'RWG',
+     8:'BtB',
+     9:'ST',
+    10:'#10',
+    11:'LWG'
+  },
   kobe:{
     1:'前川',
     2:'飯野',

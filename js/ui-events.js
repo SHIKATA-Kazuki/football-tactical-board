@@ -1,5 +1,5 @@
 import { formations, getFormationName, formationSliderMap } from './formations_new.js';
-import { playerRoles, team_member, infomation } from './config.js';
+import { team_member, infomation } from './config.js';
 import {
   readPlayersFromForm,
   placePlayers,
@@ -29,11 +29,13 @@ export function initializeFormationButtons() {
 
       const SBvalue   = sliderVal("sidbackUpDown");
       const lineValue = sliderVal("lineSlider");
-      let DF_line = 26 - lineValue * 15;
-      let FW_line = -26 + lineValue * 15;
+      let DF_line = 26 - (lineValue-0.33) * 15;
+      let FW_line = -22 + (lineValue-0.33) * 15;
+      const cx = compressStick.x*5 + 50; // -1〜+1
+      const cy = compressStick.y*(-5) + 50; // -1〜+1
 
       const key   = e.currentTarget.dataset.formation;
-      const pos = formations(key, {DF:DF_line, FW:FW_line, SB:SBvalue});
+      const pos = formations(key, {anchor: [cx, cy], DF:DF_line, FW:FW_line, SB:SBvalue});
       if (!pos) return;
 
       // スライダーも連動させる
@@ -101,7 +103,6 @@ export function createInputs(containerId, squad_number, homeaway) {
   for (let i = 10; i >= 0; i--) {
     container.innerHTML += `
       <div class="squad-input">
-        ${playerRoles[i]}
         ${team_member[team]?.[numbers[i]]}
         <input type="number" name="number${i + 1}" value="${numbers[i]}" required>
         </div>
@@ -121,11 +122,14 @@ export function redrawAllPlayers({ resetManual = false } = {}) {
   
   const SBvalue   = sliderVal("sidbackUpDown");
   const lineValue = sliderVal("lineSlider");
-  let DF_line = 26 - lineValue * 15;
-  let FW_line = -26 + lineValue * 15;
+  let DF_line = 26 - (lineValue-0.33) * 15;
+  let FW_line = -22 + (lineValue-0.33) * 15;
+
+  const cx = compressStick.x*5 + 50; // -1〜+1
+  const cy = compressStick.y*(-5) + 50; // -1〜+1
 
   const name     = getFormationName(backs, volante, top);
-  const formation = structuredClone(formations(name,{DF:DF_line, FW:FW_line, SB:SBvalue}));
+  const formation = structuredClone(formations(name,{anchor: [cx, cy], DF:DF_line, FW:FW_line, SB:SBvalue}));
 
   applyFormation(formation, resetManual);  // home のみ
 }
@@ -137,11 +141,13 @@ export function redrawAllPlayers({ resetManual = false } = {}) {
 export function redrawAllPlayers_if_team_changed(formation, side = 'home') {
   const SBvalue   = sliderVal("sidbackUpDown");
   const lineValue = sliderVal("lineSlider");
-  let DF_line = 26 - lineValue * 15;
-  let FW_line = -26 + lineValue * 15;
-  console.log("lineValue", lineValue, "DF_line", DF_line, "FW_line", FW_line, "SBvalue", SBvalue)
+  let DF_line = 24 - (lineValue-0.33) * 15;
+  let FW_line = -22 + (lineValue-0.33) * 15;
+  const cx = compressStick.x*5 + 50; // -1〜+1
+  const cy = compressStick.y*(-5) + 50; // -1〜+1
+
   const key       = Array.isArray(formation) ? formation[0] : formation;
-  const positions = structuredClone(formations(key, {DF:DF_line, FW:FW_line, SB:SBvalue}));
+  const positions = structuredClone(formations(key, {anchor: [cx, cy], DF:DF_line, FW:FW_line, SB:SBvalue}));
   if (!positions) return;
 
   const config = formationSliderMap[key];
