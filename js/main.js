@@ -1,7 +1,6 @@
 import { teamColors, infomation } from './config.js';
 import { initializeTeamSelects } from './team-colors.js';
 import {formationSliderMap } from './formations_new.js';
-// import { formations, formationSliderMap } from './formations.js';
 import {
   initializeFormationButtons,
   updateFormationButtons,

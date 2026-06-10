@@ -342,8 +342,8 @@ function attachInteraction({ grid, popup, hiddenWrap, previewImg, previewLabel, 
       }
       popup.appendChild(cell);
     });
-    popup.style.left = (x - 80) + "px";
-    popup.style.top  = (y - 80) + "px";
+    popup.style.left = (x - 400/3) + "px";
+    popup.style.top  = (y - 400/3) + "px";
     popup.classList.add("is-visible");
   }
 

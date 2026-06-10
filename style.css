@@ -487,8 +487,8 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
 
 .popup-cell {
   position: absolute;
-  width: 48px;
-  height: 48px;
+  width: var(--flickPcell);
+  height: var(--flickPcell);
   border-radius: 8px;
   border: 1px solid #ccc;
   background: #fff;
@@ -498,7 +498,8 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   font-size: 11px;
   font-weight: 600;
   color: #555;
-  transition: background 0.08s, color 0.08s;
+  transition: transform 0.08s, color 0.08s;
+  /* transition: background 0.08s, color 0.08s; */
 }
 .popup-cell.center { left:56px; top:56px; background:#eee; color:#111; border-color:#999; font-size:12px; }
 .popup-cell.top    { left:56px; top:4px; }
@@ -607,7 +608,7 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   width: 100%;
   height: 100%;
   object-fit: contain;
-  opacity: 0.18;
+  opacity: 1;
   pointer-events: none;
   padding: 3px;
   box-sizing: border-box;
@@ -625,10 +626,15 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   z-index: 99999;
 }
 .flick-popup.is-visible { display: block; }
+
+:root{
+  --flickPcell: 80px;
+}
+
 .flick-popup .flick-pcell {
   position: absolute;
-  width: 48px;
-  height: 48px;
+  width: var(--flickPcell);
+  height: var(--flickPcell);
   border-radius: 7px;
   border: 1px solid #ccc;
   background: #fff;
@@ -640,11 +646,12 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   color: #555;
   box-sizing: border-box;
 }
-.flick-popup .flick-pcell[data-dir="center"] { left:56px; top:56px; background:#eee; color:#111; border-color:#aaa; }
-.flick-popup .flick-pcell[data-dir="top"]    { left:56px; top:4px; }
-.flick-popup .flick-pcell[data-dir="bottom"] { left:56px; top:108px; }
-.flick-popup .flick-pcell[data-dir="left"]   { left:4px;  top:56px; }
-.flick-popup .flick-pcell[data-dir="right"]  { left:108px; top:56px; }
+/* flick-pcellがフリックボタンおしたときに出てくるセル */
+.flick-popup .flick-pcell[data-dir="center"] { left:calc((7/6)*var(--flickPcell)); top:calc((7/6)*var(--flickPcell)); background:#eee; color:#111; border-color:#aaa; }
+.flick-popup .flick-pcell[data-dir="top"]    { left:calc((7/6)*var(--flickPcell)); top:calc((1/12)*var(--flickPcell)); }
+.flick-popup .flick-pcell[data-dir="bottom"] { left:calc((7/6)*var(--flickPcell)); top:calc((2.25)*var(--flickPcell)); }
+.flick-popup .flick-pcell[data-dir="left"]   { left:calc((1/12)*var(--flickPcell));  top:calc((7/6)*var(--flickPcell)); }
+.flick-popup .flick-pcell[data-dir="right"]  { left:calc((2.25)*var(--flickPcell)); top:calc((7/6)*var(--flickPcell)); }
 .flick-popup .flick-pcell.is-empty     { opacity: 0.3; }
 .flick-popup .flick-pcell.is-highlight { background: #185FA5; color: #fff; border-color: #185FA5; }
 .flick-popup .flick-pcell-img {
