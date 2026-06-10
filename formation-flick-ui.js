@@ -1,9 +1,12 @@
 /**
  * formation-flick-ui.js
  *
+ * 役割: FLICK_KEYS定義・CSS注入・DOM構築・インタラクション
+ * レイアウト定義・スタイル上書きは formation-flick-ui.html 側で行う
+ *
  * 呼び出し順:
- *   initFlickFormationUI();      // ← 先
- *   initializeFormationButtons(); // ← 後
+ *   initFlickFormationUI();       // ← 先
+ *   initializeFormationButtons();  // ← 後
  */
 
 // ─── フォーメーション定義 ───────────────────────────────────────────────────
@@ -11,89 +14,83 @@
 // 各フォーメーションの img に表示したいSVGパスを直接指定してください。
 //   img: "figure/4231.svg"  → そのパスのSVGを表示
 //   img: null               → 画像なし
-const element = document.getElementById('center-circle');
-// element.style.position = 'absolute'; 
-
-// let center_x = parseFloat(element.style.left);
-// let center_y = parseFloat(element.style.top );
-
+//
 const FLICK_KEYS = [
   {
-    label: "4231", sub: "バランス",
+    label: "4バック\nFW2", sub: "4-x-2",
     formations: [
       { dir: "center", name: "4231",        img: "figure/4231.svg"        },
-      { dir: "top",    name: "4213",          img: "figure/4213.svg"         },
-      { dir: "bottom", name: "4411",         img: "figure/4411.svg"        },
-      { dir: "left",   name: null,         img: null },
-      { dir: "right",  name: null,         img: null },
+      { dir: "top",    name: "442",          img: "figure/442.svg"         },
+      { dir: "bottom", name: "4213",         img: "figure/4213.svg"        },
+      { dir: "left",   name: "442_diamond",  img: "figure/442_diamond.svg" },
+      { dir: "right",  name: "4321",         img: "figure/4321.svg"        },
     ],
   },
   {
-    label: "442", sub: "堅守速攻",
+    label: "4バック\nFW1", sub: "4-x-1",
     formations: [
-      { dir: "center", name: "442", img: "figure/442.svg" },
-      { dir: "top",    name: "424", img: "figure/424.svg" },
-      { dir: "bottom", name: "442block",  img: "figure/442block.svg"  },
-      { dir: "left",   name: null,         img: null },
-      { dir: "right",  name: null,         img: null },
+      { dir: "center", name: "4141", img: "figure/4141.svg" },
+      { dir: "top",    name: "4411", img: "figure/4411.svg" },
+      { dir: "bottom", name: "451",  img: "figure/451.svg"  },
+      { dir: "left",   name: "4132", img: "figure/4132.svg" },
+      { dir: "right",  name: "4123", img: "figure/4123.svg" },
     ],
   },
   {
-    label: "442◇", sub: "中央制圧",
+    label: "4バック\n変形", sub: "4-x-x",
     formations: [
-      { dir: "center", name: "442◇",      img: "figure/442_diamond.svg"      },
-      { dir: "top",    name: "4114", img: "figure/4114.svg" },
-      { dir: "bottom", name: "451",     img: "figure/451.svg"     },
-      { dir: "left", name: "4132",     img: "figure/4132.svg"     },
-      { dir: "right", name: "2134",     img: "figure/2134.svg"     },
+      { dir: "center", name: "433",      img: "figure/433.svg"      },
+      { dir: "top",    name: "442block", img: "figure/442block.svg" },
+      { dir: "bottom", name: "4114",     img: "figure/4114.svg"     },
+      { dir: "left",   name: "424",      img: "figure/424.svg"      },
+      { dir: "right",  name: "460",      img: "figure/460.svg"      },
     ],
   },
   {
-    label: "433", sub: "保持",
+    label: "3バック\n攻撃", sub: "3-4-x",
     formations: [
-      { dir: "center", name: "4123",        img: "figure/4123.svg"        },
-      { dir: "top",    name: "235", img: "figure/235.svg" },
-      { dir: "bottom", name: "4141",         img: "figure/4141.svg"         },
-      { dir: "left",   name: "460",       img: "figure/460.svg"        },
-      { dir: "right",  name: "433",         img: "figure/433.svg"         },
+      { dir: "center", name: "3421",        img: "figure/3421.svg"        },
+      { dir: "top",    name: "343_diamond", img: "figure/343_diamond.svg" },
+      { dir: "bottom", name: "343",         img: "figure/343.svg"         },
+      { dir: "left",   name: "3421R",       img: "figure/3421.svg"        },
+      { dir: "right",  name: "334",         img: "figure/334.svg"         },
     ],
   },
   {
-    label: "3421", sub: "安定型",
-    formations: [
-      { dir: "center", name: "3421", img: "figure/3421.svg" },
-      { dir: "top",    name: "325", img: "figure/325.svg" },
-      { dir: "bottom", name: "541",  img: "figure/541.svg"  },
-      { dir: "left",   name: "343",  img: "figure/343.svg" },
-      { dir: "right",   name: "3421R",  img: "figure/3421.svg" },
-      // { dir: "right",  name: null,   img: null               },
-    ],
-  },
-  {
-    label: "352", sub: "可変式",
+    label: "3バック\nWB", sub: "3-5-x",
     formations: [
       { dir: "center", name: "352W", img: "figure/352W.svg" },
-      { dir: "top",   name: "334",   img: "figure/334.svg"  },
-      { dir: "bottom", name: "532",  img: "figure/532.svg"  },
-      { dir: "left",    name: "352M", img: "figure/352M.svg" },
+      { dir: "top",    name: "352M", img: "figure/352M.svg" },
+      { dir: "bottom", name: "325",  img: "figure/325.svg"  },
+      { dir: "left",   name: null,   img: null               },
       { dir: "right",  name: null,   img: null               },
     ],
   },
   {
-    label: "343◇", sub: "超攻撃的",
+    label: "5バック", sub: "5-x-x",
     formations: [
-      { dir: "center", name: "343◇",  img: "figure/343_diamond.svg"  },
-      { dir: "top",    name: null,  img: null },
-      { dir: "bottom", name: null, img: null },
-      { dir: "left",   name: null,   img: null },
-      { dir: "right",  name: null,   img: null },
+      { dir: "center", name: "541", img: "figure/541.svg" },
+      { dir: "top",    name: "532", img: "figure/532.svg" },
+      { dir: "bottom", name: null,  img: null              },
+      { dir: "left",   name: null,  img: null              },
+      { dir: "right",  name: null,  img: null              },
+    ],
+  },
+  {
+    label: "前線\n厚め", sub: "x-x-3+",
+    formations: [
+      { dir: "center", name: "235",  img: "figure/235.svg"  },
+      { dir: "top",    name: "253",  img: "figure/253.svg"  },
+      { dir: "bottom", name: "2134", img: "figure/2134.svg" },
+      { dir: "left",   name: null,   img: null               },
+      { dir: "right",  name: null,   img: null               },
     ],
   },
   {
     label: "その他", sub: "misc",
     formations: [
-      { dir: "center", name: "4321", img: "figure/4321.svg" },
-      { dir: "top",    name: "253", img: "figure/253.svg" },
+      { dir: "center", name: null, img: null },
+      { dir: "top",    name: null, img: null },
       { dir: "bottom", name: null, img: null },
       { dir: "left",   name: null, img: null },
       { dir: "right",  name: null, img: null },
@@ -101,6 +98,11 @@ const FLICK_KEYS = [
   },
 ];
 
+// グリッド上の位置定義（3×3、index=4 が中央プレビューセル）
+// index:  0 1 2
+//         3 4 5  ← 4 が選択中SVG表示セル
+//         6 7 8
+// FLICK_KEYS[0〜3] → index 0〜3、FLICK_KEYS[4〜7] → index 5〜8
 const KEY_POSITIONS = [0, 1, 2, 3, 5, 6, 7, 8]; // 中央(4)を除いた8箇所
 
 const DIRS = ["center", "top", "bottom", "left", "right"];
@@ -117,7 +119,169 @@ function toLabel(name) {
 // ─── CSS注入（.flick-ui / .flick-popup スコープで既存CSSに干渉しない）───────
 const FLICK_CSS = `
 /* ── フリックUI本体（.flick-ui 以下） ─────────────────────────── */
+.flick-ui {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+  padding: 6px 0;
+}
+.flick-ui .flick-hint {
+  font-size: clamp(9px, 1.5vw, 11px);
+  color: #bbb;
+  margin: 0 0 6px;
+}
+.flick-ui .flick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(2px, 1vw, 6px);
+  width: 100%;
+  min-width: 0;
+}
+/* フリックキー */
+.flick-ui .flick-key {
+  box-sizing: border-box;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  border-radius: clamp(4px, 1vw, 8px);
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  overflow: hidden;
+}
+@supports not (aspect-ratio: 1) {
+  .flick-ui .flick-key { padding-top: 100%; height: 0; }
+}
+.flick-ui .flick-key.is-active   { background: #e8e8e8; border-color: #999; }
+.flick-ui .flick-key.is-selected { background: #ddeeff; border-color: #185FA5; }
+.flick-ui .flick-key-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.flick-ui .flick-key-main {
+  font-size: clamp(8px, 1.8vw, 11px);
+  font-weight: 700;
+  color: #222;
+  text-align: center;
+  white-space: pre-line;
+  line-height: 1.3;
+}
+.flick-ui .flick-key-sub { font-size: clamp(7px, 1.2vw, 10px); color: #aaa; margin-top: 1px; }
+.flick-ui .flick-key-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.18;
+  pointer-events: none;
+  padding: 3px;
+  box-sizing: border-box;
+}
+.flick-ui .flick-key.is-selected .flick-key-img { opacity: 0.35; }
+.flick-ui .flick-key.is-active   .flick-key-img { opacity: 0.25; }
 
+/* 中央プレビューセル */
+.flick-ui .flick-preview {
+  box-sizing: border-box;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  border-radius: clamp(4px, 1vw, 8px);
+  border: 1px solid #ddd;
+  background: #fafafa;
+  overflow: hidden;
+}
+@supports not (aspect-ratio: 1) {
+  .flick-ui .flick-preview { padding-top: 100%; height: 0; }
+}
+.flick-ui .flick-preview-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.flick-ui .flick-preview-img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  display: block;
+}
+.flick-ui .flick-preview-label {
+  font-size: clamp(8px, 1.5vw, 11px);
+  color: #555;
+  margin-top: 2px;
+  font-weight: 700;
+}
+.flick-ui .flick-preview-placeholder {
+  font-size: clamp(9px, 1.5vw, 11px);
+  color: #ccc;
+}
+
+/* ── ポップアップ（body直下、.flick-popup スコープ） ───────────── */
+.flick-popup {
+  position: fixed;
+  display: none;
+  width: 160px;
+  height: 160px;
+  pointer-events: none;
+  z-index: 99999;
+}
+.flick-popup.is-visible { display: block; }
+.flick-popup .flick-pcell {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 7px;
+  border: 1px solid #ccc;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #555;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.flick-popup .flick-pcell[data-dir="center"] { left:56px; top:56px; background:#eee; color:#111; border-color:#aaa; }
+.flick-popup .flick-pcell[data-dir="top"]    { left:56px; top:4px; }
+.flick-popup .flick-pcell[data-dir="bottom"] { left:56px; top:108px; }
+.flick-popup .flick-pcell[data-dir="left"]   { left:4px;  top:56px; }
+.flick-popup .flick-pcell[data-dir="right"]  { left:108px; top:56px; }
+.flick-popup .flick-pcell.is-empty     { opacity: 0.3; }
+.flick-popup .flick-pcell.is-highlight { background: #185FA5; color: #fff; border-color: #185FA5; }
+.flick-popup .flick-pcell-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+  box-sizing: border-box;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.flick-popup .flick-pcell.is-highlight .flick-pcell-img { filter: brightness(10); opacity: 0.85; }
+.flick-popup .flick-pcell-label {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 700;
+}
 `;
 
 function injectCSS() {
@@ -153,6 +317,12 @@ function buildFlickUI(container, side) {
   const wrap = document.createElement("div");
   wrap.className = "flick-ui";
 
+  // ヒント
+  const hint = document.createElement("p");
+  hint.className = "flick-hint";
+  hint.textContent = "押したままドラッグ → 離して確定";
+  wrap.appendChild(hint);
+
   // 3×3グリッド
   const grid = document.createElement("div");
   grid.className = "flick-grid";
@@ -172,9 +342,9 @@ function buildFlickUI(container, side) {
   previewLabel.style.display = "none";
   const previewPlaceholder = document.createElement("span");
   previewPlaceholder.className = "flick-preview-placeholder";
-  // previewPlaceholder.textContent = "none";
+  previewPlaceholder.textContent = "未選択";
   previewInner.appendChild(previewImg);
-  // previewInner.appendChild(previewLabel);
+  previewInner.appendChild(previewLabel);
   previewInner.appendChild(previewPlaceholder);
   preview.appendChild(previewInner);
 
@@ -208,7 +378,7 @@ function buildFlickUI(container, side) {
       inner.className = "flick-key-inner";
       const main = document.createElement("span");
       main.className = "flick-key-main";
-      // main.textContent = k.label;
+      main.textContent = k.label;
       const sub = document.createElement("span");
       sub.className = "flick-key-sub";
       sub.textContent = k.sub;
