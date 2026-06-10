@@ -10,11 +10,12 @@
 
 @media (max-width: 600px) {
   :root {
-    --pitch-width: 90vw;
-    --pitch-height: calc(90vw * 6 / 4);
+    --pitch-width: 95vw;
+    --pitch-height: 120vw;
+    /* --pitch-height: calc(90vw * 5 / 4); */
 
-    --field-margin: 10px;
-    --field-margin-left: 10px;
+    --field-margin: 5px;
+    --field-margin-left: 5px;
 
     --size: 0.7;
   }
@@ -43,11 +44,11 @@
 
 @media (max-width: 600px) {
   :root{
-    --pitch-height: calc(100vw * 6 / 4);
+    --pitch-height: calc(90vw * 5 / 4);
   };
   #field {
-    margin-left: 5vw;
-    margin-right: 5vw;
+    margin-left: 2vw;
+    margin-right: 2vw;
 
     height: var(--pitch-height);
     max-height: 100svh;
