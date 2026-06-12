@@ -44,7 +44,7 @@
 
 @media (max-width: 600px) {
   :root{
-    --pitch-height: calc(90vw * 5 / 4);
+    --pitch-height: calc(90vw * 6 / 4);
   };
   #field {
     margin-left: 2vw;

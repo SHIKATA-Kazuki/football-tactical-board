@@ -17,7 +17,7 @@
       flex-wrap: wrap;   /* 横並び固定 */
       /* justify-content: space-around;  */
       justify-content: center;
-      align-items: flex-start; 
+      /* align-items: flex-start;  */
       padding: 80px 0 0 0;
       gap: 10px; 
       align-items: center; /* 縦中央 */
@@ -25,9 +25,10 @@
     @media (max-width: 600px) {
       /* フィールドを最前面に */
       .main {
-        justify-content: center;
-        align-items: center; /* 縦中央 */
-        padding: 10px 0 0 0;
+        flex-flow: column;
+        justify-content:space-between;
+        /* align-items: center; */
+        padding: 30px 0 0 0;
         gap: 0;
       }
       /* PC 用の #info・.squadnum を非表示 */
@@ -93,13 +94,6 @@
         </div>
       </div>
     </div>
-    <!-- <div class="sliderpart infopart sp">
-        <div>
-          <div id="controller-compress-sp">
-            <div class="joystick-square" id="joystick-area-compress-sp"><div class="joystick-knob" id="knob-compress-sp"></div></div>
-          </div>
-        </div>
-    </div> -->
 
     <div class="squadnum infopart">
       <div class="form-block">
@@ -115,24 +109,22 @@
             <option value="gohsaka">G大阪</option>
             <option value="hiroshima">広島</option>
             <option value="shimizu">清水</option>
-            <option value="kobe_AwayVer">神戸(A)</option>
             <option value="kobe_30th">神戸(30th)</option>
-            <option value="yokohamaFM_AwayVer">横浜FM(A)</option>
-            <option value="urawa_AwayVer">浦和(A)</option>
-            <option value="antlers_AwayVer">鹿島(A)</option>
-            <option value="kashiwa_AwayVer">柏(A)</option>
-            <option value="gohsaka_AwayVer">G大阪(A)</option>
-            <option value="hiroshima_AwayVer">広島(A)</option>
           </select>
-          <button class="submit-btn" type="submit">表示</button>
+          <button id="home-squad" class="submit-btn" type="submit">番号反映</button>
+          <div class="uniform-toggle" aria-label="ホームユニフォーム切り替え">
+            <button type="button" class="uniform-home-btn is-active">H</button>
+            <button type="button" class="uniform-away-btn">A</button>
+          </div>
           <div class="squad-zone"  id="inputsHome"></div>
         </form>
       </div>
       <div class="form-block">
         <form class="squad-form"  id="playerFormAway">
           <select class="TeamSelect" id="awayTeamSelect">
-            <option value="default">未選択</option>
-            <option value="kobe">神戸</option>
+            <option value="default">表示中</option>
+            <option value="kobe">神戸(百)</option>
+            <option value="kobe25">神戸'25</option>
             <option value="yokohamaFM">横浜FM</option>
             <option value="urawa">浦和</option>
             <option value="antlers">鹿島</option>
@@ -140,16 +132,13 @@
             <option value="gohsaka">G大阪</option>
             <option value="hiroshima">広島</option>
             <option value="shimizu">清水</option>
-            <option value="kobe_AwayVer">神戸(A)</option>
             <option value="kobe_30th">神戸(30th)</option>
-            <option value="yokohamaFM_AwayVer">横浜FM(A)</option>
-            <option value="urawa_AwayVer">浦和(A)</option>
-            <option value="antlers_AwayVer">鹿島(A)</option>
-            <option value="kashiwa_AwayVer">柏(A)</option>
-            <option value="gohsaka_AwayVer">G大阪(A)</option>
-            <option value="hiroshima_AwayVer">広島(A)</option>
           </select>
-          <button class="submit-btn" type="submit">表示</button>
+          <button id="away-squad" class="submit-btn" type="submit">リセット</button>
+          <div class="uniform-toggle" aria-label="アウェイユニフォーム切り替え">
+            <button type="button" class="away-uniform-home-btn is-active">H</button>
+            <button type="button" class="away-uniform-away-btn">A</button>
+          </div>
           <div class="squad-zone"  id="inputsAway"></div>
         </form>
       </div>

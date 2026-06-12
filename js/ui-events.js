@@ -1,5 +1,5 @@
 import { formations, getFormationName, formationSliderMap } from './formations_new.js';
-import { team_member, infomation } from './config.js';
+import { TEAMS, team_member, information } from './config.js';
 import {
   readPlayersFromForm,
   placePlayers,
@@ -10,62 +10,68 @@ import {
   sliderVal
 } from './players.js';
 
-// away が初期化済みかを team-colors から参照（循環回避のため関数で遅延取得）
 function isAwayReady() {
-  // players.js 側の awayPlayers 長で判定（0 なら未描画）
   return document.querySelectorAll('.player.away').length > 0;
 }
 
 
 // =====================================================
 // フォーメーションボタン初期化
+// イベント委譲で登録するため、隠しボタンの生成タイミングに依存しない
 // =====================================================
 export function initializeFormationButtons() {
-  // Home ボタン
-  document.querySelectorAll('.home-formations button').forEach(btn => {
-    btn.addEventListener('click', e => {
-      document.querySelectorAll('.home-formations button').forEach(b => b.classList.remove('active'));
-      e.currentTarget.classList.add('active');
+  // Home: .home-formations コンテナにまとめて登録
+  const homeContainer = document.querySelector('.home-formations');
+  if (homeContainer) {
+    homeContainer.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-formation]');
+      if (!btn) return;
 
-      const SBvalue   = sliderVal("sidbackUpDown");
-      const lineValue = sliderVal("lineSlider");
-      let DF_line = 26 - (lineValue-0.33) * 15;
-      let FW_line = -22 + (lineValue-0.33) * 15;
-      const cx = compressStick.x*5 + 50; // -1〜+1
-      const cy = compressStick.y*(-5) + 50; // -1〜+1
+      homeContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-      const key   = e.currentTarget.dataset.formation;
-      const pos = formations(key, {anchor: [cx, cy], DF:DF_line, FW:FW_line, SB:SBvalue});
+      const SBvalue   = sliderVal('sidbackUpDown');
+      const lineValue = sliderVal('lineSlider');
+      const DF_line = 26 - (lineValue - 0.33) * 15;
+      const FW_line = -22 + (lineValue - 0.33) * 15;
+      const cx = compressStick.x * 5 + 50;
+      const cy = compressStick.y * (-5) + 50;
+
+      const key = btn.dataset.formation;
+      const pos = formations(key, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue });
       if (!pos) return;
 
-      // スライダーも連動させる
       const config = formationSliderMap[key];
       if (config) {
-        document.getElementById("backsSlider").value   = config.backs;
-        document.getElementById("volanteSlider").value = config.volante;
-        document.getElementById("topSlider").value     = config.top;
+        document.getElementById('backsSlider').value   = config.backs;
+        document.getElementById('volanteSlider').value = config.volante;
+        document.getElementById('topSlider').value     = config.top;
       }
 
-      const players = readPlayersFromForm(document.getElementById("playerFormHome"));
-      placePlayers(players, pos, false, true);  // resetManual=true
+      const players = readPlayersFromForm(document.getElementById('playerFormHome'));
+      placePlayers(players, pos, false, true);
     });
-  });
+  }
 
-  // Away ボタン
-  document.querySelectorAll('.away-formations button').forEach(btn => {
-    btn.addEventListener('click', e => {
-      document.querySelectorAll('.away-formations button').forEach(b => b.classList.remove('active'));
-      e.currentTarget.classList.add('active');
+  // Away: .away-formations コンテナにまとめて登録
+  const awayContainer = document.querySelector('.away-formations');
+  if (awayContainer) {
+    awayContainer.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-formation]');
+      if (!btn) return;
 
-      const key   = e.currentTarget.dataset.formation;
+      awayContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const key = btn.dataset.formation;
       const pos = formations(key, {});
       if (!pos) return;
 
-      const players = readPlayersFromForm(document.getElementById("playerFormAway"));
+      const players = readPlayersFromForm(document.getElementById('playerFormAway'));
       const flipped = pos.map(([x, y]) => [100 - x, 100 - y]);
-      placePlayers(players, flipped, true, true);  // resetManual=true
+      placePlayers(players, flipped, true, true);
     });
-  });
+  }
 }
 
 
@@ -75,12 +81,10 @@ export function initializeFormationButtons() {
 // =====================================================
 export function updateFormationButtons(formation, side = 'home') {
   const key = Array.isArray(formation) ? formation[0] : formation;
-  const selector = side === 'away'
-    ? '.away-formations button'
-    : '.home-formations button';
+  const selector = side === 'away' ? '.away-formations button' : '.home-formations button';
 
   document.querySelectorAll(selector).forEach(button => {
-    button.classList.toggle("active", button.dataset.formation === key);
+    button.classList.toggle('active', button.dataset.formation === key);
   });
 }
 
@@ -88,83 +92,107 @@ export function updateFormationButtons(formation, side = 'home') {
 // =====================================================
 // 番号入力欄を生成
 // =====================================================
-export function createInputs(containerId, squad_number, homeaway) {
-    const container = document.getElementById(containerId)
-    let team = document.getElementById("homeTeamSelect").value;
-  if (!homeaway){
-      team = document.getElementById("awayTeamSelect").value;
-  }
+export function createInputs(containerId, squadNumbers, isHome) {
+  const container = document.getElementById(containerId);
   if (!container) return;
-  container.innerHTML = "";
-  const numbers = (squad_number && squad_number.length === 11)
-    ? squad_number
-    : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-  document.getElementById
+
+  const teamKey = document.getElementById(isHome ? 'homeTeamSelect' : 'awayTeamSelect').value;
+  const members = team_member[teamKey] ?? team_member[teamKey.replace('_AwayVer', '')] ?? {};
+  const numbers = (squadNumbers?.length === 11) ? squadNumbers : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
+  container.innerHTML = '';
   for (let i = 10; i >= 0; i--) {
     container.innerHTML += `
       <div class="squad-input">
-        ${team_member[team]?.[numbers[i]]}
+        ${members[numbers[i]] ?? ''}
         <input type="number" name="number${i + 1}" value="${numbers[i]}" required>
-        </div>
+      </div>
     `;
+  }
+}
+
+export function renewSquad(containerId, squadNumbers, isHome) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const teamKey = document.getElementById(isHome ? 'homeTeamSelect' : 'awayTeamSelect').value;
+  const members = team_member[teamKey] ?? team_member[teamKey.replace('_AwayVer', '')] ?? {};
+  const numbers = (squadNumbers?.length === 11) ? squadNumbers : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
+  container.innerHTML = '';
+  for (let i = 10; i >= 0; i--) {
+    const row = document.createElement('div');
+    row.className = 'squad-input';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = members[numbers[i]] ?? '';
+
+    const input = document.createElement('input');
+    input.type     = 'number';
+    input.name     = `number${i + 1}`;
+    input.value    = numbers[i];
+    input.required = true;
+
+    input.addEventListener('input', () => {
+      nameSpan.textContent = members[Number(input.value)] ?? '';
+    });
+
+    row.appendChild(nameSpan);
+    row.appendChild(input);
+    container.appendChild(row);
   }
 }
 
 
 // =====================================================
 // 全選手を再描画（スライダー・ジョイスティック変更時）
-// home のみ対象。away はフォーメーションボタンかチーム選択で動く
 // =====================================================
 export function redrawAllPlayers({ resetManual = false } = {}) {
-  const top     = parseFloat(document.getElementById("topSlider").value);
-  const volante = parseFloat(document.getElementById("volanteSlider").value);
-  const backs   = parseFloat(document.getElementById("backsSlider").value);
-  
-  const SBvalue   = sliderVal("sidbackUpDown");
-  const lineValue = sliderVal("lineSlider");
-  let DF_line = 26 - (lineValue-0.33) * 15;
-  let FW_line = -22 + (lineValue-0.33) * 15;
+  const top     = parseFloat(document.getElementById('topSlider').value);
+  const volante = parseFloat(document.getElementById('volanteSlider').value);
+  const backs   = parseFloat(document.getElementById('backsSlider').value);
 
-  const cx = compressStick.x*5 + 50; // -1〜+1
-  const cy = compressStick.y*(-5) + 50; // -1〜+1
+  const SBvalue   = sliderVal('sidbackUpDown');
+  const lineValue = sliderVal('lineSlider');
+  const DF_line = 26 - (lineValue - 0.33) * 15;
+  const FW_line = -22 + (lineValue - 0.33) * 15;
+  const cx = compressStick.x * 5 + 50;
+  const cy = compressStick.y * (-5) + 50;
 
-  const name     = getFormationName(backs, volante, top);
-  const formation = structuredClone(formations(name,{anchor: [cx, cy], DF:DF_line, FW:FW_line, SB:SBvalue}));
+  const name      = getFormationName(backs, volante, top);
+  const formation = structuredClone(formations(name, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue }));
 
-  applyFormation(formation, resetManual);  // home のみ
+  applyFormation(formation, resetManual);
 }
 
 
 // =====================================================
-// チーム変更時の再描画（フォーメーション指定、サイド指定）
+// チーム変更時の再描画
 // =====================================================
 export function redrawAllPlayers_if_team_changed(formation, side = 'home') {
-  const SBvalue   = sliderVal("sidbackUpDown");
-  const lineValue = sliderVal("lineSlider");
-  let DF_line = 26 - (lineValue-0.33) * 15;
-  let FW_line = -22 + (lineValue-0.33) * 15;
-  const cx = compressStick.x*5 + 50; // -1〜+1
-  const cy = compressStick.y*(-5) + 50; // -1〜+1
+  const SBvalue   = sliderVal('sidbackUpDown');
+  const lineValue = sliderVal('lineSlider');
+  const DF_line = 26 - (lineValue - 0.33) * 15;
+  const FW_line = -22 + (lineValue - 0.33) * 15;
+  const cx = compressStick.x * 5 + 50;
+  const cy = compressStick.y * (-5) + 50;
 
   const key       = Array.isArray(formation) ? formation[0] : formation;
-  const positions = structuredClone(formations(key, {anchor: [cx, cy], DF:DF_line, FW:FW_line, SB:SBvalue}));
+  const positions = structuredClone(formations(key, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue }));
   if (!positions) return;
 
   const config = formationSliderMap[key];
 
   if (side === 'home') {
-    // スライダー更新
     if (config) {
-      document.getElementById("backsSlider").value   = config.backs;
-      document.getElementById("volanteSlider").value = config.volante;
-      document.getElementById("topSlider").value     = config.top;
+      document.getElementById('backsSlider').value   = config.backs;
+      document.getElementById('volanteSlider').value = config.volante;
+      document.getElementById('topSlider').value     = config.top;
     }
     applyFormation(positions, true);
-
   } else {
-    // away: 上下反転して配置
     const flipped = positions.map(([x, y]) => [100 - x, 100 - y]);
-    const players = readPlayersFromForm(document.getElementById("playerFormAway"));
+    const players = readPlayersFromForm(document.getElementById('playerFormAway'));
     placePlayers(players, flipped, true, true);
   }
 }
@@ -187,7 +215,6 @@ function requestRedraw() {
 
 // =====================================================
 // ジョイスティック汎用初期化
-// targetStick: 値の書き込み先オブジェクト（wingStick or compressStick）
 // =====================================================
 function initJoystick(areaId, knobId, targetStick) {
   const area = document.getElementById(areaId);
@@ -216,31 +243,30 @@ function initJoystick(areaId, knobId, targetStick) {
     knob.style.left = `${centerX + x}px`;
     knob.style.top  = `${centerY + y}px`;
 
-    // 書き込み先に応じて値をセット
-    targetStick.x =  x / maxRadius;  // 左:-1 〜 右:+1
-    targetStick.y = -y / maxRadius;  // 下:-1 〜 上:+1
+    targetStick.x =  x / maxRadius;
+    targetStick.y = -y / maxRadius;
 
     requestRedraw();
   }
 
-  area.addEventListener('pointerdown', (e) => {
+  area.addEventListener('pointerdown', e => {
     e.preventDefault();
     area.setPointerCapture(e.pointerId);
     activePointerId = e.pointerId;
     applyMove(e.clientX, e.clientY);
   }, { passive: false });
 
-  area.addEventListener('pointermove', (e) => {
+  area.addEventListener('pointermove', e => {
     if (activePointerId !== e.pointerId) return;
     applyMove(e.clientX, e.clientY);
   });
 
-  area.addEventListener('pointerup', (e) => {
+  area.addEventListener('pointerup', e => {
     if (activePointerId !== e.pointerId) return;
     activePointerId = null;
   });
 
-  area.addEventListener('pointercancel', (e) => {
+  area.addEventListener('pointercancel', e => {
     if (activePointerId !== e.pointerId) return;
     activePointerId = null;
   });
@@ -250,6 +276,6 @@ function initJoystick(areaId, knobId, targetStick) {
 initJoystick('joystick-area',    'knob',    wingStick);
 initJoystick('joystick-area-sp', 'knob-sp', wingStick);
 
-// 圧縮用（PC / SP で共用する場合は -sp 版も追加）
+// 圧縮用
 initJoystick('joystick-area-compress',    'knob-compress',    compressStick);
 initJoystick('joystick-area-compress-sp', 'knob-compress-sp', compressStick);

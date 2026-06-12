@@ -95,7 +95,7 @@ input[type="text"] { width: 80px; }
   position: fixed;
   top: 0;
   right: -100%;      /* 初期状態：画面外 */
-  width: min(85vw, 340px);
+  width: min(90vw, 360px);
   height: 100svh;
   background: rgba(24, 24, 24, 0.603);
   border-left: 1px solid rgba(255,255,255,0.15);
@@ -415,8 +415,8 @@ height: 30px;
 } 
 
 .form-block {
-    padding: 0 0px;
-    width: calc(var(--info_width)*0.3);
+    padding: 5px;
+    width: calc(var(--info_width)*0.45);
 }
 
 .TeamSelect{
@@ -726,6 +726,29 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   background: #5e0209;
   border-color: #5e0209;
 }
+
+/* .uniform-toggle {
+  display: inline-flex;
+  gap: 2px;
+}
+.uniform-toggle button {
+  padding: 2px 8px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  background: #eee;
+  cursor: pointer;
+  font-size: 0.75rem;
+  opacity: 0.5;
+}
+.uniform-toggle button.is-active {
+  background: #333;
+  color: #fff;
+  opacity: 1;
+}
+.uniform-toggle button:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+} */
 /* formation-buttons home-formations home-block */
 
 /* 終了 */
