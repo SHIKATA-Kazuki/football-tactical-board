@@ -176,14 +176,16 @@ export const TEAMS = {
     bestMember: [1, 22, 4, 3, 11, 24, 10, 15, 18, 8, 13],
     chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
     uniform: {
+      svg:'japan2026_home',
       style: 'linear-gradient(to bottom, red 0% 7%, white 7% 17%, blue 10% 100% )',
       color: 'blue', text: '#fff', shadowsize: 0.1,
     },
     away: {
       chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
       uniform: {
+        svg:'japan2026_away',
         style: 'linear-gradient(to bottom, white 0%, white 66%, blue 66%, blue 85%, red 85%, red 100%)',
-        color: 'white', text: 'blue', shadowsize: 0.5,
+        color: 'white', text: 'gray', shadowsize: 0.5,
       },
       formation:  ['4213'],
       bestMember: [1, 34, 13, 33, 2, 6, 11, 8, 9, 40, 30],
