@@ -2,16 +2,13 @@ import { TEAMS, information } from './config.js';
 import { createInputs, redrawAllPlayers_if_team_changed, updateFormationButtons } from './ui-events.js';
 import { placePlayers } from './players.js';
 
-// Away が一度でも選択されたか
 let awayInitialized = false;
 
 // ユニフォームモード: 'home' | 'away'
-// セレクトの値(teamKey)はどちらのモードでも同じベースキーを使う
 const uniformMode = { home: 'home', away: 'home' };
 
 // =====================================================
 // ユニフォームデータの解決
-//   mode: 'home' | 'away'
 // =====================================================
 function resolveUniform(teamDef, mode) {
   return mode === 'away' && teamDef.away
@@ -32,7 +29,9 @@ function resolveFormation(teamDef, mode) {
 }
 
 // =====================================================
-// ユニフォーム色を DOM に適用（チーム変更・モード切替で共用）
+// ユニフォームを DOM に適用
+//   svg フィールドがあれば background-image で表示、
+//   なければ style（グラデーション等）にフォールバック
 // =====================================================
 function applyUniform(isHome, teamKey) {
   const side    = isHome ? 'home' : 'away';
@@ -51,11 +50,32 @@ function applyUniform(isHome, teamKey) {
     chip.textContent      = teamDef.name;
   }
 
-  // ユニフォーム色更新
+  // ユニフォーム更新
   document.querySelectorAll(isHome ? '.player.home' : '.player.away')
     .forEach(p => {
-      p.style.background = uniformData.style;
-      p.style.color      = uniformData.text;
+      if (uniformData.svg) {
+        // SVGファイルを background-image で表示
+        p.style.backgroundImage = `url('./uniform/${uniformData.svg}.svg')`;
+        p.style.backgroundSize  = 'cover';
+        p.style.backgroundPosition = 'center';
+        // CSS background プロパティと競合しないよう background-color は透明に
+        p.style.backgroundColor = 'transparent';
+        // style グラデーションは無効化
+        p.style.background = '';
+        // 再セット（backgroundImage が background の shorthand で消えるのを防ぐ）
+        p.style.backgroundImage = `url('./uniform/${uniformData.svg}.svg')`;
+        p.style.backgroundSize  = 'cover';
+        p.style.backgroundPosition = 'center';
+      } else {
+        // フォールバック: 従来のグラデーション
+        p.style.backgroundImage    = '';
+        p.style.backgroundSize     = '';
+        p.style.backgroundPosition = '';
+        p.style.background = uniformData.style;
+      }
+
+      p.style.color = uniformData.text;
+
       if (uniformData.color) {
         const s = uniformData.shadowsize;
         p.style.textShadow = [
@@ -69,7 +89,7 @@ function applyUniform(isHome, teamKey) {
       }
     });
 
-  // ホーム/アウェイ切り替えボタンのアクティブ状態を更新
+  // ホーム/アウェイ切り替えボタンのアクティブ状態
   const btnHome = document.querySelector(isHome ? '.uniform-home-btn' : '.away-uniform-home-btn');
   const btnAway = document.querySelector(isHome ? '.uniform-away-btn' : '.away-uniform-away-btn');
   const hasAway = !!teamDef.away;
@@ -88,12 +108,9 @@ function updateTeamColor(isHome, teamKey) {
   const awaySelect = document.getElementById('awayTeamSelect');
   const side       = isHome ? 'home' : 'away';
 
-  // チーム変更時はモードをホームにリセット
   uniformMode[side] = 'home';
-
   applyUniform(isHome, teamKey);
 
-  // 入力欄更新（home のみ。away は awayInitialized 後）
   createInputs('inputsHome', information[homeSelect.value]?.BestMember, true);
   if (awayInitialized) {
     createInputs('inputsAway', information[awaySelect.value]?.BestMember, false);
@@ -115,9 +132,7 @@ function updateTeamColor(isHome, teamKey) {
 }
 
 // =====================================================
-// ユニフォームモード切り替え（ボタン押下から呼ぶ）
-//   isHome : true=ホーム側, false=アウェイ側
-//   mode   : 'home' | 'away'
+// ユニフォームモード切り替え
 // =====================================================
 export function switchUniformMode(isHome, mode) {
   const side    = isHome ? 'home' : 'away';
@@ -139,19 +154,16 @@ export function initializeTeamSelects() {
   homeSelect.addEventListener('change', e => updateTeamColor(true,  e.target.value));
   awaySelect.addEventListener('change', e => updateTeamColor(false, e.target.value));
 
-  // ホーム側ユニフォーム切り替えボタン
   document.querySelector('.uniform-home-btn')
     ?.addEventListener('click', () => switchUniformMode(true,  'home'));
   document.querySelector('.uniform-away-btn')
     ?.addEventListener('click', () => switchUniformMode(true,  'away'));
 
-  // アウェイ側ユニフォーム切り替えボタン
   document.querySelector('.away-uniform-home-btn')
     ?.addEventListener('click', () => switchUniformMode(false, 'home'));
   document.querySelector('.away-uniform-away-btn')
     ?.addEventListener('click', () => switchUniformMode(false, 'away'));
 
-  // 初期描画: home のみ
   updateTeamColor(true, homeSelect.value);
 }
 
