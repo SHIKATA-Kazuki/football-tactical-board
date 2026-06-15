@@ -185,7 +185,7 @@ export const TEAMS = {
       uniform: {
         svg:'japan2026_away',
         style: 'linear-gradient(to bottom, white 0%, white 66%, blue 66%, blue 85%, red 85%, red 100%)',
-        color: 'white', text: 'gray', shadowsize: 0.5,
+        color: 'white', text: 'black', shadowsize: 0.5,
       },
       formation:  ['4213'],
       bestMember: [1, 34, 13, 33, 2, 6, 11, 8, 9, 40, 30],
