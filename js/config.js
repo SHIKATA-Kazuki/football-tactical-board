@@ -41,6 +41,35 @@ const KOBE_MEMBERS25 = {
   44: '日高', 71: '権田', 80: 'ﾝﾄﾞｶ',
 };
 
+const KOBE_MEMBERS24 = {
+  1: '前川',  2: '飯野',  3: 'ﾄｩｰﾚﾙ', 4: '山川', 
+  6: '扇原',  7: '井手口', 8: 'ｲﾆｴｽﾀ', 9: '宮代',  10: '大迫',
+  11: '武藤', 12: 'MOVI', 13: '大樹',  14: '汰木',   15: '本多',
+  16: '斎藤', 17: '吉田', 18: '井出', 19: '初瀬', 20: 'None',
+  21: '新井', 22: '大樹', 23: '広瀬',  24: '酒井', 25: '鍬先',
+  26: 'ﾊﾟﾄﾘｯｷ', 27: 'ｴﾘｷ', 28: '濱崎', 29: '小松', 30: '山内',
+  31: '岩波', 32: 'ﾘｯｷ',  33: '橋本', 35: '富永', 41: '永戸',
+  44: '日高', 81: '菊池', 96: '山口',
+};
+const KOBE_MEMBERS23 = {
+  1: '前川',  2: '飯野',  3: 'ﾄｩｰﾚﾙ', 4: 'None',  5: '山口',
+  6: '扇原',  7: '井手口', 8: 'ｲﾆｴｽﾀ', 9: '宮代',  10: '大迫',
+  11: '武藤', 12: 'MOVI', 13: '大樹',  14: '汰木',   15: '本多',
+  16: '斎藤', 17: '吉田', 18: '井出', 19: '初瀬', 20: 'None',
+  21: '新井', 22: '大樹', 23: '山川',  24: '酒井', 25: '鍬先',
+  26: 'ﾊﾟﾄﾘｯｷ', 27: 'ｴﾘｷ', 28: '濱崎', 29: '小松', 30: '山内',
+  31: '岩波', 32: 'ﾘｯｷ',  33: '橋本', 35: '富永', 41: '永戸',
+  44: '日高', 81: '菊池', 
+};
+const JAPAN = {
+  1: '彩艶',  2: '菅原',  3: '谷口', 4: '板倉',  5: '長友',
+  6: '町野',  7: '田中碧', 8: '久保', 9: '後藤',  10: '堂安律',
+  11: '前田', 12: '大迫', 13: '中村',  14: '伊東',   15: '鎌田',
+  16: '渡辺', 17: '唯人', 18: '上田', 19: '小川', 20: '瀬古',
+  21: '伊藤', 22: '冨安', 23: '早川',  24: '佐野', 25: '淳之介',
+  26: '塩貝', 27: 'ｴﾘｷ'
+};
+
 export const TEAMS = {
 
   default: {
@@ -65,6 +94,28 @@ export const TEAMS = {
     bestMember: [1, 24, 3, 16, 15, 25, 11, 7, 10, 5, 41],
     chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
     uniform: {
+      style: 'linear-gradient(90deg, black 2%, crimson 2% 16%, black 16% 30%, crimson 30% 42%, black 42% 58%, crimson 58% 72%, black 72% 86%, crimson 86% 98%, black 98%)',
+      color: 'black', text: 'white', shadowsize: 0,
+    },
+    away: {
+      chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+      uniform: {
+        style: 'linear-gradient(90deg, gray 2%, white 2% 16%, gray 16% 30%, white 30% 42%, gray 42% 58%, white 58% 72%, gray 72% 86%, white 86% 98%, gray 98%)',
+        color: '#e6b422', text: 'black', shadowsize: 0.4,
+      },
+      formation:  ['4123'],
+      bestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
+    },
+  },
+
+  // 25年度ユニフォーム
+  kobe25: {
+    name: '神戸',
+    members: KOBE_MEMBERS25,
+    formation:  ['4123'],
+    bestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
+    chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+    uniform: {
       style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
       color: 'crimson', text: '#fff', shadowsize: 0,
     },
@@ -79,16 +130,44 @@ export const TEAMS = {
     },
   },
 
-  // 25周年ユニフォームバリアント
-  kobe25: {
+  kobe24: {
     name: '神戸',
-    members: KOBE_MEMBERS25,
+    members: KOBE_MEMBERS24,
     formation:  ['4123'],
-    bestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
+    bestMember: [1, 24, 3, 4, 19, 6, 11, 96, 10, 18, 23],
     chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
     uniform: {
-      style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
+      style: 'linear-gradient(130deg, black 25%, crimson 100%)',
       color: 'crimson', text: '#fff', shadowsize: 0,
+    },
+    away: {
+      chip:    { color: 'rgba(255, 255, 255, 0.92)', text: 'rgba(160, 66, 73, 0.92)' },
+      uniform: {
+        style: 'linear-gradient(180deg, white 0% 80%, rgba(160, 66, 73, 0.92) 80% 100%)',        
+        color: 'rgba(160, 66, 73, 0.92)', text: 'rgba(160, 66, 73, 0.92)', shadowsize: 0.1,
+      },
+      formation:  ['4123'],
+      bestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
+    },
+  },
+  kobe23: {
+    name: '神戸',
+    members: KOBE_MEMBERS23,
+    formation:  ['4123'],
+    bestMember: [1, 24, 3, 23, 19, 16, 22, 5, 10, 18, 11],
+    chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+    uniform: {
+      style: 'linear-gradient(130deg, crimson 25%, black 100%)',
+      color: 'crimson', text: '#fff', shadowsize: 0,
+    },
+    away: {
+      chip:    { color: 'rgba(255, 255, 255, 0.92)', text: 'rgba(160, 66, 73, 0.92)' },
+      uniform: {
+        style: 'linear-gradient(130deg, white 25%, gray 100%)',        
+        color: 'black', text: 'black', shadowsize: 0.1,
+      },
+      formation:  ['4123'],
+      bestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
     },
   },
 
@@ -98,13 +177,33 @@ export const TEAMS = {
     members: KOBE_MEMBERS25,
     formation:  ['4123'],
     bestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
-    chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+    chip:    { color: 'rgba(255, 255, 255, 0.92)', text: '#fff' },
     uniform: {
       style: 'linear-gradient(90deg, black 2%, white 2% 16%, black 16% 30%, white 30% 42%, black 42% 58%, white 58% 72%, black 72% 86%, white 86% 98%, black 98%)',
       color: '#e6b422', text: 'black', shadowsize: 0.8,
     },
   },
 
+  japan: {
+    name: '日本2026W杯',
+    members: JAPAN,
+    formation:  ['3421'],
+    bestMember: [1, 22, 4, 3, 11, 24, 10, 15, 18, 8, 13],
+    chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
+    uniform: {
+      style: 'linear-gradient(to bottom, red 0% 7%, white 7% 17%, blue 10% 100% )',
+      color: 'blue', text: '#fff', shadowsize: 0.1,
+    },
+    away: {
+      chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
+      uniform: {
+        style: 'linear-gradient(to bottom, white 0%, white 66%, blue 66%, blue 85%, red 85%, red 100%)',
+        color: 'white', text: 'blue', shadowsize: 0.5,
+      },
+      formation:  ['4213'],
+      bestMember: [1, 34, 13, 33, 2, 6, 11, 8, 9, 40, 30],
+    },
+  },
   yokohamaFM: {
     name: '横浜FM',
     members: {},
