@@ -86,14 +86,14 @@ export const TEAMS = {
     bestMember: [1, 24, 3, 16, 15, 25, 11, 7, 10, 5, 41],
     chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
     uniform: {
-      svg: 'kobe_home',
+      // svg: 'kobe_home',
       style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
       color: 'crimson', text: '#fff', shadowsize: 0,
     },
     away: {
       chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
       uniform: {
-        svg: 'kobe_away',
+        // svg: 'kobe_away',
         style: 'linear-gradient(40deg, white 0 45%, black 25% 65%, white 55% 100%)',
         color: '#e6b422', text: 'black', shadowsize: 0.5,
       },
@@ -109,9 +109,19 @@ export const TEAMS = {
     bestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
     chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
     uniform: {
-      svg: 'kobe25',
+      // svg: 'kobe25',
       style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
       color: 'crimson', text: '#fff', shadowsize: 0,
+    },
+    away: {
+      chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
+      uniform: {
+        // svg: 'kobe_away',
+        style: 'linear-gradient(40deg, white 0 45%, black 25% 65%, white 55% 100%)',
+        color: '#e6b422', text: 'black', shadowsize: 0.5,
+      },
+      formation:  ['4123'],
+      bestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
     },
   },
 
@@ -173,7 +183,7 @@ export const TEAMS = {
     name: '日本2026W杯',
     members: JAPAN,
     formation:  ['3421'],
-    bestMember: [1, 22, 4, 3, 11, 24, 10, 15, 18, 8, 13],
+    bestMember: [1, 16, 3, 21, 13, 15, 10, 24, 18, 8, 11],
     chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
     uniform: {
       svg:'japan2026_home',

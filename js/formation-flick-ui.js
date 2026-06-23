@@ -82,13 +82,15 @@ const FLICK_KEYS = [
     ],
   },
   {
-    label: 'その他', sub: 'misc',
+    label: '日本', sub: 'misc',
     formations: [
-      { dir: 'center', name: '4321',    img: 'figure/4321.svg'        },
-      { dir: 'top',    name: '253',     img: 'figure/253.svg'         },
-      { dir: 'bottom', name: null,      img: null                     },
-      { dir: 'left',   name: null,      img: null                     },
-      { dir: 'right',  name: null,      img: null                     },
+      { dir: 'center', name: '3421',    img: 'uniform/japan2026_home.svg'        },
+      { dir: 'top',    name: '343◇jp',      img: 'figure/343_diamond.svg'},
+      // { dir: 'top',    name: '253',     img: 'figure/253.svg'         },
+      { dir: 'bottom', name: '541',     img: 'figure/541.svg'         },
+      { dir: 'left',   name: '4231jp',      img: 'figure/4231.svg'},
+      // { dir: 'right',  name: null,      img: null                     },
+      { dir: 'right', name: '4123jp',      img: 'figure/4123.svg'     },
     ],
   },
 ];
