@@ -96,7 +96,7 @@ const FLICK_KEYS = [
     formations: [
       { dir: 'center', name: '343◇', img: 'figure/343_diamond.svg' },
       { dir: 'top',    name: null,    img: null },
-      { dir: 'bottom', name: null,    img: null },
+      { dir: 'bottom', name: 'assemble',    img: null },
       { dir: 'left',   name: null,    img: null },
       { dir: 'right',  name: null,    img: null },
     ],
