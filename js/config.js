@@ -1,414 +1,463 @@
-// =====================================================
-// チームマスターデータ
-//
-// uniform フィールド:
-//   svg   : './uniform/{name}.svg' のファイル名部分（拡張子なし）
-//           指定があれば background-image で表示、なければ style にフォールバック
-//   style : svg がない場合の CSS background 値（グラデーション等）
-//   color : テキストシャドウ用の基調色（null で無効）
-//   text  : 文字色
-//   shadowsize : テキストシャドウの大きさ（px）
-// =====================================================
+/**
+ * config.js
+ *
+ * チームマスターデータ。
+ * 階層構造: TEAM_CATALOG[チームID][年度ID][試合ID]
+ *
+ * 各エントリが持つフィールド:
+ *   label      : 試合ラベル（例: "4/12 vs 浦和"）
+ *   members    : 背番号→選手名の辞書
+ *   formation  : デフォルトフォーメーション名の配列
+ *   bestMember : スターティング11の背番号配列（インデックス順）
+ *   chip       : チップ UI 用の色定義
+ *   uniform    : ホームユニフォーム定義
+ *   away?      : アウェイユニフォーム・フォーメーション定義（省略可）
+ *
+ * ユニフォームフィールド:
+ *   svg        : './uniform/{name}.svg' のファイル名部分（拡張子なし）
+ *   style      : svg がない場合の CSS background 値
+ *   color      : テキストシャドウ用の基調色（null で無効）
+ *   text       : 文字色
+ *   shadowsize : テキストシャドウのサイズ（px）
+ */
 
-const KOBE_MEMBERS = {
-  1: '前川',  2: '飯野',  3: 'ﾄｩｰﾚﾙ', 4: '山川',  5: '郷家',
-  6: '扇原',  7: '井手口', 8: 'ｲﾆｴｽﾀ', 9: '宮代',  10: '大迫',
-  11: '武藤', 12: 'MOVI', 13: '大樹',  14: '乾',   15: 'ｼﾞｴｺﾞ',
-  16: 'ｶｴﾀｰﾉ', 17: '吉田', 18: '井出', 19: '満田', 20: 'None',
-  21: '新井', 22: '本山', 23: '広瀬',  24: '酒井', 25: '鍬先',
-  26: 'ﾊﾟﾄﾘｯｷ', 27: 'ｴﾘｷ', 28: '濱崎', 29: '小松', 30: '山内',
-  31: '岩波', 32: 'ﾘｯｷ',  33: '橋本', 35: '富永', 41: '永戸',
-  44: '日高', 71: '権田', 80: 'ﾝﾄﾞｶ',
+// ─── 選手名簿 ────────────────────────────────────────────────────────────────
+
+const JAPAN_MEMBERS = {
+   1: '彩艶',   2: '菅原',   3: '谷口',   4: '板倉',   5: '長友',
+   6: '町野',   7: '田中碧',  8: '久保',   9: '後藤',  10: '堂安律',
+  11: '前田',  12: '大迫',  13: '中村',  14: '伊東',  15: '鎌田',
+  16: '渡辺',  17: '唯人',  18: '上田',  19: '小川',  20: '瀬古',
+  21: '伊藤',  22: '冨安',  23: '早川',  24: '佐野',  25: '淳之介',
+  26: '塩貝',  27: 'ｴﾘｷ',
 };
 
-const KOBE_MEMBERS25 = {
-  1: '前川',  2: '飯野',  3: 'ﾄｩｰﾚﾙ', 4: '山川',  5: '斎藤',
-  6: '扇原',  7: '井手口', 8: 'ｲﾆｴｽﾀ', 9: '宮代',  10: '大迫',
-  11: '武藤', 12: 'MOVI', 13: '大樹',  14: '汰木',   15: '本多',
-  16: 'ｶｴﾀｰﾉ', 17: '吉田', 18: '井出', 19: '満田', 20: 'None',
-  21: '新井', 22: '本山', 23: '広瀬',  24: '酒井', 25: '鍬先',
-  26: 'ﾊﾟﾄﾘｯｷ', 27: 'ｴﾘｷ', 28: '濱崎', 29: '小松', 30: '山内',
-  31: '岩波', 32: 'ﾘｯｷ',  33: '橋本', 35: '富永', 41: '永戸',
-  44: '日高', 71: '権田', 80: 'ﾝﾄﾞｶ',
+const KOBE_MEMBERS_BASE = {
+   1: '前川',   2: '飯野',   3: 'ﾄｩｰﾚﾙ',  4: '山川',   5: '郷家',
+   6: '扇原',   7: '井手口',  8: 'ｲﾆｴｽﾀ',  9: '宮代',  10: '大迫',
+  11: '武藤',  12: 'MOVI',  13: '大樹',  14: '乾',    15: 'ｼﾞｴｺﾞ',
+  16: 'ｶｴﾀｰﾉ', 17: '吉田',  18: '井出',  19: '満田',  21: '新井',
+  22: '本山',  23: '広瀬',  24: '酒井',  25: '鍬先',  26: 'ﾊﾟﾄﾘｯｷ',
+  27: 'ｴﾘｷ',   28: '濱崎',  29: '小松',  30: '山内',  31: '岩波',
+  32: 'ﾘｯｷ',   33: '橋本',  35: '富永',  41: '永戸',  44: '日高',
+  71: '権田',  80: 'ﾝﾄﾞｶ',
 };
 
-const KOBE_MEMBERS24 = {
-  1: '前川',  2: '飯野',  3: 'ﾄｩｰﾚﾙ', 4: '山川', 
-  6: '扇原',  7: '井手口', 8: 'ｲﾆｴｽﾀ', 9: '宮代',  10: '大迫',
-  11: '武藤', 12: 'MOVI', 13: '大樹',  14: '汰木',   15: '本多',
-  16: '斎藤', 17: '吉田', 18: '井出', 19: '初瀬', 20: 'None',
-  21: '新井', 22: '大樹', 23: '広瀬',  24: '酒井', 25: '鍬先',
-  26: 'ﾊﾟﾄﾘｯｷ', 27: 'ｴﾘｷ', 28: '濱崎', 29: '小松', 30: '山内',
-  31: '岩波', 32: 'ﾘｯｷ',  33: '橋本', 35: '富永', 41: '永戸',
-  44: '日高', 81: '菊池', 96: '山口',
-};
-const KOBE_MEMBERS23 = {
-  1: '前川',  2: '飯野',  3: 'ﾄｩｰﾚﾙ', 4: 'None',  5: '山口',
-  6: '扇原',  7: '井手口', 8: 'ｲﾆｴｽﾀ', 9: '宮代',  10: '大迫',
-  11: '武藤', 12: 'MOVI', 13: '大樹',  14: '汰木',   15: '本多',
-  16: '斎藤', 17: '吉田', 18: '井出', 19: '初瀬', 20: 'None',
-  21: '新井', 22: '大樹', 23: '山川',  24: '酒井', 25: '鍬先',
-  26: 'ﾊﾟﾄﾘｯｷ', 27: 'ｴﾘｷ', 28: '濱崎', 29: '小松', 30: '山内',
-  31: '岩波', 32: 'ﾘｯｷ',  33: '橋本', 35: '富永', 41: '永戸',
-  44: '日高', 81: '菊池', 
-};
-const JAPAN = {
-  1: '彩艶',  2: '菅原',  3: '谷口', 4: '板倉',  5: '長友',
-  6: '町野',  7: '田中碧', 8: '久保', 9: '後藤',  10: '堂安律',
-  11: '前田', 12: '大迫', 13: '中村',  14: '伊東',   15: '鎌田',
-  16: '渡辺', 17: '唯人', 18: '上田', 19: '小川', 20: '瀬古',
-  21: '伊藤', 22: '冨安', 23: '早川',  24: '佐野', 25: '淳之介',
-  26: '塩貝', 27: 'ｴﾘｷ'
+const KOBE_MEMBERS_25 = { ...KOBE_MEMBERS_BASE, 5: '斎藤', 14: '汰木', 15: '本多' };
+
+const KOBE_MEMBERS_24 = {
+   1: '前川',   2: '飯野',   3: 'ﾄｩｰﾚﾙ',  4: '山川',   6: '扇原',
+   7: '井手口',  8: 'ｲﾆｴｽﾀ',  9: '宮代',  10: '大迫',  11: '武藤',
+  12: 'MOVI',  13: '大樹',  14: '汰木',  15: '本多',  16: '斎藤',
+  17: '吉田',  18: '井出',  19: '初瀬',  21: '新井',  22: '大樹',
+  23: '広瀬',  24: '酒井',  25: '鍬先',  26: 'ﾊﾟﾄﾘｯｷ', 27: 'ｴﾘｷ',
+  28: '濱崎',  29: '小松',  30: '山内',  31: '岩波',  32: 'ﾘｯｷ',
+  33: '橋本',  35: '富永',  41: '永戸',  44: '日高',  81: '菊池', 96: '山口',
 };
 
-export const TEAMS = {
+const KOBE_MEMBERS_23 = { ...KOBE_MEMBERS_24, 5: '山口', 16: '斎藤', 19: '初瀬', 23: '山川' };
 
+const ANTLERS_MEMBERS = {
+   1: '早川',   2: '安西',   3: '金',     4: '千田',   5: '関川',
+   6: '三竿',   9: 'ﾚｵｾｱﾗ', 10: '柴崎',  11: '田川',  13: '知念',
+  17: 'ｴｳﾍﾞﾙ', 19: '帥岡',  22: '濃野',  23: '津久井', 25: '小池',
+  27: '松村',  55: '植田',  71: '荒木',  77: 'ﾁｬｳﾞﾘｯﾁ',
+};
+
+// ─── ユニフォーム定義（共有リソース）────────────────────────────────────────
+
+const UNI = {
   default: {
-    name: '未選択',
-    members: {
-       1: 'GK', 2: 'RB', 3: 'CB', 4: 'CB',  5: 'LB',
-       6: 'AC', 7: 'RWG', 8: 'BtB', 9: 'ST', 10: '#10', 11: 'LWG',
-    },
-    formation:  ['442'],
-    bestMember: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    chip:    { color: 'rgba(255, 255, 255, 0.92)', text: '#4b4040' },
-    uniform: {
-      svg: 'default',
-      style: 'linear-gradient(40deg, #ccc 0 45%, #eee 25% 65%, #ccc 55% 100%)',
-      color: '#eee', text: '#4b4040', shadowsize: 0.5,
-    },
+    chip:    { color: 'rgba(255,255,255,0.92)', text: '#4b4040' },
+    home: { svg: 'default', style: 'linear-gradient(40deg,#ccc 0 45%,#eee 25% 65%,#ccc 55% 100%)', color: '#eee', text: '#4b4040', shadowsize: 0.5 },
   },
-
-  kobe: {
-    name: '神戸',
-    members: KOBE_MEMBERS,
-    formation:  ['4123'],
-    bestMember: [1, 24, 3, 16, 15, 25, 11, 7, 10, 5, 41],
-    chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
-    uniform: {
-      // svg: 'kobe_home',
-      style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
-      color: 'crimson', text: '#fff', shadowsize: 0,
-    },
-    away: {
-      chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
-      uniform: {
-        // svg: 'kobe_away',
-        style: 'linear-gradient(40deg, white 0 45%, black 25% 65%, white 55% 100%)',
-        color: '#e6b422', text: 'black', shadowsize: 0.5,
-      },
-      formation:  ['4123'],
-      bestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
-    },
+  japan: {
+    chip:    { color: 'rgba(0,0,200,0.9)', text: '#fff' },
+    home: { svg: 'japan2026_home', style: 'linear-gradient(to bottom,red 0% 7%,white 7% 17%,blue 10% 100%)', color: 'blue', text: '#fff', shadowsize: 0.1 },
+    away: { svg: 'japan2026_away', style: 'linear-gradient(to bottom,white 0%,white 66%,blue 66%,blue 85%,red 85%,red 100%)', color: 'white', text: 'black', shadowsize: 0.5 },
   },
-
-  kobe25: {
-    name: '神戸',
-    members: KOBE_MEMBERS,
-    formation:  ['4123'],
-    bestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
-    chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
-    uniform: {
-      // svg: 'kobe25',
-      style: 'linear-gradient(40deg, crimson 0 45%, black 25% 65%, crimson 55% 100%)',
-      color: 'crimson', text: '#fff', shadowsize: 0,
-    },
-    away: {
-      chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
-      uniform: {
-        // svg: 'kobe_away',
-        style: 'linear-gradient(40deg, white 0 45%, black 25% 65%, white 55% 100%)',
-        color: '#e6b422', text: 'black', shadowsize: 0.5,
-      },
-      formation:  ['4123'],
-      bestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
-    },
+  kobe_crimson: {
+    chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
+    home: { style: 'linear-gradient(40deg,crimson 0 45%,black 25% 65%,crimson 55% 100%)', color: 'crimson', text: '#fff', shadowsize: 0 },
+    away: { style: 'linear-gradient(40deg,white 0 45%,black 25% 65%,white 55% 100%)', color: '#e6b422', text: 'black', shadowsize: 0.5 },
   },
-
+  kobe_black: {
+    chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
+    home: { style: 'linear-gradient(130deg,black 25%,crimson 100%)', color: 'crimson', text: '#fff', shadowsize: 0 },
+    away: { style: 'linear-gradient(180deg,white 0% 80%,rgba(160,66,73,0.92) 80% 100%)', color: 'rgba(160,66,73,0.92)', text: 'rgba(160,66,73,0.92)', shadowsize: 0.1 },
+  },
+  kobe_dark_crimson: {
+    chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
+    home: { style: 'linear-gradient(130deg,crimson 25%,black 100%)', color: 'crimson', text: '#fff', shadowsize: 0 },
+    away: { style: 'linear-gradient(130deg,white 25%,gray 100%)', color: 'black', text: 'black', shadowsize: 0.1 },
+  },
   kobe_30th: {
-    name: '神戸',
-    members: KOBE_MEMBERS,
-    formation:  ['4123'],
-    bestMember: [1, 24, 3, 4, 41, 6, 27, 7, 13, 9, 23],
-    chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
-    uniform: {
-      svg: 'kobe_30th',
-      style: 'linear-gradient(90deg, black 2%, white 2% 16%, black 16% 30%, white 30% 42%, black 42% 58%, white 58% 72%, black 72% 86%, white 86% 98%, black 98%)',
-      color: '#e6b422', text: 'black', shadowsize: 0.8,
-    },
-  },
-
-  kobe24: {
-    name: '神戸',
-    members: KOBE_MEMBERS24,
-    formation:  ['4123'],
-    bestMember: [1, 24, 3, 4, 19, 6, 11, 96, 10, 18, 23],
-    chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
-    uniform: {
-      style: 'linear-gradient(130deg, black 25%, crimson 100%)',
-      color: 'crimson', text: '#fff', shadowsize: 0,
-    },
-    away: {
-      chip:    { color: 'rgba(255, 255, 255, 0.92)', text: 'rgba(160, 66, 73, 0.92)' },
-      uniform: {
-        style: 'linear-gradient(180deg, white 0% 80%, rgba(160, 66, 73, 0.92) 80% 100%)',        
-        color: 'rgba(160, 66, 73, 0.92)', text: 'rgba(160, 66, 73, 0.92)', shadowsize: 0.1,
-      },
-      formation:  ['4123'],
-      bestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
-    },
-  },
-  kobe23: {
-    name: '神戸',
-    members: KOBE_MEMBERS23,
-    formation:  ['4123'],
-    bestMember: [1, 24, 3, 23, 19, 16, 22, 5, 10, 18, 11],
-    chip:    { color: 'rgba(220, 20, 60, 0.92)', text: '#fff' },
-    uniform: {
-      style: 'linear-gradient(130deg, crimson 25%, black 100%)',
-      color: 'crimson', text: '#fff', shadowsize: 0,
-    },
-    away: {
-      chip:    { color: 'rgba(255, 255, 255, 0.92)', text: 'rgba(160, 66, 73, 0.92)' },
-      uniform: {
-        style: 'linear-gradient(130deg, white 25%, gray 100%)',        
-        color: 'black', text: 'black', shadowsize: 0.1,
-      },
-      formation:  ['4123'],
-      bestMember: [1, 24, 4, 3, 41, 6, 11, 7, 29, 5, 13],
-    },
-  },
-
-    japan: {
-    name: '日本2026W杯',
-    members: JAPAN,
-    formation:  ['3421'],
-    bestMember: [1, 16, 3, 21, 13, 15, 10, 24, 18, 8, 11],
-    chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
-    uniform: {
-      svg:'japan2026_home',
-      style: 'linear-gradient(to bottom, red 0% 7%, white 7% 17%, blue 10% 100% )',
-      color: 'blue', text: '#fff', shadowsize: 0.1,
-    },
-    away: {
-      chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
-      uniform: {
-        svg:'japan2026_away',
-        style: 'linear-gradient(to bottom, white 0%, white 66%, blue 66%, blue 85%, red 85%, red 100%)',
-        color: 'white', text: 'black', shadowsize: 0.5,
-      },
-      formation:  ['4213'],
-      bestMember: [1, 34, 13, 33, 2, 6, 11, 8, 9, 40, 30],
-    },
+    chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
+    home: { svg: 'kobe_30th', style: 'linear-gradient(90deg,black 2%,white 2% 16%,black 16% 30%,white 30% 42%,black 42% 58%,white 58% 72%,black 72% 86%,white 86% 98%,black 98%)', color: '#e6b422', text: 'black', shadowsize: 0.8 },
   },
   yokohamaFM: {
-    name: '横浜FM',
-    members: {},
-    formation:  ['4213'],
-    bestMember: [1, 34, 13, 33, 2, 6, 11, 8, 9, 40, 30],
-    chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
-    uniform: {
-      svg: 'yokohamaFM_home',
-      style: 'linear-gradient(to bottom, blue 0%, blue 72%, white 72%, white 80%, red 80%, red 100%)',
-      color: 'blue', text: '#fff', shadowsize: 0.5,
-    },
-    away: {
-      chip:    { color: 'rgba(0, 0, 200, 0.9)', text: '#fff' },
-      uniform: {
-        svg: 'yokohamaFM_away',
-        style: 'linear-gradient(to bottom, white 0%, white 66%, blue 66%, blue 85%, red 85%, red 100%)',
-        color: 'white', text: 'blue', shadowsize: 0.5,
-      },
-      formation:  ['4213'],
-      bestMember: [1, 34, 13, 33, 2, 6, 11, 8, 9, 40, 30],
-    },
+    chip:    { color: 'rgba(0,0,200,0.9)', text: '#fff' },
+    home: { svg: 'yokohamaFM_home', style: 'linear-gradient(to bottom,blue 0%,blue 72%,white 72%,white 80%,red 80%,red 100%)', color: 'blue', text: '#fff', shadowsize: 0.5 },
+    away: { svg: 'yokohamaFM_away', style: 'linear-gradient(to bottom,white 0%,white 66%,blue 66%,blue 85%,red 85%,red 100%)', color: 'white', text: 'blue', shadowsize: 0.5 },
   },
-
   urawa: {
-    name: '浦和',
-    members: {},
-    formation:  ['4231'],
-    bestMember: [1, 4, 22, 5, 88, 13, 77, 25, 36, 45, 8],
-    chip:    { color: 'rgb(231, 0, 43)', text: '#fff' },
-    uniform: {
-      svg: 'urawa_home',
-      style: 'linear-gradient(to bottom, rgb(231, 0, 43) 0% 72%, white 72% 80%, black 80% 100%)',
-      color: 'rgb(231, 0, 43)', text: '#fff', shadowsize: 0.5,
-    },
-    away: {
-      chip:    { color: 'rgba(231, 0, 43, 0.9)', text: '#fff' },
-      uniform: {
-        svg: 'urawa_away',
-        style: 'linear-gradient(to bottom, white 0%, white 85%, black 85%, black 100%)',
-        color: null, text: '#000', shadowsize: 0,
-      },
-      formation:  ['4231'],
-      bestMember: [1, 4, 22, 5, 88, 13, 77, 25, 36, 45, 8],
-    },
+    chip:    { color: 'rgb(231,0,43)', text: '#fff' },
+    home: { svg: 'urawa_home', style: 'linear-gradient(to bottom,rgb(231,0,43) 0% 72%,white 72% 80%,black 80% 100%)', color: 'rgb(231,0,43)', text: '#fff', shadowsize: 0.5 },
+    away: { svg: 'urawa_away', style: 'linear-gradient(to bottom,white 0%,white 85%,black 85%,black 100%)', color: null, text: '#000', shadowsize: 0 },
   },
-
   antlers: {
-    name: '鹿島',
-    members: {
-       1: '早川',  2: '安西',  3: '金',    4: '千田',  5: '関川',
-       6: '三竿',  7: 'None',  8: 'None',  9: 'ﾚｵｾｱﾗ', 10: '柴崎',
-      11: '田川', 13: '知念', 17: 'ｴｳﾍﾞﾙ', 19: '帥岡', 22: '濃野',
-      23: '津久井', 24: 'None', 25: '小池', 27: '松村', 40: 'UMA',
-      55: '植田', 71: '荒木', 77: 'ﾁｬｳﾞﾘｯﾁ',
-    },
-    formation:  ['4231'],
-    bestMember: [1, 22, 55, 5, 2, 10, 27, 6, 9, 40, 71],
-    chip:    { color: 'rgba(139, 0, 0, 0.9)', text: '#fff' },
-    uniform: {
-      svg: 'antlers_home',
-      style: 'linear-gradient(to bottom, rgb(23, 28, 45) 0% 30%, rgb(183, 24, 64) 30% 35%, rgb(23, 28, 45) 35% 55%, rgb(183, 24, 64) 55% 60%, rgb(23, 28, 45) 60% 80%, rgb(183, 24, 64) 80% 85%, rgb(23, 28, 45) 85% 100%)',
-      color: 'rgb(183, 24, 64)', text: '#fff', shadowsize: 0.5,
-    },
-    away: {
-      chip:    { color: 'rgba(139, 0, 0, 0.9)', text: '#fff' },
-      uniform: {
-        svg: 'antlers_away',
-        style: 'linear-gradient(0deg, white 0 30%, black 30% 70%, white 70%)',
-        color: null, text: '#cccccc', shadowsize: 0,
-      },
-      formation:  ['4231'],
-      bestMember: [1, 22, 55, 5, 2, 10, 27, 6, 9, 40, 71],
-    },
+    chip:    { color: 'rgba(139,0,0,0.9)', text: '#fff' },
+    home: { svg: 'antlers_home', style: 'linear-gradient(to bottom,rgb(23,28,45) 0% 30%,rgb(183,24,64) 30% 35%,rgb(23,28,45) 35% 55%,rgb(183,24,64) 55% 60%,rgb(23,28,45) 60% 80%,rgb(183,24,64) 80% 85%,rgb(23,28,45) 85% 100%)', color: 'rgb(183,24,64)', text: '#fff', shadowsize: 0.5 },
+    away: { svg: 'antlers_away', style: 'linear-gradient(0deg,white 0 30%,black 30% 70%,white 70%)', color: null, text: '#cccccc', shadowsize: 0 },
   },
-
   kashiwa: {
-    name: '柏',
-    members: {},
-    formation:  ['3421'],
-    bestMember: [25, 42, 4, 26, 2, 39, 24, 21, 10, 8, 16],
-    chip:    { color: 'rgba(255, 255, 0, 0.92)', text: '#fff' },
-    uniform: {
-      svg: 'kashiwa_home',
-      style: 'linear-gradient(90deg, yellow 30%, black 30%, black 35%, yellow 35%, yellow 40%, black 40%, black 60%, yellow 60%, yellow 65%, black 65%, black 70%, yellow 70%)',
-      color: 'yellow', text: '#000', shadowsize: 0.8,
-    },
-    away: {
-      chip:    { color: 'rgba(255, 255, 0, 0.92)', text: '#fff' },
-      uniform: {
-        svg: 'kashiwa_away',
-        style: 'linear-gradient(to bottom, gray 20%, white 20%)',
-        color: null, text: '#000', shadowsize: 0,
-      },
-      formation:  ['3421'],
-      bestMember: [25, 42, 4, 26, 2, 39, 24, 21, 10, 8, 16],
-    },
+    chip:    { color: 'rgba(255,255,0,0.92)', text: '#fff' },
+    home: { svg: 'kashiwa_home', style: 'linear-gradient(90deg,yellow 30%,black 30%,black 35%,yellow 35%,yellow 40%,black 40%,black 60%,yellow 60%,yellow 65%,black 65%,black 70%,yellow 70%)', color: 'yellow', text: '#000', shadowsize: 0.8 },
+    away: { svg: 'kashiwa_away', style: 'linear-gradient(to bottom,gray 20%,white 20%)', color: null, text: '#000', shadowsize: 0 },
   },
-
   gohsaka: {
-    name: 'G大阪',
-    members: {},
-    formation:  ['4231'],
-    bestMember: [1, 3, 5, 4, 21, 16, 17, 10, 23, 11, 97],
-    chip:    { color: 'rgba(0, 0, 255, 0.92)', text: '#fff' },
-    uniform: {
-      svg: 'gohsaka_home',
-      style: 'repeating-linear-gradient(90deg, blue 0 10px, black 10px 20px)',
-      color: null, text: '#fff', shadowsize: 0.5,
-    },
-    away: {
-      chip:    { color: 'rgba(0, 0, 255, 0.92)', text: '#fff' },
-      uniform: {
-        svg: 'gohsaka_away',
-        style: 'linear-gradient(to bottom, white 60%, blue 60%)',
-        color: null, text: '#000', shadowsize: 0,
-      },
-      formation:  ['4231'],
-      bestMember: [1, 3, 5, 4, 21, 16, 17, 10, 23, 11, 97],
-    },
+    chip:    { color: 'rgba(0,0,255,0.92)', text: '#fff' },
+    home: { svg: 'gohsaka_home', style: 'repeating-linear-gradient(90deg,blue 0 10px,black 10px 20px)', color: null, text: '#fff', shadowsize: 0.5 },
+    away: { svg: 'gohsaka_away', style: 'linear-gradient(to bottom,white 60%,blue 60%)', color: null, text: '#000', shadowsize: 0 },
   },
-
   hiroshima: {
-    name: '広島',
-    members: {},
-    formation:  ['3421'],
-    bestMember: [1, 33, 4, 19, 13, 14, 15, 6, 10, 9, 11],
-    chip:    { color: 'rgba(81, 48, 143, 0.92)', text: '#fff' },
-    uniform: {
-      svg: 'hiroshima_home',
-      style: 'rgb(81, 48, 143)',
-      color: 'rgb(81, 48, 143)', text: '#fff', shadowsize: 0.5,
-    },
-    away: {
-      chip:    { color: 'rgba(81, 48, 143, 0.92)', text: '#fff' },
-      uniform: {
-        svg: 'hiroshima_away',
-        style: 'linear-gradient(90deg, rgb(81,48,143) 0 10%, white 10% 90%, rgb(81,48,143) 90% 100%)',
-        color: null, text: '#000', shadowsize: 0,
-      },
-      formation:  ['3421'],
-      bestMember: [1, 33, 4, 19, 13, 14, 15, 6, 10, 9, 11],
-    },
+    chip:    { color: 'rgba(81,48,143,0.92)', text: '#fff' },
+    home: { svg: 'hiroshima_home', style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5 },
+    away: { svg: 'hiroshima_away', style: 'linear-gradient(90deg,rgb(81,48,143) 0 10%,white 10% 90%,rgb(81,48,143) 90% 100%)', color: null, text: '#000', shadowsize: 0 },
   },
-
   shimizu: {
-    name: '清水',
-    members: {},
-    formation:  ['4123'],
-    bestMember: [1, 5, 14, 51, 28, 81, 11, 6, 9, 23, 7],
-    chip:    { color: 'rgb(240, 146, 5)', text: '#003D6B' },
-    uniform: {
-      svg: 'shimizu_home',
-      style: 'rgb(240, 146, 5)',
-      color: 'rgb(240, 146, 5)', text: '#003D6B', shadowsize: 0.5,
-    },
+    chip:    { color: 'rgb(240,146,5)', text: '#003D6B' },
+    home: { svg: 'shimizu_home', style: 'rgb(240,146,5)', color: 'rgb(240,146,5)', text: '#003D6B', shadowsize: 0.5 },
   },
-
   kawasaki: {
-    name: '川崎',
-    members: {},
-    formation:  ['4231'],
-    bestMember: [49, 29, 2, 28, 13, 6, 17, 8, 9, 14, 23],
-    chip:    { color: 'rgba(0, 180, 0, 0.9)', text: '#fff' },
-    uniform: {
-      svg: 'kawasaki_home',
-      style: 'rgb(0, 180, 0)',
-      color: 'rgb(0, 180, 0)', text: '#fff', shadowsize: 0.5,
-    },
+    chip:    { color: 'rgba(0,180,0,0.9)', text: '#fff' },
+    home: { svg: 'kawasaki_home', style: 'rgb(0,180,0)', color: 'rgb(0,180,0)', text: '#fff', shadowsize: 0.5 },
   },
-
 };
 
-// =====================================================
-// 後方互換レイヤー
-// =====================================================
+// ─── ヘルパー: エントリ生成 ──────────────────────────────────────────────────
 
-function buildChipEntry(chip, name) {
-  return { name, color: chip.color, text: chip.text };
+/**
+ * TEAM_CATALOG エントリを簡潔に生成するヘルパー。
+ * @param {string} label
+ * @param {Record<number,string>} members
+ * @param {string} uniKey
+ * @param {string[]} formation
+ * @param {number[]} bestMember
+ * @param {{ formation:string[], bestMember:number[] }|null} awayOverride
+ */
+function entry(label, members, uniKey, formation, bestMember, awayOverride = null) {
+  const u = UNI[uniKey];
+  const base = {
+    label,
+    members,
+    formation,
+    bestMember,
+    chip:    u.chip,
+    uniform: u.home,
+  };
+  if (awayOverride && u.away) {
+    base.away = {
+      chip:       u.chip,
+      uniform:    u.away,
+      formation:  awayOverride.formation,
+      bestMember: awayOverride.bestMember,
+    };
+  }
+  return base;
 }
 
-function buildUniformEntry(uniform, name) {
-  return { name, svg: uniform.svg ?? null, style: uniform.style, color: uniform.color ?? undefined, text: uniform.text, shadowsize: uniform.shadowsize };
+// ─── チームカタログ（3 段階階層） ────────────────────────────────────────────
+//
+// 構造: TEAM_CATALOG[チームID][年度ID][試合ID]
+//   チームID : 'kobe', 'japan', ... など
+//   年度ID   : '2026', '2025', ... など（表示順を保つため配列ではなく順序付きオブジェクト）
+//   試合ID   : 'best', '0412_urawa', ... など
+//
+// 「best」キーはそのシーズンのベストイレブン（デフォルト選択）。
+
+export const TEAM_CATALOG = {
+
+  // ── デフォルト（未選択）──────────────────────────────────────────────────────
+  default: {
+    label: '未選択',
+    seasons: {
+      '-': {
+        label: '-',
+        lineups: {
+          best: entry('デフォルト', {
+            1:'GK', 2:'RB', 3:'CB', 4:'CB', 5:'LB',
+            6:'AC', 7:'RWG', 8:'BtB', 9:'ST', 10:'#10', 11:'LWG',
+          }, 'default', ['442'], [1,2,3,4,5,6,7,8,9,10,11]),
+        },
+      },
+    },
+  },
+
+  // ── ヴィッセル神戸 ──────────────────────────────────────────────────────────
+  kobe: {
+    label: '神戸',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', KOBE_MEMBERS_25, 'kobe_crimson',
+            ['4123'], [1,24,3,4,41,6,27,7,13,9,23],
+            { formation: ['4123'], bestMember: [1,24,3,4,41,6,27,7,13,9,23] }),
+        },
+      },
+      '2024': {
+        label: '2024',
+        lineups: {
+          best: entry('ベスト11', KOBE_MEMBERS_24, 'kobe_black',
+            ['4123'], [1,24,3,4,19,6,11,96,10,18,23],
+            { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
+        },
+      },
+      '2023': {
+        label: '2023',
+        lineups: {
+          best: entry('ベスト11', KOBE_MEMBERS_23, 'kobe_dark_crimson',
+            ['4123'], [1,24,3,23,19,16,22,5,10,18,11],
+            { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
+        },
+      },
+      '30th': {
+        label: '30周年',
+        lineups: {
+          best: entry('30周年ユニ', KOBE_MEMBERS_BASE, 'kobe_30th',
+            ['4123'], [1,24,3,4,41,6,27,7,13,9,23]),
+        },
+      },
+      'classic': {
+        label: '百年構想',
+        lineups: {
+          best: entry('ベスト11', KOBE_MEMBERS_BASE, 'kobe_crimson',
+            ['4123'], [1,24,3,16,15,25,11,7,10,5,41],
+            { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
+        },
+      },
+    },
+  },
+
+  // ── 日本代表 ────────────────────────────────────────────────────────────────
+  japan: {
+    label: '日本代表',
+    seasons: {
+      'dutch': {
+        label: '2026W杯',
+        lineups: {
+          dutch: entry('オランダ戦', JAPAN_MEMBERS, 'japan',
+            ['3421'], [1,16,3,21,13,15,10,24,18,8,11],
+            { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
+          tunisia: entry('チュニジア戦', JAPAN_MEMBERS, 'japan',
+            ['3421'], [1,22,4,21,13,7,10,24,18,14,15],
+            { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
+          norway: entry('ノルウェー戦', JAPAN_MEMBERS, 'japan',
+            ['3421'], [1,16,4,21,13,15,2,7,18,10,11],
+            { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
+        },
+      },
+    },
+  },
+
+  // ── 横浜F・マリノス ─────────────────────────────────────────────────────────
+  yokohamaFM: {
+    label: '横浜FM',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', {}, 'yokohamaFM',
+            ['4213'], [1,34,13,33,2,6,11,8,9,40,30],
+            { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
+        },
+      },
+    },
+  },
+
+  // ── 浦和レッズ ──────────────────────────────────────────────────────────────
+  urawa: {
+    label: '浦和',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', {}, 'urawa',
+            ['4231'], [1,4,22,5,88,13,77,25,36,45,8],
+            { formation: ['4231'], bestMember: [1,4,22,5,88,13,77,25,36,45,8] }),
+        },
+      },
+    },
+  },
+
+  // ── 鹿島アントラーズ ────────────────────────────────────────────────────────
+  antlers: {
+    label: '鹿島',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', ANTLERS_MEMBERS, 'antlers',
+            ['4231'], [1,22,55,5,2,10,27,6,9,40,71],
+            { formation: ['4231'], bestMember: [1,22,55,5,2,10,27,6,9,40,71] }),
+        },
+      },
+    },
+  },
+
+  // ── 柏レイソル ──────────────────────────────────────────────────────────────
+  kashiwa: {
+    label: '柏',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', {}, 'kashiwa',
+            ['3421'], [25,42,4,26,2,39,24,21,10,8,16],
+            { formation: ['3421'], bestMember: [25,42,4,26,2,39,24,21,10,8,16] }),
+        },
+      },
+    },
+  },
+
+  // ── ガンバ大阪 ──────────────────────────────────────────────────────────────
+  gohsaka: {
+    label: 'G大阪',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', {}, 'gohsaka',
+            ['4231'], [1,3,5,4,21,16,17,10,23,11,97],
+            { formation: ['4231'], bestMember: [1,3,5,4,21,16,17,10,23,11,97] }),
+        },
+      },
+    },
+  },
+
+  // ── サンフレッチェ広島 ──────────────────────────────────────────────────────
+  hiroshima: {
+    label: '広島',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', {}, 'hiroshima',
+            ['3421'], [1,33,4,19,13,14,15,6,10,9,11],
+            { formation: ['3421'], bestMember: [1,33,4,19,13,14,15,6,10,9,11] }),
+        },
+      },
+    },
+  },
+
+  // ── 清水エスパルス ──────────────────────────────────────────────────────────
+  shimizu: {
+    label: '清水',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', {}, 'shimizu',
+            ['4123'], [1,5,14,51,28,81,11,6,9,23,7]),
+        },
+      },
+    },
+  },
+
+  // ── 川崎フロンターレ ────────────────────────────────────────────────────────
+  kawasaki: {
+    label: '川崎',
+    seasons: {
+      '2025': {
+        label: '2025',
+        lineups: {
+          best: entry('ベスト11', {}, 'kawasaki',
+            ['4231'], [49,29,2,28,13,6,17,8,9,14,23]),
+        },
+      },
+    },
+  },
+};
+
+// ─── カタログ参照ヘルパー ────────────────────────────────────────────────────
+
+/**
+ * チームID・年度ID・試合IDからエントリを返す。
+ * いずれかが見つからない場合は null。
+ *
+ * @param {string} teamId
+ * @param {string} seasonId
+ * @param {string} lineupId
+ * @returns {object|null}
+ */
+export function getLineup(teamId, seasonId, lineupId) {
+  return TEAM_CATALOG[teamId]?.seasons?.[seasonId]?.lineups?.[lineupId] ?? null;
 }
 
-function buildInfoEntry(team) {
-  return { formation_key: team.formation, BestMember: team.bestMember };
+/**
+ * チームIDのシーズン一覧を返す。
+ * @param {string} teamId
+ * @returns {Record<string,{label:string, lineups:object}>}
+ */
+export function getSeasons(teamId) {
+  return TEAM_CATALOG[teamId]?.seasons ?? {};
 }
 
-export const teamColors       = {};
-export const teamUniformColor = {};
-export const information      = {};
-export const team_member      = {};
-/** @deprecated typo版。新規コードでは information を使ってください */
-export const infomation       = information;
+/**
+ * シーズンのラインナップ一覧を返す。
+ * @param {string} teamId
+ * @param {string} seasonId
+ * @returns {Record<string,object>}
+ */
+export function getLineups(teamId, seasonId) {
+  return TEAM_CATALOG[teamId]?.seasons?.[seasonId]?.lineups ?? {};
+}
 
-for (const [key, team] of Object.entries(TEAMS)) {
-  teamColors[key]       = buildChipEntry(team.chip, team.name);
-  teamUniformColor[key] = buildUniformEntry(team.uniform, team.name);
-  information[key]      = buildInfoEntry(team);
-  team_member[key]      = team.members;
+// ─── 後方互換レイヤー ────────────────────────────────────────────────────────
+// team-colors.js / ui-events.js が直接参照するフラットなオブジェクト。
+// TEAM_CATALOG から自動生成する。
 
-  if (team.away) {
-    const awayKey = `${key}_AwayVer`;
-    teamColors[awayKey]       = buildChipEntry(team.away.chip, team.name);
-    teamUniformColor[awayKey] = buildUniformEntry(team.away.uniform, team.name);
-    information[awayKey]      = { formation_key: team.away.formation, BestMember: team.away.bestMember };
-    team_member[awayKey]      = team.members;
+export const TEAMS        = {};   // チームID → TeamDef（team-colors.js 用）
+export const information  = {};   // 旧キー  → { BestMember }（ui-events.js 用）
+export const team_member  = {};   // 旧キー  → members
+
+for (const [teamId, teamDef] of Object.entries(TEAM_CATALOG)) {
+  for (const [seasonId, seasonDef] of Object.entries(teamDef.seasons ?? {})) {
+    for (const [lineupId, lineup] of Object.entries(seasonDef.lineups ?? {})) {
+      // 旧キー: "kobe", "kobe_2024_best", ...
+      // 最初のエントリ（best）が旧来の teamKey に対応する
+      const legacyKey = lineupId === 'best' && seasonId === Object.keys(teamDef.seasons)[0]
+        ? teamId
+        : `${teamId}__${seasonId}__${lineupId}`;
+
+      TEAMS[legacyKey] = {
+        name:       teamDef.label,
+        members:    lineup.members,
+        formation:  lineup.formation,
+        bestMember: lineup.bestMember,
+        chip:       lineup.chip,
+        uniform:    lineup.uniform,
+        away:       lineup.away ? {
+          chip:       lineup.away.chip,
+          uniform:    lineup.away.uniform,
+          formation:  lineup.away.formation,
+          bestMember: lineup.away.bestMember,
+        } : undefined,
+      };
+
+      information[legacyKey] = {
+        formation_key: lineup.formation,
+        BestMember:    lineup.bestMember,
+      };
+      team_member[legacyKey] = lineup.members;
+
+      if (lineup.away) {
+        const awayKey = `${legacyKey}_AwayVer`;
+        TEAMS[awayKey]       = { ...TEAMS[legacyKey], uniform: lineup.away.uniform };
+        information[awayKey] = { formation_key: lineup.away.formation, BestMember: lineup.away.bestMember };
+        team_member[awayKey] = lineup.members;
+      }
+    }
   }
 }
-
-/* 終了 */

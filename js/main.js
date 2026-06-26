@@ -1,32 +1,80 @@
-import { information } from './config.js';
+/**
+ * main.js
+ *
+ * アプリケーションのエントリポイント。
+ * DOMContentLoaded 後に各モジュールを初期化する。
+ *
+ * 初期化順序（依存関係があるため順番を守ること）:
+ *   1. initializeTeamSelects()      — 3 段チーム選択 UI・初期ユニフォーム適用
+ *   2. initFlickFormationUI()       — 隠しボタンを DOM に生成
+ *   3. initializeFormationButtons() — 生成済みボタンに click リスナーを登録
+ *   4. スライダー input イベント登録
+ *   5. フォーム submit イベント登録（スクワッド確定）
+ *   6. initPlayerNameToggle()       — フィールド長押しで選手名を表示/非表示
+ *   7. redrawAllPlayers()           — 初期描画
+ */
+
 import { initializeTeamSelects } from './team-colors.js';
-import { formationSliderMap } from './formations_new.js';
 import {
   initializeFormationButtons,
   updateFormationButtons,
   createInputs,
   redrawAllPlayers,
-  renewSquad
+  renewSquad,
 } from './ui-events.js';
 import { initFlickFormationUI } from './formation-flick-ui.js';
 
+// ─── 選手名トグル ─────────────────────────────────────────────────────────────
+
+/**
+ * フィールドを長押し（500ms）すると .field-show-names クラスを #field に付与し、
+ * 全選手ノードの下に名前を表示する。もう一度長押しすると非表示に戻る。
+ *
+ * CSS 側で .field-show-names .player::after { content: attr(data-name); ... } を定義すること。
+ */
+function initPlayerNameToggle() {
+  const field = document.getElementById('field');
+  if (!field) return;
+
+  let pressTimer = null;
+
+  function startPress(e) {
+    // フリックUIのキー操作と競合しないようにする
+    if (e.target.closest('.player')) return;
+    pressTimer = setTimeout(() => {
+      field.classList.toggle('field-show-names');
+      pressTimer = null;
+    }, 500);
+  }
+
+  function cancelPress() {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+  }
+
+  field.addEventListener('mousedown',   startPress);
+  field.addEventListener('touchstart',  startPress, { passive: true });
+  field.addEventListener('mouseup',     cancelPress);
+  field.addEventListener('mouseleave',  cancelPress);
+  field.addEventListener('touchend',    cancelPress);
+  field.addEventListener('touchcancel', cancelPress);
+}
+
+// ─── 初期化 ──────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.forms-wrapper.infopart').style.display = 'flex';
 
+  // 1. チーム選択（内部で createInputs も呼ぶ）
   initializeTeamSelects();
-  initFlickFormationUI();       // 先：隠しボタンを DOM に生成
-  initializeFormationButtons(); // 後：生成済みボタンに click リスナーを登録
 
-  const homeSelect = document.getElementById('homeTeamSelect');
-  const awaySelect = document.getElementById('awayTeamSelect');
+  // 2 & 3. フリック UI → ボタンリスナー
+  initFlickFormationUI();
+  initializeFormationButtons();
 
-  createInputs('inputsHome',    information[homeSelect.value]?.BestMember, true);
-  createInputs('inputsAway',    information[awaySelect.value]?.BestMember, false);
-  createInputs('inputsHome-sp', information[homeSelect.value]?.BestMember, true);
-  createInputs('inputsAway-sp', information[awaySelect.value]?.BestMember, false);
-
-  // スライダー変更 → home のみ再描画
+  // 4. スライダー変更 → 再描画
   document.querySelectorAll('input[type="range"]').forEach(slider => {
     slider.addEventListener('input', () => {
       updateFormationButtons();
@@ -34,19 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // スクワッド送信
-  document.querySelector('form').addEventListener('submit', event => {
+  // 5. スクワッド送信（番号反映ボタン）
+  document.querySelector('form')?.addEventListener('submit', event => {
     event.preventDefault();
-    const home = document.getElementById('homeTeamSelect');
-    const away = document.getElementById('awayTeamSelect');
-    renewSquad('inputsHome',    information[home.value]?.BestMember, true);
-    renewSquad('inputsAway',    information[away.value]?.BestMember, false);
-    renewSquad('inputsHome-sp', information[home.value]?.BestMember, true);
-    renewSquad('inputsAway-sp', information[away.value]?.BestMember, false);
+    renewSquad('inputsHome',    null, true);
+    renewSquad('inputsAway',    null, false);
+    renewSquad('inputsHome-sp', null, true);
+    renewSquad('inputsAway-sp', null, false);
   });
 
+  // 6. 長押しで選手名トグル
+  initPlayerNameToggle();
+
+  // 7. 初期描画
   redrawAllPlayers();
 });
-
-
-/* 終了 */

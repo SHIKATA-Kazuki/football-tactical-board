@@ -51,6 +51,59 @@
       }
     }
   </style>
+  <style id="player-name-style-snippet">
+  /* ── 選手名バッジ ──────────────────────────────────────────────────────────── */
+
+  /* 全選手ノードに共通の ::after 設定 */
+  .player::after {
+    content: attr(data-name);          /* data-name 属性の値をそのまま表示 */
+    display: block;
+    position: absolute;
+    top: 100%;                         /* ノードの真下 */
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+
+    /* 非表示状態 */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+
+    /* バッジスタイル */
+    font-size: 0.62rem;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    margin-top: 2px;
+    z-index: 10;
+  }
+
+  /* #field に .field-show-names が付いているときだけ ::after を表示 */
+  #field.field-show-names .player::after {
+    opacity: 1;
+  }
+
+  /* 長押しフィードバック: フィールドが押し込まれているように見せる（任意） */
+  #field.field-show-names {
+    outline: 2px solid rgba(255, 255, 255, 0.4);
+    outline-offset: -2px;
+  }
+
+  /* 3 段セレクトグループのスタイル（必要に応じて調整） */
+  .team-select-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .team-select-group select {
+    width: 100%;
+    font-size: 0.85rem;
+  }
+  </style>
 </head>
 <body>
   <div class="bg_pattern Paper_v2"></div>
@@ -98,48 +151,53 @@
     <div class="squadnum infopart">
       <div class="form-block">
         <form class="squad-form"  id="playerFormHome">
-          <select class="TeamSelect" id="homeTeamSelect">
-            <option value="default">表示中</option>
-            <option value="kobe">神戸(百)</option>
-            <option value="kobe25">神戸'25</option>
-            <option value="kobe_30th">神戸(30th)</option>
-            <option value="kobe24">神戸'24</option>
-            <option value="kobe23">神戸'23</option>
-            <option value="yokohamaFM">横浜FM</option>
-            <option value="urawa">浦和</option>
-            <option value="antlers">鹿島</option>
-            <option value="kashiwa">柏</option>
-            <option value="gohsaka">G大阪</option>
-            <option value="hiroshima">広島</option>
-            <option value="shimizu">清水</option>
-            <option value="japan">日本代表</option>
-          </select>
-          <button id="home-squad" class="submit-btn" type="submit">番号反映</button>
-          <div class="uniform-toggle" aria-label="ホームユニフォーム切り替え">
-            <button type="button" class="uniform-home-btn is-active">H</button>
-            <button type="button" class="uniform-away-btn">A</button>
-          </div>
-          <div class="squad-zone"  id="inputsHome"></div>
+            <div class="team-select-group">              
+              <select class="home-team-select">
+                <option value="default">未選択</option>
+                <option value="kobe">神戸</option>
+                <option value="japan">日本代表</option>
+                <option value="yokohamaFM">横浜FM</option>
+                <option value="urawa">浦和</option>
+                <option value="antlers">鹿島</option>
+                <option value="kashiwa">柏</option>
+                <option value="gohsaka">G大阪</option>
+                <option value="hiroshima">広島</option>
+                <option value="shimizu">清水</option>
+                <option value="kawasaki">川崎</option>
+              </select>
+              <!-- 年度選択（JS が動的に生成） -->
+              <select class="home-season-select"></select>
+              <!-- 試合選択（JS が動的に生成） -->
+              <select class="home-lineup-select"></select>
+              <!-- </div> -->
+            </div>
+            <button id="home-squad" class="submit-btn" type="submit">番号反映</button>
+            <div class="uniform-toggle" aria-label="ホームユニフォーム切り替え">
+              <button type="button" class="uniform-home-btn is-active">H</button>
+              <button type="button" class="uniform-away-btn">A</button>
+            </div>
+            <div class="squad-zone"  id="inputsHome"></div>            
         </form>
       </div>
       <div class="form-block">
         <form class="squad-form"  id="playerFormAway">
-          <select class="TeamSelect" id="awayTeamSelect">
-            <option value="default">表示中</option>
-            <option value="kobe">神戸(百)</option>
-            <option value="kobe25">神戸'25</option>
-            <option value="kobe_30th">神戸(30th)</option>
-            <option value="kobe24">神戸'24</option>
-            <option value="kobe23">神戸'23</option>
-            <option value="yokohamaFM">横浜FM</option>
-            <option value="urawa">浦和</option>
-            <option value="antlers">鹿島</option>
-            <option value="kashiwa">柏</option>
-            <option value="gohsaka">G大阪</option>
-            <option value="hiroshima">広島</option>
-            <option value="shimizu">清水</option>
-            <option value="japan">日本代表</option>
-          </select>
+            <div class="team-select-group">
+              <select class="away-team-select">
+                <option value="default">未選択</option>
+                <option value="kobe">神戸</option>
+                <option value="japan">日本代表</option>
+                <option value="yokohamaFM">横浜FM</option>
+                <option value="urawa">浦和</option>
+                <option value="antlers">鹿島</option>
+                <option value="kashiwa">柏</option>
+                <option value="gohsaka">G大阪</option>
+                <option value="hiroshima">広島</option>
+                <option value="shimizu">清水</option>
+                <option value="kawasaki">川崎</option>
+              </select>
+              <select class="away-season-select"></select>
+              <select class="away-lineup-select"></select>
+            </div>
           <button id="away-squad" class="submit-btn" type="submit">リセット</button>
           <div class="uniform-toggle" aria-label="アウェイユニフォーム切り替え">
             <button type="button" class="away-uniform-home-btn is-active">H</button>
