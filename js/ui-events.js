@@ -90,7 +90,8 @@ export function initializeFormationButtons() {
       }
 
       const players = readPlayersFromForm(document.getElementById('playerFormHome'));
-      placePlayers(players, pos, false, true);
+      const members = getCurrentLineup(true)?.members ?? {};
+      placePlayers(players, pos, false, true, members);
     });
   }
 
@@ -109,8 +110,9 @@ export function initializeFormationButtons() {
       if (!pos) return;
 
       const players = readPlayersFromForm(document.getElementById('playerFormAway'));
+      const members = getCurrentLineup(false)?.members ?? {};
       const flipped = pos.map(([x, y]) => [100 - x, 100 - y]);
-      placePlayers(players, flipped, true, true);
+      placePlayers(players, flipped, true, true, members);
     });
   }
 }
@@ -156,7 +158,7 @@ export function createInputs(containerId, squadNumbers, isHome) {
   for (let i = 10; i >= 0; i--) {
     container.innerHTML += `
       <div class="squad-input">
-        ${members[numbers[i]] ?? ''}
+        <span class="player-name-label" data-squad-idx="${i}">${members[numbers[i]] ?? ''}</span>
         <input type="number" name="number${i + 1}" value="${numbers[i]}" required>
       </div>
     `;
@@ -187,7 +189,9 @@ export function renewSquad(containerId, squadNumbers, isHome) {
     row.className  = 'squad-input';
 
     const nameSpan = document.createElement('span');
-    nameSpan.textContent = members[numbers[i]] ?? '';
+    nameSpan.className       = 'player-name-label';
+    nameSpan.dataset.squadIdx = String(i);
+    nameSpan.textContent     = members[numbers[i]] ?? '';
 
     const input    = document.createElement('input');
     input.type     = 'number';
@@ -224,7 +228,8 @@ export function redrawAllPlayers({ resetManual = false } = {}) {
     formations(name, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue })
   );
 
-  applyFormation(formation, resetManual);
+  const members = getCurrentLineup(true)?.members ?? {};
+  applyFormation(formation, resetManual, members);
 }
 
 /**
@@ -249,11 +254,13 @@ export function redrawAllPlayers_if_team_changed(formation, side = 'home') {
       document.getElementById('volanteSlider').value = config.volante;
       document.getElementById('topSlider').value     = config.top;
     }
-    applyFormation(positions, true);
+    const members = getCurrentLineup(true)?.members ?? {};
+    applyFormation(positions, true, members);
   } else {
     const flipped = positions.map(([x, y]) => [100 - x, 100 - y]);
     const players = readPlayersFromForm(document.getElementById('playerFormAway'));
-    placePlayers(players, flipped, true, true);
+    const members = getCurrentLineup(false)?.members ?? {};
+    placePlayers(players, flipped, true, true, members);
   }
 }
 

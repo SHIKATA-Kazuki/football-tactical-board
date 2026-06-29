@@ -168,22 +168,7 @@ export function readPlayersFromForm(formEl) {
   }));
 }
 
-/**
- * 選手番号からフォームに隣接する選手名スパンのテキストを取得するヘルパー。
- * squad-input 内の span から名前を収集して配列にまとめる。
- *
- * @param {boolean} isOpponent
- * @returns {string[]}  インデックス 0〜10（選手番号順）
- */
-function readPlayerNamesFromDOM(isOpponent) {
-  const formId = isOpponent ? 'playerFormAway' : 'playerFormHome';
-  const form   = document.getElementById(formId);
-  if (!form) return Array(11).fill('');
-
-  // squad-input の並びは逆順（i=10→0）で生成されているため並べ直す
-  const rows = [...form.querySelectorAll('.squad-input')].reverse();
-  return rows.map(row => row.querySelector('span')?.textContent?.trim() ?? '');
-}
+// 名前情報は placePlayers の引数 members として受け取る（下記参照）
 
 /**
  * 選手をフィールドに配置する。
@@ -191,16 +176,16 @@ function readPlayerNamesFromDOM(isOpponent) {
  * @param {{number:string, name:string}[]} players
  * @param {[number,number][]}              positions
  * @param {boolean}                        isOpponent  true = アウェイチーム
- * @param {boolean}                        [resetManual=false]  手動移動をリセットして再配置
+ * @param {boolean}                        [resetManual=false]
+ * @param {Record<number,string>}          [members={}]  背番号→名前の辞書（名前バッジ用）
  */
-export function placePlayers(players, positions, isOpponent, resetManual = false) {
+export function placePlayers(players, positions, isOpponent, resetManual = false, members = {}) {
   const field   = document.getElementById('field');
   const arr     = isOpponent ? awayPlayers : homePlayers;
   const sideKey = isOpponent ? 'away' : 'home';
 
   if (resetManual) manualPositions[sideKey].clear();
 
-  // DOM 数を players 数に合わせる
   while (arr.length < players.length) {
     const div = document.createElement('div');
     div.className = isOpponent ? 'player away' : 'player home';
@@ -211,9 +196,6 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
     arr.pop().remove();
   }
 
-  // 名前ラベル用に DOM から選手名を取得
-  const names = readPlayerNamesFromDOM(isOpponent);
-
   for (let i = 0; i < players.length; i++) {
     const el = arr[i];
     el.className = isOpponent ? 'player away' : 'player home';
@@ -222,10 +204,11 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
     el.style.left = `${x}%`;
     el.style.top  = `${y}%`;
 
+    const num = parseInt(players[i].number, 10);
     el.innerHTML = `<strong>${players[i].number}</strong>`;
 
-    // data-name を設定 → CSS の ::after で名前バッジを表示（field-show-names クラス連動）
-    el.dataset.name = names[i] ?? '';
+    // data-name に選手名をセット → CSS ::after で長押し時に表示
+    el.dataset.name = members[num] ?? '';
 
     attachDrag(el, sideKey, i);
   }
@@ -235,10 +218,11 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
 
 /**
  * 自チームにフォーメーションを適用する。
- * @param {[number,number][]} positions
- * @param {boolean}           [resetManual=false]
+ * @param {[number,number][]}     positions
+ * @param {boolean}               [resetManual=false]
+ * @param {Record<number,string>} [members={}]
  */
-export function applyFormation(positions, resetManual = false) {
+export function applyFormation(positions, resetManual = false, members = {}) {
   const players = readPlayersFromForm(document.getElementById('playerFormHome'));
-  placePlayers(players, positions, false, resetManual);
+  placePlayers(players, positions, false, resetManual, members);
 }

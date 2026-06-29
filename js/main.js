@@ -39,7 +39,7 @@ function initPlayerNameToggle() {
   let pressTimer = null;
 
   function startPress(e) {
-    // フリックUIのキー操作と競合しないようにする
+    // 選手ノード上の操作（ドラッグ）と競合しない
     if (e.target.closest('.player')) return;
     pressTimer = setTimeout(() => {
       field.classList.toggle('field-show-names');
@@ -48,18 +48,22 @@ function initPlayerNameToggle() {
   }
 
   function cancelPress() {
-    if (pressTimer) {
+    if (pressTimer !== null) {
       clearTimeout(pressTimer);
       pressTimer = null;
     }
   }
 
   field.addEventListener('mousedown',   startPress);
-  field.addEventListener('touchstart',  startPress, { passive: true });
   field.addEventListener('mouseup',     cancelPress);
   field.addEventListener('mouseleave',  cancelPress);
+  field.addEventListener('mousemove',   cancelPress);   // ③ マウス移動でもキャンセル
+
+  // touchstart は passive:false にして、長押し中のスクロールを防ぐ
+  field.addEventListener('touchstart',  startPress,  { passive: false });
   field.addEventListener('touchend',    cancelPress);
   field.addEventListener('touchcancel', cancelPress);
+  field.addEventListener('touchmove',   cancelPress);   // ③ スクロール開始でキャンセル
 }
 
 // ─── 初期化 ──────────────────────────────────────────────────────────────────

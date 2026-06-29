@@ -81,6 +81,11 @@ const UNI = {
     home: { style: 'linear-gradient(40deg,crimson 0 45%,black 25% 65%,crimson 55% 100%)', color: 'crimson', text: '#fff', shadowsize: 0 },
     away: { style: 'linear-gradient(40deg,white 0 45%,black 25% 65%,white 55% 100%)', color: '#e6b422', text: 'black', shadowsize: 0.5 },
   },
+  kobe_hyaku: {
+    chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
+    home: { style: 'linear-gradient(90deg, black 2%, crimson 2% 16%, black 16% 30%, crimson 30% 42%, black 42% 58%, crimson 58% 72%, black 72% 86%, crimson 86% 98%, black 98%)', color: 'crimson', text: '#fff', shadowsize: 0 },
+    away: { style: 'linear-gradient(90deg, gray 2%, white 2% 16%, gray 16% 30%, white 30% 42%, gray 42% 58%, white 58% 72%, gray 72% 86%, white 86% 98%, gray 98%)', color: '#e6b422', text: 'black', shadowsize: 0.4 },
+  },
   kobe_black: {
     chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
     home: { style: 'linear-gradient(130deg,black 25%,crimson 100%)', color: 'crimson', text: '#fff', shadowsize: 0 },
@@ -112,7 +117,7 @@ const UNI = {
   },
   kashiwa: {
     chip:    { color: 'rgba(255,255,0,0.92)', text: '#fff' },
-    home: { svg: 'kashiwa_home', style: 'linear-gradient(90deg,yellow 30%,black 30%,black 35%,yellow 35%,yellow 40%,black 40%,black 60%,yellow 60%,yellow 65%,black 65%,black 70%,yellow 70%)', color: 'yellow', text: '#000', shadowsize: 0.8 },
+    home: { style: 'linear-gradient(90deg, yellow 30%, black 30%, black 35%, yellow 35%, yellow 40%, black 40%, black 60%, yellow 60%, yellow 65%, black 65%, black 70%, yellow 70%)', color: 'yellow', text: '#000', shadowsize: 0.8 },
     away: { svg: 'kashiwa_away', style: 'linear-gradient(to bottom,gray 20%,white 20%)', color: null, text: '#000', shadowsize: 0 },
   },
   gohsaka: {
@@ -232,7 +237,7 @@ export const TEAM_CATALOG = {
       'classic': {
         label: '百年構想',
         lineups: {
-          best: entry('ベスト11', KOBE_MEMBERS_BASE, 'kobe_crimson',
+          best: entry('ベスト11', KOBE_MEMBERS_BASE, 'kobe_hyaku',
             ['4123'], [1,24,3,16,15,25,11,7,10,5,41],
             { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
         },

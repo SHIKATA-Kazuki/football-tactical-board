@@ -18,7 +18,6 @@
 
 import { TEAM_CATALOG, TEAMS, information, getSeasons, getLineups, getLineup } from './config.js';
 import { createInputs, redrawAllPlayers_if_team_changed, updateFormationButtons } from './ui-events.js';
-import { placePlayers } from './players.js';
 
 // ─── 状態 ────────────────────────────────────────────────────────────────────
 
