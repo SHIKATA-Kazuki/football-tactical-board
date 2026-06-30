@@ -31,6 +31,9 @@ const JAPAN_MEMBERS = {
   21: '伊藤',  22: '冨安',  23: '早川',  24: '佐野',  25: '淳之介',
   26: '塩貝',  27: 'ｴﾘｷ',
 };
+const BRAZIL_MEMBERS = {
+   7: 'Vini'
+};
 
 const KOBE_MEMBERS_BASE = {
    1: '前川',   2: '飯野',   3: 'ﾄｩｰﾚﾙ',  4: '山川',   5: '郷家',
@@ -133,6 +136,10 @@ const UNI = {
   shimizu: {
     chip:    { color: 'rgb(240,146,5)', text: '#003D6B' },
     home: { svg: 'shimizu_home', style: 'rgb(240,146,5)', color: 'rgb(240,146,5)', text: '#003D6B', shadowsize: 0.5 },
+  },
+  brazil: {
+    chip:    { color: 'rgb(236, 240, 5)', text: '#35b614' },
+    home: { style: 'rgb(236, 240, 5)', color: 'rgb(236, 240, 5)', text: '#35b614', shadowsize: 0},
   },
   kawasaki: {
     chip:    { color: 'rgba(0,180,0,0.9)', text: '#fff' },
@@ -261,6 +268,23 @@ export const TEAM_CATALOG = {
           norway: entry('ノルウェー戦', JAPAN_MEMBERS, 'japan',
             ['3421'], [1,16,4,21,13,15,2,7,18,10,11],
             { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
+          brazil: entry('ブラジル戦', JAPAN_MEMBERS, 'japan',
+            ['3421'], [1,22,3,21,13,15,10,24,18,14,11],
+            { formation: ['4213'], bestMember: [1,22,3,21,13,15,10,24,18,14,11] }),
+        },
+      },
+    },
+  },
+  
+  brazil: {
+    label: 'ブラジル代表',
+    seasons: {
+      '2026': {
+        label: '2026W杯',
+        lineups: {
+          best: entry('32', BRAZIL_MEMBERS, 'brazil',
+            ['4123'], [1,13,4,3,16,5,26,8,9,20,7],
+            { formation: ['4123'], bestMember: [1,13,4,3,16,5,26,8,9,20,7] }),
         },
       },
     },
