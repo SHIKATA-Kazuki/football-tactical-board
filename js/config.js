@@ -31,6 +31,13 @@ const JAPAN_MEMBERS = {
   21: '伊藤',  22: '冨安',  23: '早川',  24: '佐野',  25: '淳之介',
   26: '塩貝',  27: 'ｴﾘｷ',
 };
+const JAPAN_MEMBERS_best = {
+   1: '彩艶',   2: '菅原',   3: '谷口',   4: '瀬古',   5: '渡邉',
+   6: '藤田',   7: '三笘',  8: '南野',   9: '町野',  10: '堂安律',
+  11: '前田',  12: '大迫',  13: '中村',  14: '伊東',  15: '鎌田',
+  16: '渡辺',  17: '田中',  18: '上田',  19: '小川',  20: '久保',
+  21: '伊藤',  22: '冨安',  23: '早川',  24: '佐野',  25: '淳之介',
+};
 const BRAZIL_MEMBERS = {
    7: 'Vini'
 };
@@ -256,7 +263,7 @@ export const TEAM_CATALOG = {
   japan: {
     label: '日本代表',
     seasons: {
-      'dutch': {
+      'Worldcup': {
         label: '2026W杯',
         lineups: {
           dutch: entry('オランダ戦', JAPAN_MEMBERS, 'japan',
@@ -271,6 +278,17 @@ export const TEAM_CATALOG = {
           brazil: entry('ブラジル戦', JAPAN_MEMBERS, 'japan',
             ['3421'], [1,22,3,21,13,15,10,24,18,14,11],
             { formation: ['4213'], bestMember: [1,22,3,21,13,15,10,24,18,14,11] }),
+        },
+      },
+      'Worldcup': {
+        label: '親善試合',
+        lineups: {
+          dutch: entry('イングランド戦', JAPAN_MEMBERS_best, 'japan',
+            ['3421'], [1,5,3,21,13,15,10,24,18,14,7],
+            { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
+          dutch: entry('ブラジル戦', JAPAN_MEMBERS_best, 'japan',
+            ['3421'], [1,3,4,25,13,15,10,24,18,20,8],
+            { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
         },
       },
     },
