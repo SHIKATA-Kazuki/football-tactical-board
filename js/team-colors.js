@@ -18,6 +18,7 @@
 
 import { TEAM_CATALOG, TEAMS, information, getSeasons, getLineups, getLineup } from './config.js';
 import { createInputs, redrawAllPlayers_if_team_changed, updateFormationButtons } from './ui-events.js';
+import { onPlayerNodeCreated } from './players.js';
 
 // ─── 状態 ────────────────────────────────────────────────────────────────────
 
@@ -28,7 +29,7 @@ const uniformMode = { home: 'home', away: 'home' };
 
 /** 現在選択されているラインナップキー */
 const currentSelection = {
-  home: { teamId: 'default', seasonId: '-', lineupId: 'best' },
+  home: { teamId: 'default_home', seasonId: '-', lineupId: 'best' },
   away: { teamId: 'default', seasonId: '-', lineupId: 'best' },
 };
 
@@ -125,6 +126,15 @@ function applyUniformToPlayer(el, uniform) {
   } else {
     el.style.textShadow = '';
   }
+
+  // 内側リング（襟・パイピング等のアクセントカラー表現用）
+  if (uniform.circle) {
+    el.classList.add('inner-ring');
+    el.style.setProperty('--ring-color', uniform.circle);
+  } else {
+    el.classList.remove('inner-ring');
+    el.style.removeProperty('--ring-color');
+  }
 }
 
 /**
@@ -171,6 +181,14 @@ function applyUniform(isHome, lineup) {
 
 /**
  * 選択されたラインナップをフィールドに反映する。
+ *
+ * 順序について: applyUniform() は「今存在する .player ノード」にのみ
+ * スタイルを適用するが、選手ノードの生成/再生成は
+ * redrawAllPlayers_if_team_changed() 側で行われる。
+ * ノードが新規生成された場合でも players.js の onPlayerNodeCreated フック
+ * （initializeTeamSelects 内で登録）が自動的にユニフォームを当てるため、
+ * ここでの呼び出し順序自体は実害がない。
+ *
  * @param {boolean} isHome
  * @param {string}  teamId
  * @param {string}  seasonId
@@ -280,6 +298,18 @@ export function switchUniformMode(isHome, mode) {
  * DOMContentLoaded 後に呼ぶこと。
  */
 export function initializeTeamSelects() {
+  // .player ノードが（再）生成されるたびに、そのノードが属するサイドの
+  // 現在のユニフォームを自動適用する。これにより、フォーメーション変更や
+  // スライダー操作で新規ノードが作られた場合でも背景・リング等が欠落しない。
+  onPlayerNodeCreated((el, isOpponent) => {
+    const isHome = !isOpponent;
+    const side   = isHome ? 'home' : 'away';
+    const sel    = currentSelection[side];
+    const lineup = getLineup(sel.teamId, sel.seasonId, sel.lineupId);
+    if (!lineup) return;
+    applyUniformToPlayer(el, resolveUniform(lineup, uniformMode[side]));
+  });
+
   initTripleSelect(true);   // ホーム
   initTripleSelect(false);  // アウェイ
 

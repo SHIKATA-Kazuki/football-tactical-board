@@ -32,6 +32,15 @@ import { initFlickFormationUI } from './formation-flick-ui.js';
  *
  * CSS 側で .field-show-names .player::after { content: attr(data-name); ... } を定義すること。
  */
+const squad = document.getElementById('home-squad');
+squad.addEventListener('input', () => {
+    renewSquad('inputsHome',    null, true);
+    renewSquad('inputsAway',    null, false);
+    renewSquad('inputsHome-sp', null, true);
+    renewSquad('inputsAway-sp', null, false);
+});
+
+
 function initPlayerNameToggle() {
   const field = document.getElementById('field');
   if (!field) return;

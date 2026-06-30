@@ -103,6 +103,25 @@
     width: 100%;
     font-size: 0.85rem;
   }
+
+  /* ── 内側リング（uniform.circle 指定時に表示）──────────────────────────────── */
+  /*
+     team-colors.js の applyUniformToPlayer() が
+     uniform.circle が指定されたユニフォームの場合に
+     .player へ .inner-ring クラスと --ring-color 変数をセットする。
+
+     .player はフィールド配置のため既に position: absolute が設定済みなので、
+     ::before の基準としてそのまま利用できる（position: relative の追加は不要）。
+  */
+  .player.inner-ring::before {
+    content: '';
+    position: absolute;
+    inset: 7%;            /* ノードの中心寄りに小さめの円を配置（必要に応じて調整） */
+    border-radius: 50%;
+    border: 1px solid var(--ring-color, transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
   </style>
 </head>
 <body>
@@ -153,7 +172,7 @@
         <form class="squad-form"  id="playerFormHome">
             <div class="team-select-group">              
               <select class="home-team-select">
-                <option value="default">未選択</option>
+                <option value="default_home">未選択</option>
                 <option value="kobe">神戸</option>
                 <option value="japan">日本代表</option>
                 <option value="brazil">ブラジル代表</option>
@@ -221,6 +240,7 @@
       </div>
     </div>
   </header>
+
 
   <div class="main">
     <div id="field" class="centering_item">
@@ -370,7 +390,6 @@
       </div>
     </div>
   </div>
-
 
   <script>
     // =============================================

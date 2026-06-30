@@ -11,6 +11,7 @@
  *   readPlayersFromForm(formEl)
  *   placePlayers(players, positions, isOpponent, resetManual?)
  *   applyFormation(positions, resetManual?)
+ *   onPlayerNodeCreated(callback)  — 新規 .player ノード生成時に呼ばれるフックを登録
  */
 
 // ─── ジョイスティック状態 ────────────────────────────────────────────────────
@@ -20,6 +21,25 @@ export let wingStick     = { x: 0, y: 0 };
 
 /** @type {{x:number, y:number}} 圧縮スティック（-1〜+1） */
 export let compressStick = { x: 0, y: 0 };
+
+// ─── 新規ノード生成フック ────────────────────────────────────────────────────
+//
+// players.js は team-colors.js（ユニフォーム適用）に依存させたくないため
+// （循環 import を避けるため）、コールバック登録方式にしている。
+// team-colors.js 側が初期化時に「新規ノードへユニフォームを適用する関数」を
+// ここへ登録し、placePlayers が新しい <div class="player"> を作るたびに
+// 自動でユニフォームが当たるようにする。
+
+/** @type {((el: HTMLElement, isOpponent: boolean) => void)[]} */
+const playerNodeCreatedHooks = [];
+
+/**
+ * 新規 .player ノード生成時に呼ばれるコールバックを登録する。
+ * @param {(el: HTMLElement, isOpponent: boolean) => void} callback
+ */
+export function onPlayerNodeCreated(callback) {
+  playerNodeCreatedHooks.push(callback);
+}
 
 // ─── ユーティリティ ──────────────────────────────────────────────────────────
 
@@ -211,6 +231,12 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
     el.dataset.name = members[num] ?? '';
 
     attachDrag(el, sideKey, i);
+
+    // ユニフォーム（背景・テキストシャドウ・内側リング等）を適用する。
+    // el.innerHTML の書き換えで中身は消えるが、style/class は消えないため
+    // 既存ノードでも毎回呼んで問題ない（冪等処理）。
+    // 新規生成ノードはここで初めてユニフォームが当たる。
+    playerNodeCreatedHooks.forEach(cb => cb(el, isOpponent));
   }
 
   if (isOpponent) { awayPlayers = arr; } else { homePlayers = arr; }

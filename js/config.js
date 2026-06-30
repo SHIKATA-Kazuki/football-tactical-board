@@ -77,6 +77,10 @@ const ANTLERS_MEMBERS = {
 // ─── ユニフォーム定義（共有リソース）────────────────────────────────────────
 
 const UNI = {
+  default_home: {
+    chip:    { color: 'rgba(0, 0, 0, 0.92)', text: '#ffffff' },
+    home: { style: 'linear-gradient(40deg,#222 0 50%,#000 50% 100%)', color: '#c0be38', text: '#ffffff', shadowsize: 0 },
+  },
   default: {
     chip:    { color: 'rgba(255,255,255,0.92)', text: '#4b4040' },
     home: { svg: 'default', style: 'linear-gradient(40deg,#ccc 0 45%,#eee 25% 65%,#ccc 55% 100%)', color: '#eee', text: '#4b4040', shadowsize: 0.5 },
@@ -112,13 +116,21 @@ const UNI = {
   },
   yokohamaFM: {
     chip:    { color: 'rgba(0,0,200,0.9)', text: '#fff' },
-    home: { svg: 'yokohamaFM_home', style: 'linear-gradient(to bottom,blue 0%,blue 72%,white 72%,white 80%,red 80%,red 100%)', color: 'blue', text: '#fff', shadowsize: 0.5 },
-    away: { svg: 'yokohamaFM_away', style: 'linear-gradient(to bottom,white 0%,white 66%,blue 66%,blue 85%,red 85%,red 100%)', color: 'white', text: 'blue', shadowsize: 0.5 },
+    home: { 
+      // svg: 'yokohamaFM_home', 
+      style: 'blue', 
+      // style: 'linear-gradient(to bottom,blue 0%,blue 72%,white 72%,white 80%,red 80%,red 100%)', 
+      color: 'blue', 
+      text: '#fff', 
+      shadowsize: 0.5,
+      circle: 'rgb(231,0,43)'
+    },
+    away: {style: 'white', color: 'white', text: 'blue', shadowsize: 0.5, circle: 'rgb(231,0,43)'},
   },
   urawa: {
     chip:    { color: 'rgb(231,0,43)', text: '#fff' },
-    home: { svg: 'urawa_home', style: 'linear-gradient(to bottom,rgb(231,0,43) 0% 72%,white 72% 80%,black 80% 100%)', color: 'rgb(231,0,43)', text: '#fff', shadowsize: 0.5 },
-    away: { svg: 'urawa_away', style: 'linear-gradient(to bottom,white 0%,white 85%,black 85%,black 100%)', color: null, text: '#000', shadowsize: 0 },
+    home: { style: 'red', color: 'rgb(231,0,43)', text: '#fff', shadowsize: 0.5, circle: 'rgb(0, 0, 0)'},
+    away: { style: 'white', color: 'white', text: '#000', shadowsize: 0 , circle: 'rgb(231,0,43)'},
   },
   antlers: {
     chip:    { color: 'rgba(139,0,0,0.9)', text: '#fff' },
@@ -137,16 +149,16 @@ const UNI = {
   },
   hiroshima: {
     chip:    { color: 'rgba(81,48,143,0.92)', text: '#fff' },
-    home: { svg: 'hiroshima_home', style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5 },
-    away: { svg: 'hiroshima_away', style: 'linear-gradient(90deg,rgb(81,48,143) 0 10%,white 10% 90%,rgb(81,48,143) 90% 100%)', color: null, text: '#000', shadowsize: 0 },
+    home: {style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5, circle: 'rgb(255, 255, 255)' },
+    away: {style: 'white', color: null, text: '#000', shadowsize: 0, circle: 'rgb(81,48,143)'},
   },
   shimizu: {
     chip:    { color: 'rgb(240,146,5)', text: '#003D6B' },
-    home: { svg: 'shimizu_home', style: 'rgb(240,146,5)', color: 'rgb(240,146,5)', text: '#003D6B', shadowsize: 0.5 },
+    home: { svg: 'shimizu_home', style: 'rgb(240,146,5)', color: 'rgb(240,146,5)', text: '#003D6B', shadowsize: 0.5, circle: '#003D6B' },
   },
   brazil: {
     chip:    { color: 'rgb(236, 240, 5)', text: '#35b614' },
-    home: { style: 'rgb(236, 240, 5)', color: 'rgb(236, 240, 5)', text: '#35b614', shadowsize: 0},
+    home: { style: 'rgb(236, 240, 5)', color: 'rgb(236, 240, 5)', text: '#35b614', shadowsize: 0, circle: '#0d51e4' },
   },
   kawasaki: {
     chip:    { color: 'rgba(0,180,0,0.9)', text: '#fff' },
@@ -198,6 +210,20 @@ function entry(label, members, uniKey, formation, bestMember, awayOverride = nul
 export const TEAM_CATALOG = {
 
   // ── デフォルト（未選択）──────────────────────────────────────────────────────
+  default_home: {
+    label: '未選択',
+    seasons: {
+      '-': {
+        label: '-',
+        lineups: {
+          best: entry('デフォルト', {
+            1:'GK', 2:'RB', 3:'CB', 4:'CB', 5:'LB',
+            6:'AC', 7:'RWG', 8:'BtB', 9:'ST', 10:'#10', 11:'LWG',
+          }, 'default_home', ['442'], [1,2,3,4,5,6,7,8,9,10,11]),
+        },
+      },
+    },
+  },
   default: {
     label: '未選択',
     seasons: {
@@ -217,6 +243,21 @@ export const TEAM_CATALOG = {
   kobe: {
     label: '神戸',
     seasons: {
+      'classic': {
+        label: '百年構想',
+        lineups: {
+          best: entry('ベスト11', KOBE_MEMBERS_BASE, 'kobe_hyaku',
+            ['4123'], [1,24,3,16,15,25,11,7,10,5,41],
+            { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
+        },
+      },
+      '30th': {
+        label: '30周年',
+        lineups: {
+          best: entry('30周年ユニ', KOBE_MEMBERS_BASE, 'kobe_30th',
+            ['4123'], [1,24,3,4,41,6,27,7,13,9,23]),
+        },
+      },
       '2025': {
         label: '2025',
         lineups: {
@@ -238,21 +279,6 @@ export const TEAM_CATALOG = {
         lineups: {
           best: entry('ベスト11', KOBE_MEMBERS_23, 'kobe_dark_crimson',
             ['4123'], [1,24,3,23,19,16,22,5,10,18,11],
-            { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
-        },
-      },
-      '30th': {
-        label: '30周年',
-        lineups: {
-          best: entry('30周年ユニ', KOBE_MEMBERS_BASE, 'kobe_30th',
-            ['4123'], [1,24,3,4,41,6,27,7,13,9,23]),
-        },
-      },
-      'classic': {
-        label: '百年構想',
-        lineups: {
-          best: entry('ベスト11', KOBE_MEMBERS_BASE, 'kobe_hyaku',
-            ['4123'], [1,24,3,16,15,25,11,7,10,5,41],
             { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
         },
       },

@@ -171,8 +171,8 @@ header {
       transparent 55% 100%     /* その後また透明 */
     ),
     crimson;                   /* ベース色 */
-  border: 1px solid var(--borer_color);
-  color: var(--borer_color);
+  /* border: 1px solid var(--borer_color);
+  color: var(--borer_color); */
 }
     
 .opponent { background-color:  rgba(255,255,255,0.92); color: #000;}
@@ -726,6 +726,7 @@ body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
   background: #5e0209;
   border-color: #5e0209;
 }
+
 
 /* .uniform-toggle {
   display: inline-flex;
