@@ -280,13 +280,13 @@ export const TEAM_CATALOG = {
             { formation: ['4213'], bestMember: [1,22,3,21,13,15,10,24,18,14,11] }),
         },
       },
-      'Worldcup': {
+      'exhibition': {
         label: '親善試合',
         lineups: {
-          dutch: entry('イングランド戦', JAPAN_MEMBERS_best, 'japan',
+          england: entry('イングランド戦', JAPAN_MEMBERS_best, 'japan',
             ['3421'], [1,5,3,21,13,15,10,24,18,14,7],
             { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
-          dutch: entry('ブラジル戦', JAPAN_MEMBERS_best, 'japan',
+          brazil: entry('ブラジル戦', JAPAN_MEMBERS_best, 'japan',
             ['3421'], [1,3,4,25,13,15,10,24,18,20,8],
             { formation: ['4213'], bestMember: [1,34,13,33,2,6,11,8,9,40,30] }),
         },
