@@ -69,6 +69,7 @@ const KOBE_MEMBERS_BASE = {
 const KOBE_MEMBERS_25 = { ...KOBE_MEMBERS_BASE, 5: '斎藤', 14: '汰木', 15: '本多' };
 
 const KOBE_MEMBERS_24 = {
+  // ...KOBE_MEMBERS_BASE,
    1: '前川',   2: '飯野',   3: 'ﾄｩｰﾚﾙ',  4: '山川',   6: '扇原',
    7: '井手口',  8: 'ｲﾆｴｽﾀ',  9: '宮代',  10: '大迫',  11: '武藤',
   12: 'MOVI',  13: '大樹',  14: '汰木',  15: '本多',  16: '斎藤',
@@ -78,7 +79,7 @@ const KOBE_MEMBERS_24 = {
   33: '橋本',  35: '富永',  41: '永戸',  44: '日高',  81: '菊池', 96: '山口',
 };
 
-const KOBE_MEMBERS_23 = { ...KOBE_MEMBERS_24, 5: '山口', 16: '斎藤', 19: '初瀬', 23: '山川' };
+const KOBE_MEMBERS_23 = { ...KOBE_MEMBERS_24, 5: '山口', 16: '斎藤',17:'菊池', 19: '初瀬', 23: '山川' };
 
 const ANTLERS_MEMBERS = {
    1: '早川',   2: '安西',   3: '金',     4: '千田',   5: '関川',
@@ -102,6 +103,11 @@ const UNI = {
     chip:    { color: 'rgba(0,0,200,0.9)', text: '#fff' },
     home: { svg: 'japan2026_home', style: 'linear-gradient(to bottom,red 0% 7%,white 7% 17%,blue 10% 100%)', color: 'blue', text: '#fff', shadowsize: 0.1 },
     away: { svg: 'japan2026_away', style: 'linear-gradient(to bottom,white 0%,white 66%,blue 66%,blue 85%,red 85%,red 100%)', color: 'white', text: 'black', shadowsize: 0.5 },
+  },
+  kobe_2627: {
+    chip:    { color: 'rgba(165, 21, 50, 0.92)', text: '#fff' },
+    home: { style: 'linear-gradient(40deg,rgba(163, 17, 47, 0.92) 40% ,rgba(241, 20, 64, 0.92) 100%)', color: 'rgba(160, 17, 46, 0.92)', text: '#b9921d', shadowsize: 0, circle: '#b9921d'},
+    // home: {style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5, circle: 'rgb(255, 255, 255)' },
   },
   kobe_crimson: {
     chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
@@ -267,16 +273,16 @@ export const TEAM_CATALOG = {
       '2627': {
         label: '26/27シーズン',
         lineups: {
-          best: entry('ベスト11', KOBE_MEMBERS2627, 'kobe_hyaku',
+          best: entry('ベスト11', KOBE_MEMBERS2627, 'kobe_2627',
             ['4123'], [1,24,3,4,41,6,11,7,10,5,13],
             { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
-          my: entry('個人的', KOBE_MEMBERS2627, 'kobe_hyaku',
+          my: entry('個人的', KOBE_MEMBERS2627, 'kobe_2627',
             ['4123'], [1,24,3,4,41,6,11,7,13,20,23],
             { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,13,20,23] }),
-          option: entry('ターンオーバー', KOBE_MEMBERS2627, 'kobe_hyaku',
+          option: entry('ターンオーバー', KOBE_MEMBERS2627, 'kobe_2627',
             ['4123'], [71,2,16,80,43,25,26,20,29,28,15],
             { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
-          u21: entry('U-21', KOBE_MEMBERS2627, 'kobe_hyaku',
+          u21: entry('U-21', KOBE_MEMBERS2627, 'kobe_2627',
             ['4123'], [39,38,43,16,57,33,58,35,45,28,51],
             { formation: ['4123'], bestMember: [39,38,43,16,57,33,58,35,45,28,51] }),
         },

@@ -48,7 +48,7 @@ const FLICK_KEYS = [
       { dir: 'top',    name: '424',      img: 'figure/424.svg' },
       { dir: 'bottom', name: '442block', img: 'figure/442block.svg' },
       { dir: 'left',   name: null,       img: null },
-      { dir: 'right',  name: null,       img: null },
+      { dir: 'right',  name: '442block_idea',   img: 'figure/442block.svg' },
     ],
   },
   {
@@ -88,7 +88,7 @@ const FLICK_KEYS = [
       { dir: 'top',    name: '334',  img: 'figure/334.svg' },
       { dir: 'bottom', name: '532',  img: 'figure/532.svg' },
       { dir: 'left',   name: '352M', img: 'figure/352M.svg' },
-      { dir: 'right',  name: null,   img: null },
+      { dir: 'right',  name: '442block_idea',   img: 'figure/442block.svg' },
     ],
   },
   {
