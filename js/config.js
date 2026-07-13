@@ -87,7 +87,20 @@ const ANTLERS_MEMBERS = {
   17: 'ｴｳﾍﾞﾙ', 19: '帥岡',  22: '濃野',  23: '津久井', 25: '小池',
   27: '松村',  55: '植田',  71: '荒木',  77: 'ﾁｬｳﾞﾘｯﾁ',
 };
-
+const ARGENTINA_MEMBERS = {
+  23: 'マルティネス',
+  26: 'モリーナ',
+  13: 'ロメロ',
+  6: 'マルティネス',
+  3: 'タグリアフィコ',
+  5: 'バレデス',
+  7: 'デバウル',
+  24: 'フェルナンデス',
+  20: 'アリスター',
+  10: 'メッシ',
+  9: 'アルバレス'
+}
+            // ['442◇'], [23,26,13,6,3,5,7,24,20,10,9],
 // ─── ユニフォーム定義（共有リソース）────────────────────────────────────────
 
 const UNI = {
@@ -118,6 +131,10 @@ const UNI = {
     chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
     home: { style: 'linear-gradient(90deg, black 2%, crimson 2% 16%, black 16% 30%, crimson 30% 42%, black 42% 58%, crimson 58% 72%, black 72% 86%, crimson 86% 98%, black 98%)', color: 'crimson', text: '#fff', shadowsize: 0 },
     away: { style: 'linear-gradient(90deg, gray 2%, white 2% 16%, gray 16% 30%, white 30% 42%, gray 42% 58%, white 58% 72%, gray 72% 86%, white 86% 98%, gray 98%)', color: '#e6b422', text: 'black', shadowsize: 0.4 },
+  },
+  argentina: {
+    chip:    { color: 'rgba(111, 238, 255, 0.92)', text: '#000000' },
+    home: { style: 'linear-gradient(90deg, rgba(111, 238, 255, 0.92) 2%, white 2% 16%, rgba(111, 238, 255, 0.92) 16% 30%, white 30% 42%, rgba(111, 238, 255, 0.92) 42% 58%, white 58% 72%, rgba(111, 238, 255, 0.92) 72% 86%, white 86% 98%, rgba(111, 238, 255, 0.92) 98%)', color: 'rgba(111, 238, 255, 0.92)', text: '#000000', shadowsize: 0 },
   },
   kobe_black: {
     chip:    { color: 'rgba(220,20,60,0.92)', text: '#fff' },
@@ -373,6 +390,20 @@ export const TEAM_CATALOG = {
           best: entry('32', BRAZIL_MEMBERS, 'brazil',
             ['4123'], [1,13,4,3,16,5,26,8,9,20,7],
             { formation: ['4123'], bestMember: [1,13,4,3,16,5,26,8,9,20,7] }),
+        },
+      },
+    },
+  },
+
+  argentina: {
+    label: 'アルゼンチン代表',
+    seasons: {
+      '2026': {
+        label: '2026W杯',
+        lineups: {
+          best: entry('32', ARGENTINA_MEMBERS, 'argentina',
+            ['442◇'], [23,26,13,6,3,5,7,24,20,10,9],
+            { formation: ['442◇'], bestMember: [23,26,13,6,3,5,7,24,20,10,9] }),
         },
       },
     },

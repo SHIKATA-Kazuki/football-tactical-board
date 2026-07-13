@@ -56,7 +56,7 @@ const FLICK_KEYS = [
     formations: [
       { dir: 'center', name: '442◇', img: 'figure/442_diamond.svg' },
       { dir: 'top',    name: '4114',  img: 'figure/4114.svg' },
-      { dir: 'bottom', name: '451',   img: 'figure/451.svg' },
+      { dir: 'bottom', name: '532_idea',   img: 'figure/532.svg' },
       { dir: 'left',   name: '4132',  img: 'figure/4132.svg' },
       { dir: 'right',  name: '2134',  img: 'figure/2134.svg' },
     ],
@@ -98,7 +98,7 @@ const FLICK_KEYS = [
       { dir: 'top',    name: null,    img: null },
       { dir: 'bottom', name: 'assemble',    img: null },
       { dir: 'left',   name: null,    img: null },
-      { dir: 'right',  name: null,    img: null },
+      { dir: 'bottom', name: '451',   img: 'figure/451.svg' },
     ],
   },
   {
