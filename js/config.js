@@ -100,6 +100,20 @@ const ARGENTINA_MEMBERS = {
   10: 'メッシ',
   9: 'アルバレス'
 }
+const ENGLAND_MEMBERS = {
+  1: 'ピックフォード',
+  2: 'コンサ',
+  3: 'オライリー',
+  4: 'ライス',
+  5: 'ストーンズ',
+  6: 'グエイ',
+  7: 'サカ',
+  8: 'マウント',
+  9: 'ケイン',
+  10: 'フォーデン',
+  11: 'スターリング',
+  18: 'ラッシュフォード'  
+}
             // ['442◇'], [23,26,13,6,3,5,7,24,20,10,9],
 // ─── ユニフォーム定義（共有リソース）────────────────────────────────────────
 
@@ -120,6 +134,11 @@ const UNI = {
   kobe_2627: {
     chip:    { color: 'rgba(165, 21, 50, 0.92)', text: '#fff' },
     home: { style: 'linear-gradient(40deg,rgba(163, 17, 47, 0.92) 40% ,rgba(241, 20, 64, 0.92) 100%)', color: 'rgba(160, 17, 46, 0.92)', text: '#b9921d', shadowsize: 0, circle: '#b9921d'},
+    // home: {style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5, circle: 'rgb(255, 255, 255)' },
+  },
+  england: {
+    chip:    { color: 'rgba(255, 255, 255, 0.92)', text: '#800b0b' },
+    home: { style: 'white', color: '#800b0b', text: '#800b0b', shadowsize: 0, circle: '#800b0b'},
     // home: {style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5, circle: 'rgb(255, 255, 255)' },
   },
   kobe_crimson: {
@@ -390,6 +409,19 @@ export const TEAM_CATALOG = {
           best: entry('32', BRAZIL_MEMBERS, 'brazil',
             ['4123'], [1,13,4,3,16,5,26,8,9,20,7],
             { formation: ['4123'], bestMember: [1,13,4,3,16,5,26,8,9,20,7] }),
+        },
+      },
+    },
+  },
+  england: {
+    label: 'イングランド代表',
+    seasons: {
+      '2026': {
+        label: '2026W杯',
+        lineups: {
+          best: entry('32', ENGLAND_MEMBERS, 'england',
+            ['4231'], [1,2,5,6,3,4,7,8,9,10,18],
+            { formation: ['4231'], bestMember: [1,13,4,3,16,5,26,8,9,20,7] }),
         },
       },
     },
