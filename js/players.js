@@ -148,9 +148,10 @@ function attachDrag(el, sideKey, index) {
     el.style.zIndex     = '100';
     el.style.transition = 'none';
 
+    const field = document.getElementById('field');
+    const rect  = field.getBoundingClientRect();   // ドラッグ開始時に 1 回だけ計測
+
     el.onpointermove = (ev) => {
-      const field = document.getElementById('field');
-      const rect  = field.getBoundingClientRect();
       const x = Math.min(100, Math.max(0, (ev.clientX - rect.left) / rect.width  * 100));
       const y = Math.min(100, Math.max(0, (ev.clientY - rect.top)  / rect.height * 100));
       el.style.left = `${x}%`;
@@ -158,13 +159,17 @@ function attachDrag(el, sideKey, index) {
       manualPositions[sideKey].set(index, { left: `${x}%`, top: `${y}%` });
     };
 
-    el.onpointerup = () => {
+    // 【修正】pointercancel（OS のジェスチャ割り込み等）でも確実に解除する
+    const end = () => {
       el.style.cursor     = 'grab';
       el.style.zIndex     = '';
       el.style.transition = '';
       el.onpointermove    = null;
       el.onpointerup      = null;
+      el.onpointercancel  = null;
     };
+    el.onpointerup     = end;
+    el.onpointercancel = end;
   };
 }
 
@@ -220,12 +225,25 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
     const el = arr[i];
     el.className = isOpponent ? 'player away' : 'player home';
 
-    const [x, y] = applyTacticalAdjustments(i + 1, positions[i], isOpponent);
-    el.style.left = `${x}%`;
-    el.style.top  = `${y}%`;
+    // 【修正】ドラッグした位置は記録されていたが使われておらず、
+    // スライダーやジョイスティックを触ると元に戻っていた。
+    // 手動配置がある選手はその位置を優先する（resetManual=true で破棄）。
+    const manual = manualPositions[sideKey].get(i);
+    if (manual) {
+      el.style.left = manual.left;
+      el.style.top  = manual.top;
+    } else if (positions[i]) {
+      const [x, y] = applyTacticalAdjustments(i + 1, positions[i], isOpponent);
+      el.style.left = `${x}%`;
+      el.style.top  = `${y}%`;
+    }
 
-    const num = parseInt(players[i].number, 10);
-    el.innerHTML = `<strong>${players[i].number}</strong>`;
+    // 【修正】innerHTML への直接埋め込みをやめ、textContent で安全に描画
+    const label = players[i].number ?? '';
+    const num   = parseInt(label, 10);
+    const strong = document.createElement('strong');
+    strong.textContent = label;
+    el.replaceChildren(strong);
 
     // data-name に選手名をセット → CSS ::after で長押し時に表示
     el.dataset.name = members[num] ?? '';
@@ -233,7 +251,7 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
     attachDrag(el, sideKey, i);
 
     // ユニフォーム（背景・テキストシャドウ・内側リング等）を適用する。
-    // el.innerHTML の書き換えで中身は消えるが、style/class は消えないため
+    // 中身の書き換えで子要素は消えるが、style/class は消えないため
     // 既存ノードでも毎回呼んで問題ない（冪等処理）。
     // 新規生成ノードはここで初めてユニフォームが当たる。
     playerNodeCreatedHooks.forEach(cb => cb(el, isOpponent));

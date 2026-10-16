@@ -121,3 +121,25 @@ import 側（`main.js` / `ui-events.js`）のパスもあわせて更新済み�
 - 動作ロジック（座標計算・イベント処理・DOM 操作）はすべて変更なし。
 - `index.html` は変更なし（`formations_new.js` の import パスは HTML 側に存在しないため不要）。
 - CSS / SVG / ユニフォーム画像は対象外。
+
+---
+
+## デバッグ（バグ修正）
+
+| # | 症状 | 原因 | 修正ファイル |
+|---|---|---|---|
+| 1 | 「番号反映」で入力した番号が 1〜11 に戻り、フィールドにも反映されない | `renewSquad(…, null, …)` が入力欄をデフォルト番号で作り直していた／再描画していなかった | main.js, ui-events.js |
+| 2 | アウェイ側のボタンを押すとページがリロードされる | `querySelector('form')` で最初のフォームにしか submit を登録していなかった | main.js |
+| 3 | フリックで 4213・433・jp 系などを選んでも、スライダーやジョイスティックに触ると 8 種のどれかに戻る | `redrawAllPlayers` が毎回スライダーからフォーメーション名を再計算していた | ui-events.js |
+| 4 | スライダーを触るとボタンのアクティブ表示が消える | `updateFormationButtons()` を引数なしで呼んでいた | main.js, ui-events.js |
+| 5 | ドラッグした選手が、スライダー操作で元の位置に戻る | `manualPositions` に記録だけして使っていなかった | players.js |
+| 6 | チーム変更・フォーメーション選択後、ドロワー(SP)のスライダー表示がずれる | PC 側スライダーだけ書き換えていた | ui-events.js |
+| 7 | スマホ表示で #field の margin / 角丸などの指定が効かない | `@media` 内の `};` の余分な `;` で直後の `#field {}` ルールが丸ごと無効化 | field.css |
+| 8 | 343◇ キーの 451 が選べない | `dir: 'bottom'` が重複（right の誤り） | formation-flick-ui.js |
+| 9 | フリック中央のフォーメーション名ラベルが出ない | `previewLabel` が DOM に追加されていなかった | formation-flick-ui.js |
+| 10 | touchcancel 時にポップアップが残る | ハンドラ未登録 | formation-flick-ui.js |
+| 11 | チーム変更直後は番号を打っても横の名前が更新されない | `createInputs` に input リスナーがなかった | ui-events.js |
+| 12 | アウェイのチーム変更時だけホームの戦術スライダーが効いてしまう | 再描画関数がホーム用の値を流用していた | ui-events.js |
+
+その他: 選手番号の描画を `innerHTML` から `textContent` に変更、長押し判定を 8px の手ぶれ許容つき Pointer Events に統一、`pointercancel` でドラッグ状態を解除。
+アウェイ側ボタンのラベルは「リセット」→「番号反映」に変更（index.html）。

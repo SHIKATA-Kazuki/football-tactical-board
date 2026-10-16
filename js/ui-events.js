@@ -4,34 +4,49 @@
  * UI イベントの登録とフォーメーション操作ロジック。
  *
  * 責務:
+ *   - フォーメーションの選択状態（ホーム・アウェイ）の保持
  *   - フォーメーションボタン（ホーム・アウェイ）のクリックイベント
  *   - スライダー値の読み取りと選手再描画
  *   - チーム変更時の再描画
  *   - ジョイスティック初期化
- *   - スクワッド入力フィールドの生成・更新
+ *   - スクワッド入力フィールドの生成・番号反映
  */
 
 import { formations, getFormationName, formationSliderMap } from './formations.js';
-import { TEAM_CATALOG, getLineup } from './config.js';
+import { getLineup } from './config.js';
 import {
   readPlayersFromForm,
   placePlayers,
   applyFormation,
   wingStick,
   compressStick,
-  resetManualPositions,
   sliderVal,
 } from './players.js';
+
+// ─── フォーメーション状態 ────────────────────────────────────────────────────
+//
+// 【修正】以前はスライダーを動かすたびに getFormationName() で
+// 8 種のどれかに戻してしまい、フリック UI や config で選んだ
+// 4213 / 433 / 352Mjp などが消えていた。
+// 「選んだフォーメーション」と「そのときのスライダー値」を覚えておき、
+// backs / DMF / Top スライダーが実際に動かされたときだけ切り替える。
+
+const formationState = {
+  home: { key: null, sliderSnapshot: null },
+  away: { key: null },
+};
+
+/** 現在のフォーメーション名を返す */
+export function getCurrentFormation(side = 'home') {
+  return formationState[side].key;
+}
 
 // ─── 内部ユーティリティ ──────────────────────────────────────────────────────
 
 /**
  * 現在のサイドのラインナップを取得する。
- * team-colors.js の getCurrentSelection に依存するが循環 import を避けるため
- * DOM から直接読む（3 段セレクトの value を参照）。
- *
+ * 循環 import を避けるため DOM の 3 段セレクトから直接読む。
  * @param {boolean} isHome
- * @returns {{ members: Record<number,string> } | null}
  */
 function getCurrentLineup(isHome) {
   const side     = isHome ? 'home' : 'away';
@@ -42,10 +57,7 @@ function getCurrentLineup(isHome) {
   return getLineup(teamEl.value, seasonEl.value, lineupEl.value);
 }
 
-/**
- * 戦術スライダー値をまとめて読み取る。
- * @returns {{ cx:number, cy:number, DF_line:number, FW_line:number, SBvalue:number }}
- */
+/** 戦術スライダー値（ライン・SB・圧縮）をまとめて読み取る。 */
 function readTacticalSliders() {
   const lineValue = sliderVal('lineSlider');
   return {
@@ -57,88 +69,170 @@ function readTacticalSliders() {
   };
 }
 
+/** backs / DMF / Top の 3 スイッチを読む */
+function readFormationSliders() {
+  return {
+    backs:   sliderVal('backsSlider'),
+    volante: sliderVal('volanteSlider'),
+    top:     sliderVal('topSlider'),
+  };
+}
+
+function sameSnapshot(a, b) {
+  return !!a && !!b && a.backs === b.backs && a.volante === b.volante && a.top === b.top;
+}
+
+/**
+ * PC スライダーと SP（ドロワー）スライダーの両方に値をセットする。
+ * 【修正】以前は PC 側だけ書き換えていたため、チーム変更や
+ * フォーメーション選択後に SP 側の表示がずれていた。
+ */
+export function setSliderValue(id, value) {
+  const pc = document.getElementById(id);
+  const sp = document.getElementById(`${id}-sp`);
+  if (pc) pc.value = value;
+  if (sp) sp.value = value;
+}
+
+/** フォーメーションに対応するスライダー位置へ合わせ、スナップショットを更新 */
+function syncFormationSliders(key) {
+  const config = formationSliderMap[key];
+  if (config) {
+    setSliderValue('backsSlider',   config.backs);
+    setSliderValue('volanteSlider', config.volante);
+    setSliderValue('topSlider',     config.top);
+  }
+  formationState.home.sliderSnapshot = readFormationSliders();
+}
+
+function normalizeKey(formation) {
+  return Array.isArray(formation) ? formation[0] : formation;
+}
+
+// ─── 描画 ────────────────────────────────────────────────────────────────────
+
+function drawHome(key, resetManual) {
+  const { cx, cy, DF_line, FW_line, SBvalue } = readTacticalSliders();
+  const pos = formations(key, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue });
+  if (!pos) {
+    console.warn(`[ui-events] 未定義のフォーメーション: ${key}`);
+    return;
+  }
+  const members = getCurrentLineup(true)?.members ?? {};
+  applyFormation(pos, resetManual, members);
+  updateFormationButtons(key, 'home');
+}
+
+function drawAway(key, resetManual) {
+  const pos = formations(key, {});   // アウェイは戦術スライダーの影響を受けない
+  if (!pos) {
+    console.warn(`[ui-events] 未定義のフォーメーション: ${key}`);
+    return;
+  }
+  const flipped = pos.map(([x, y]) => [100 - x, 100 - y]);
+  const players = readPlayersFromForm(document.getElementById('playerFormAway'));
+  const members = getCurrentLineup(false)?.members ?? {};
+  placePlayers(players, flipped, true, resetManual, members);
+  updateFormationButtons(key, 'away');
+}
+
+/** ホームのフォーメーションを明示的に選択する（ボタン・フリック・チーム変更） */
+export function selectHomeFormation(formation) {
+  const key = normalizeKey(formation);
+  if (!formations(key)) return;
+  formationState.home.key = key;
+  syncFormationSliders(key);
+  drawHome(key, true);
+}
+
+/** アウェイのフォーメーションを明示的に選択する */
+export function selectAwayFormation(formation) {
+  const key = normalizeKey(formation);
+  if (!formations(key)) return;
+  formationState.away.key = key;
+  drawAway(key, true);
+}
+
+/**
+ * スライダー・ジョイスティック操作時の再描画。
+ * backs / DMF / Top が選択時から変わっていればスライダー由来の
+ * フォーメーションに切り替え、変わっていなければ現在のものを維持する。
+ */
+export function redrawAllPlayers({ resetManual = false } = {}) {
+  const sliders = readFormationSliders();
+  let key = formationState.home.key;
+
+  if (!key || !sameSnapshot(sliders, formationState.home.sliderSnapshot)) {
+    const sliderKey = getFormationName(sliders.backs, sliders.volante, sliders.top);
+    if (sliderKey !== key) resetManual = true;   // 形が変わったら手動配置は破棄
+    key = sliderKey;
+    formationState.home.key = key;
+    formationState.home.sliderSnapshot = sliders;
+  }
+  drawHome(key, resetManual);
+}
+
+/** 後方互換: チーム変更後に指定フォーメーションで再描画する */
+export function redrawAllPlayers_if_team_changed(formation, side = 'home') {
+  if (side === 'home') selectHomeFormation(formation);
+  else                 selectAwayFormation(formation);
+}
+
+/**
+ * 番号入力の内容をフィールドに反映する（手動ドラッグ位置は維持）。
+ * 【修正】以前の renewSquad(…, null, …) は入力欄を 1〜11 に作り直してしまい、
+ * 入力した番号が消えたうえフィールドにも反映されていなかった。
+ * @param {boolean} isHome
+ */
+export function applySquadNumbers(isHome) {
+  if (isHome) {
+    redrawAllPlayers();
+  } else if (formationState.away.key) {
+    drawAway(formationState.away.key, false);
+  }
+}
+
 // ─── フォーメーションボタン ───────────────────────────────────────────────────
 
 /**
  * ホーム・アウェイのフォーメーションコンテナにイベント委譲で
- * クリックリスナーを登録する。
- *
- * initFlickFormationUI() による隠しボタン生成後に呼ぶこと。
+ * クリックリスナーを登録する。initFlickFormationUI() の後に呼ぶこと。
  */
 export function initializeFormationButtons() {
-  // ── ホーム ──────────────────────────────────────────────────────────────────
-  const homeContainer = document.querySelector('.home-formations');
-  if (homeContainer) {
-    homeContainer.addEventListener('click', e => {
-      const btn = e.target.closest('button[data-formation]');
-      if (!btn) return;
-
-      homeContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const key = btn.dataset.formation;
-      const { cx, cy, DF_line, FW_line, SBvalue } = readTacticalSliders();
-      const pos = formations(key, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue });
-      if (!pos) return;
-
-      // スライダー値を該当フォーメーションに合わせる
-      const config = formationSliderMap[key];
-      if (config) {
-        document.getElementById('backsSlider').value   = config.backs;
-        document.getElementById('volanteSlider').value = config.volante;
-        document.getElementById('topSlider').value     = config.top;
-      }
-
-      const players = readPlayersFromForm(document.getElementById('playerFormHome'));
-      const members = getCurrentLineup(true)?.members ?? {};
-      placePlayers(players, pos, false, true, members);
-    });
-  }
-
-  // ── アウェイ ────────────────────────────────────────────────────────────────
-  const awayContainer = document.querySelector('.away-formations');
-  if (awayContainer) {
-    awayContainer.addEventListener('click', e => {
-      const btn = e.target.closest('button[data-formation]');
-      if (!btn) return;
-
-      awayContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const key = btn.dataset.formation;
-      const pos = formations(key, {});
-      if (!pos) return;
-
-      const players = readPlayersFromForm(document.getElementById('playerFormAway'));
-      const members = getCurrentLineup(false)?.members ?? {};
-      const flipped = pos.map(([x, y]) => [100 - x, 100 - y]);
-      placePlayers(players, flipped, true, true, members);
-    });
-  }
+  document.querySelector('.home-formations')?.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-formation]');
+    if (btn) selectHomeFormation(btn.dataset.formation);
+  });
+  document.querySelector('.away-formations')?.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-formation]');
+    if (btn) selectAwayFormation(btn.dataset.formation);
+  });
 }
 
 /**
- * フォーメーションボタンのアクティブ状態を更新する。
+ * フォーメーションボタンのアクティブ状態を更新し、
+ * コンテナに 'formation:change' イベントを発火する（フリック UI の表示同期用）。
  *
- * @param {string|string[]} formation  フォーメーション名（または [名前, ...] の配列）
+ * @param {string|string[]} formation
  * @param {'home'|'away'}   [side='home']
  */
 export function updateFormationButtons(formation, side = 'home') {
-  const key      = Array.isArray(formation) ? formation[0] : formation;
-  const selector = side === 'away'
-    ? '.away-formations button'
-    : '.home-formations button';
+  const key       = normalizeKey(formation);
+  const container = document.querySelector(side === 'away' ? '.away-formations' : '.home-formations');
+  if (!container) return;
 
-  document.querySelectorAll(selector).forEach(btn => {
+  container.querySelectorAll('button[data-formation]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.formation === key);
   });
+  container.dispatchEvent(new CustomEvent('formation:change', { detail: { key } }));
 }
 
 // ─── スクワッド入力フィールド ─────────────────────────────────────────────────
 
 /**
  * スクワッド入力フィールドを（再）生成する。
- * シンプルに innerHTML で構築するため、初回描画向け。
+ * 【修正】番号を打ち替えると横の選手名もその場で更新されるようにした
+ * （以前は innerHTML 生成のみでリスナーがなかった）。
  *
  * @param {string}   containerId
  * @param {number[]} squadNumbers  ラインナップの bestMember 配列
@@ -148,52 +242,22 @@ export function createInputs(containerId, squadNumbers, isHome) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const lineup  = getCurrentLineup(isHome);
-  const members = lineup?.members ?? {};
+  const members = getCurrentLineup(isHome)?.members ?? {};
   const numbers = squadNumbers?.length === 11
     ? squadNumbers
     : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
-  container.innerHTML = '';
+  container.replaceChildren();
   for (let i = 10; i >= 0; i--) {
-    container.innerHTML += `
-      <div class="squad-input">
-        <span class="player-name-label" data-squad-idx="${i}">${members[numbers[i]] ?? ''}</span>
-        <input type="number" name="number${i + 1}" value="${numbers[i]}" required>
-      </div>
-    `;
-  }
-}
-
-/**
- * スクワッド入力フィールドを更新する。
- * 選手名の動的更新（input イベント）を含む。
- *
- * @param {string}   containerId
- * @param {number[]} squadNumbers
- * @param {boolean}  isHome
- */
-export function renewSquad(containerId, squadNumbers, isHome) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const lineup  = getCurrentLineup(isHome);
-  const members = lineup?.members ?? {};
-  const numbers = squadNumbers?.length === 11
-    ? squadNumbers
-    : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-
-  container.innerHTML = '';
-  for (let i = 10; i >= 0; i--) {
-    const row      = document.createElement('div');
-    row.className  = 'squad-input';
+    const row = document.createElement('div');
+    row.className = 'squad-input';
 
     const nameSpan = document.createElement('span');
-    nameSpan.className       = 'player-name-label';
+    nameSpan.className        = 'player-name-label';
     nameSpan.dataset.squadIdx = String(i);
-    nameSpan.textContent     = members[numbers[i]] ?? '';
+    nameSpan.textContent      = members[numbers[i]] ?? '';
 
-    const input    = document.createElement('input');
+    const input = document.createElement('input');
     input.type     = 'number';
     input.name     = `number${i + 1}`;
     input.value    = numbers[i];
@@ -202,87 +266,28 @@ export function renewSquad(containerId, squadNumbers, isHome) {
       nameSpan.textContent = members[Number(input.value)] ?? '';
     });
 
-    row.appendChild(nameSpan);
-    row.appendChild(input);
+    row.append(nameSpan, input);
     container.appendChild(row);
-  }
-}
-
-// ─── 再描画 ──────────────────────────────────────────────────────────────────
-
-/**
- * スライダー値からフォーメーションを決定し、全選手を再描画する。
- * スライダー変更・ジョイスティック操作時に呼ぶ。
- *
- * @param {Object}  [options]
- * @param {boolean} [options.resetManual=false]
- */
-export function redrawAllPlayers({ resetManual = false } = {}) {
-  const backs   = parseFloat(document.getElementById('backsSlider').value);
-  const volante = parseFloat(document.getElementById('volanteSlider').value);
-  const top     = parseFloat(document.getElementById('topSlider').value);
-
-  const { cx, cy, DF_line, FW_line, SBvalue } = readTacticalSliders();
-  const name      = getFormationName(backs, volante, top);
-  const formation = structuredClone(
-    formations(name, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue })
-  );
-
-  const members = getCurrentLineup(true)?.members ?? {};
-  applyFormation(formation, resetManual, members);
-}
-
-/**
- * チーム変更後に指定フォーメーションで再描画する。
- *
- * @param {string|string[]} formation
- * @param {'home'|'away'}   [side='home']
- */
-export function redrawAllPlayers_if_team_changed(formation, side = 'home') {
-  const { cx, cy, DF_line, FW_line, SBvalue } = readTacticalSliders();
-  const key       = Array.isArray(formation) ? formation[0] : formation;
-  const positions = structuredClone(
-    formations(key, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue })
-  );
-  if (!positions) return;
-
-  const config = formationSliderMap[key];
-
-  if (side === 'home') {
-    if (config) {
-      document.getElementById('backsSlider').value   = config.backs;
-      document.getElementById('volanteSlider').value = config.volante;
-      document.getElementById('topSlider').value     = config.top;
-    }
-    const members = getCurrentLineup(true)?.members ?? {};
-    applyFormation(positions, true, members);
-  } else {
-    const flipped = positions.map(([x, y]) => [100 - x, 100 - y]);
-    const players = readPlayersFromForm(document.getElementById('playerFormAway'));
-    const members = getCurrentLineup(false)?.members ?? {};
-    placePlayers(players, flipped, true, true, members);
   }
 }
 
 // ─── ジョイスティック ────────────────────────────────────────────────────────
 
-// requestAnimationFrame で連続入力をまとめる
 let animationQueued = false;
 function requestRedraw() {
   if (animationQueued) return;
   animationQueued = true;
   requestAnimationFrame(() => {
-    redrawAllPlayers();
     animationQueued = false;
+    redrawAllPlayers();
   });
 }
 
 /**
  * ジョイスティックを初期化する。
- *
- * @param {string}             areaId      操作エリア要素の ID
- * @param {string}             knobId      ノブ要素の ID
- * @param {{x:number,y:number}} targetStick 書き込み先のスティック状態
+ * @param {string}              areaId
+ * @param {string}              knobId
+ * @param {{x:number,y:number}} targetStick
  */
 function initJoystick(areaId, knobId, targetStick) {
   const area = document.getElementById(areaId);
@@ -296,16 +301,15 @@ function initJoystick(areaId, knobId, targetStick) {
     const rect      = area.getBoundingClientRect();
     const centerX   = rect.width  / 2;
     const centerY   = rect.height / 2;
-    const maxRadius = rect.width  / 2 - 20;
+    const maxRadius = Math.max(1, rect.width / 2 - 20);   // 0 除算防止
 
     let x = clientX - rect.left - centerX;
     let y = clientY - rect.top  - centerY;
 
-    const dist = Math.sqrt(x * x + y * y);
+    const dist = Math.hypot(x, y);
     if (dist > maxRadius) {
-      const angle = Math.atan2(y, x);
-      x = Math.cos(angle) * maxRadius;
-      y = Math.sin(angle) * maxRadius;
+      x = x / dist * maxRadius;
+      y = y / dist * maxRadius;
     }
 
     knob.style.left = `${centerX + x}px`;
@@ -322,28 +326,19 @@ function initJoystick(areaId, knobId, targetStick) {
     area.setPointerCapture(e.pointerId);
     activePointerId = e.pointerId;
     applyMove(e.clientX, e.clientY);
-  }, { passive: false });
-
+  });
   area.addEventListener('pointermove', e => {
-    if (activePointerId !== e.pointerId) return;
-    applyMove(e.clientX, e.clientY);
+    if (activePointerId === e.pointerId) applyMove(e.clientX, e.clientY);
   });
-
-  area.addEventListener('pointerup', e => {
-    if (activePointerId !== e.pointerId) return;
-    activePointerId = null;
-  });
-
-  area.addEventListener('pointercancel', e => {
-    if (activePointerId !== e.pointerId) return;
-    activePointerId = null;
-  });
+  const release = e => { if (activePointerId === e.pointerId) activePointerId = null; };
+  area.addEventListener('pointerup',     release);
+  area.addEventListener('pointercancel', release);
 }
 
 // ウィング用（PC / SP）
 initJoystick('joystick-area',    'knob',    wingStick);
 initJoystick('joystick-area-sp', 'knob-sp', wingStick);
 
-// 圧縮用（PC / SP）
+// 圧縮用（PC / SP）※現在 HTML ではコメントアウト中
 initJoystick('joystick-area-compress',    'knob-compress',    compressStick);
 initJoystick('joystick-area-compress-sp', 'knob-compress-sp', compressStick);

@@ -2,59 +2,42 @@
  * main.js
  *
  * アプリケーションのエントリポイント。
- * DOMContentLoaded 後に各モジュールを初期化する。
  *
  * 初期化順序（依存関係があるため順番を守ること）:
- *   1. initializeTeamSelects()      — 3 段チーム選択 UI・初期ユニフォーム適用
+ *   1. initializeTeamSelects()      — 3 段チーム選択 UI・初期ユニフォーム・初期配置
  *   2. initFlickFormationUI()       — 隠しボタンを DOM に生成
  *   3. initializeFormationButtons() — 生成済みボタンに click リスナーを登録
  *   4. スライダー input イベント登録
- *   5. フォーム submit イベント登録（スクワッド確定）
+ *   5. フォーム submit イベント登録（番号反映）
  *   6. initPlayerNameToggle()       — フィールド長押しで選手名を表示/非表示
- *   7. redrawAllPlayers()           — 初期描画
+ *   7. redrawAllPlayers()           — 初期描画（フリック UI の選択表示もここで同期）
  */
 
 import { initializeTeamSelects } from './team-colors.js';
 import {
   initializeFormationButtons,
-  updateFormationButtons,
-  createInputs,
   redrawAllPlayers,
-  renewSquad,
+  applySquadNumbers,
+  updateFormationButtons,
+  getCurrentFormation,
 } from './ui-events.js';
 import { initFlickFormationUI } from './formation-flick-ui.js';
 
 // ─── 選手名トグル ─────────────────────────────────────────────────────────────
 
 /**
- * フィールドを長押し（500ms）すると .field-show-names クラスを #field に付与し、
- * 全選手ノードの下に名前を表示する。もう一度長押しすると非表示に戻る。
- *
- * CSS 側で .field-show-names .player::after { content: attr(data-name); ... } を定義すること。
+ * フィールドの空いている所を長押し（500ms）すると #field に
+ * .field-show-names を付け外しし、選手名バッジを表示/非表示する。
  */
-const squad = document.getElementById('home-squad');
-squad.addEventListener('input', () => {
-    renewSquad('inputsHome',    null, true);
-    renewSquad('inputsAway',    null, false);
-    renewSquad('inputsHome-sp', null, true);
-    renewSquad('inputsAway-sp', null, false);
-});
-
-
 function initPlayerNameToggle() {
   const field = document.getElementById('field');
   if (!field) return;
 
+  const LONG_PRESS_MS  = 500;
+  const MOVE_TOLERANCE = 8;   // px。わずかな手ぶれではキャンセルしない
   let pressTimer = null;
-
-  function startPress(e) {
-    // 選手ノード上の操作（ドラッグ）と競合しない
-    if (e.target.closest('.player')) return;
-    pressTimer = setTimeout(() => {
-      field.classList.toggle('field-show-names');
-      pressTimer = null;
-    }, 500);
-  }
+  let startX = 0;
+  let startY = 0;
 
   function cancelPress() {
     if (pressTimer !== null) {
@@ -63,50 +46,62 @@ function initPlayerNameToggle() {
     }
   }
 
-  field.addEventListener('mousedown',   startPress);
-  field.addEventListener('mouseup',     cancelPress);
-  field.addEventListener('mouseleave',  cancelPress);
-  field.addEventListener('mousemove',   cancelPress);   // ③ マウス移動でもキャンセル
-
-  // touchstart は passive:false にして、長押し中のスクロールを防ぐ
-  field.addEventListener('touchstart',  startPress,  { passive: false });
-  field.addEventListener('touchend',    cancelPress);
-  field.addEventListener('touchcancel', cancelPress);
-  field.addEventListener('touchmove',   cancelPress);   // ③ スクロール開始でキャンセル
+  field.addEventListener('pointerdown', e => {
+    if (e.target.closest('.player')) return;   // 選手ドラッグと競合させない
+    startX = e.clientX;
+    startY = e.clientY;
+    cancelPress();
+    pressTimer = setTimeout(() => {
+      field.classList.toggle('field-show-names');
+      pressTimer = null;
+    }, LONG_PRESS_MS);
+  });
+  field.addEventListener('pointermove', e => {
+    if (pressTimer === null) return;
+    if (Math.hypot(e.clientX - startX, e.clientY - startY) > MOVE_TOLERANCE) cancelPress();
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(type =>
+    field.addEventListener(type, cancelPress)
+  );
+  // 長押しでスマホのコンテキストメニューが出ないようにする
+  field.addEventListener('contextmenu', e => {
+    if (!e.target.closest('.player')) e.preventDefault();
+  });
 }
 
 // ─── 初期化 ──────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.forms-wrapper.infopart').style.display = 'flex';
+  const formsWrapper = document.querySelector('.forms-wrapper.infopart');
+  if (formsWrapper) formsWrapper.style.display = 'flex';
 
-  // 1. チーム選択（内部で createInputs も呼ぶ）
+  // 1. チーム選択（内部で createInputs と初期フォーメーション適用も行う）
   initializeTeamSelects();
 
   // 2 & 3. フリック UI → ボタンリスナー
   initFlickFormationUI();
   initializeFormationButtons();
 
-  // 4. スライダー変更 → 再描画
-  document.querySelectorAll('input[type="range"]').forEach(slider => {
-    slider.addEventListener('input', () => {
-      updateFormationButtons();
-      redrawAllPlayers();
-    });
+  // 4. スライダー変更 → 再描画（ボタンのアクティブ表示も redraw 内で更新）
+  document.querySelectorAll('#forPC input[type="range"]').forEach(slider => {
+    slider.addEventListener('input', () => redrawAllPlayers());
   });
 
-  // 5. スクワッド送信（番号反映ボタン）
-  document.querySelector('form')?.addEventListener('submit', event => {
-    event.preventDefault();
-    renewSquad('inputsHome',    null, true);
-    renewSquad('inputsAway',    null, false);
-    renewSquad('inputsHome-sp', null, true);
-    renewSquad('inputsAway-sp', null, false);
+  // 5. 番号反映（ホーム・アウェイ両方のフォーム）
+  //    【修正】以前は querySelector('form') で最初のフォームしか拾っておらず、
+  //    アウェイ側のボタンを押すとページがリロードされていた。
+  document.querySelectorAll('form.squad-form').forEach(form => {
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      applySquadNumbers(form.id === 'playerFormHome');
+    });
   });
 
   // 6. 長押しで選手名トグル
   initPlayerNameToggle();
 
-  // 7. 初期描画
+  // 7. 初期描画（フリック UI はチーム初期化より後に作られるので、選択表示をここで同期）
   redrawAllPlayers();
+  const awayKey = getCurrentFormation('away');
+  if (awayKey) updateFormationButtons(awayKey, 'away');
 });

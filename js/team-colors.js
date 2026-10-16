@@ -17,7 +17,7 @@
  */
 
 import { TEAM_CATALOG, TEAMS, information, getSeasons, getLineups, getLineup } from './config.js';
-import { createInputs, redrawAllPlayers_if_team_changed, updateFormationButtons } from './ui-events.js';
+import { createInputs, selectHomeFormation, selectAwayFormation } from './ui-events.js';
 import { onPlayerNodeCreated } from './players.js';
 
 // ─── 状態 ────────────────────────────────────────────────────────────────────
@@ -184,7 +184,7 @@ function applyUniform(isHome, lineup) {
  *
  * 順序について: applyUniform() は「今存在する .player ノード」にのみ
  * スタイルを適用するが、選手ノードの生成/再生成は
- * redrawAllPlayers_if_team_changed() 側で行われる。
+ * selectHomeFormation() / selectAwayFormation() 側で行われる。
  * ノードが新規生成された場合でも players.js の onPlayerNodeCreated フック
  * （initializeTeamSelects 内で登録）が自動的にユニフォームを当てるため、
  * ここでの呼び出し順序自体は実害がない。
@@ -212,12 +212,10 @@ function applyLineup(isHome, teamId, seasonId, lineupId) {
   if (!formation) return;
 
   if (isHome) {
-    redrawAllPlayers_if_team_changed(formation, 'home');
-    updateFormationButtons(formation, 'home');
+    selectHomeFormation(formation);
   } else {
     awayInitialized = true;
-    redrawAllPlayers_if_team_changed(formation, 'away');
-    updateFormationButtons(formation, 'away');
+    selectAwayFormation(formation);
   }
 }
 

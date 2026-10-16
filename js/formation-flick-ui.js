@@ -98,7 +98,7 @@ const FLICK_KEYS = [
       { dir: 'top',    name: null,    img: null },
       { dir: 'bottom', name: 'assemble',    img: null },
       { dir: 'left',   name: null,    img: null },
-      { dir: 'bottom', name: '451',   img: 'figure/451.svg' },
+      { dir: 'right',  name: '451',   img: 'figure/451.svg' },   // 【修正】'bottom' が重複していて 451 が選べなかった
     ],
   },
   {
@@ -138,7 +138,14 @@ function toLabel(name) {
 
 // スタイルは style.css 側で定義することを推奨。
 // 動的に追加が必要な場合はここに記述する。
-const FLICK_CSS = `/* フリックUI は外部 CSS (style.css) で管理 */`;
+const FLICK_CSS = `
+.flick-preview-inner { position: relative; }
+.flick-preview-label {
+  position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%);
+  font-size: 10px; font-weight: 700; line-height: 1.2; white-space: nowrap;
+  padding: 0 4px; border-radius: 3px; background: rgba(0,0,0,.55); color: #fff;
+  pointer-events: none;
+}`;
 
 function injectCSS() {
   if (document.getElementById('flick-ui-css')) return;
@@ -157,7 +164,6 @@ function injectCSS() {
  * @param {'home'|'away'} side
  */
 function buildFlickUI(container, side) {
-  console.log(`[FlickUI] buildFlickUI start: side=${side}`);
   container.innerHTML = '';
 
   // ① 隠しボタン群（initializeFormationButtons の querySelectorAll に引っかかる）
@@ -216,7 +222,6 @@ function buildHiddenButtons() {
     wrap.appendChild(btn);
   });
 
-  console.log(`[FlickUI] hidden buttons: ${allNames.length}個`);
   return wrap;
 }
 
@@ -245,6 +250,7 @@ function buildPreviewCell() {
   previewPlaceholder.className = 'flick-preview-placeholder';
 
   inner.appendChild(previewImg);
+  inner.appendChild(previewLabel);         // 【修正】DOM に追加されておらずラベルが出なかった
   inner.appendChild(previewPlaceholder);
   preview.appendChild(inner);
 
@@ -356,10 +362,18 @@ function attachInteraction({ grid, popup, hiddenWrap, previewImg, previewLabel, 
   // ── ポインター終了 ──────────────────────────────────────────────────────────
   function onEnd() {
     if (activeIdx === null) return;
-
     const f = FLICK_KEYS[activeIdx].formations.find(f => f.dir === flickDir);
+    reset();
     if (f?.name) triggerFormation(f.name);
+  }
 
+  /** 【追加】touchcancel 時はポップアップを閉じるだけ（確定しない） */
+  function onCancel() {
+    if (activeIdx === null) return;
+    reset();
+  }
+
+  function reset() {
     popup.classList.remove('is-visible');
     grid.querySelectorAll('.flick-key').forEach(k => k.classList.remove('is-active'));
     activeIdx = null;
@@ -367,8 +381,7 @@ function attachInteraction({ grid, popup, hiddenWrap, previewImg, previewLabel, 
   }
 
   // ── フォーメーション確定 ────────────────────────────────────────────────────
-  function triggerFormation(name) {
-    // 中央プレビューを更新
+  function updateSelection(name) {
     const selectedKey = FLICK_KEYS.find(k => k.formations.some(f => f.name === name));
     const selectedF   = selectedKey?.formations.find(f => f.name === name);
     const src         = toImgSrc(selectedF);
@@ -376,24 +389,33 @@ function attachInteraction({ grid, popup, hiddenWrap, previewImg, previewLabel, 
     if (src) {
       previewImg.src               = src;
       previewImg.style.display     = 'block';
-      previewLabel.textContent     = toLabel(name);
-      previewLabel.style.display   = 'block';
       previewPlaceholder.style.display = 'none';
+    } else {
+      previewImg.style.display     = 'none';
     }
+    previewLabel.textContent   = toLabel(name);
+    previewLabel.style.display = name ? 'block' : 'none';
 
-    // 選択済みキーをハイライト
     grid.querySelectorAll('.flick-key').forEach(k => {
       const idx = +k.dataset.idx;
       k.classList.toggle('is-selected',
         FLICK_KEYS[idx].formations.some(f => f.name === name)
       );
     });
+  }
 
+  // 【追加】スライダーやチーム変更でフォーメーションが変わったときも表示を同期
+  hiddenWrap.parentElement?.addEventListener('formation:change', e => {
+    updateSelection(e.detail?.key ?? null);
+  });
+
+  // ── フォーメーション確定 ────────────────────────────────────────────────────
+  function triggerFormation(name) {
     // 隠しボタンをクリックして ui-events.js の既存ロジックを起動
-    const btn = hiddenWrap.querySelector(`button[data-formation="${name}"]`);
+    // （表示の更新は formation:change イベント経由で updateSelection が行う）
+    const btn = hiddenWrap.querySelector(`button[data-formation="${CSS.escape(name)}"]`);
     if (btn) {
       btn.click();
-      console.log(`[FlickUI] triggered: ${name}`);
     } else {
       console.warn(`[FlickUI] hidden button not found: ${name}`);
     }
@@ -477,8 +499,10 @@ function attachInteraction({ grid, popup, hiddenWrap, previewImg, previewLabel, 
     onMove(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: false });
 
-  document.addEventListener('mouseup',  onEnd);
-  document.addEventListener('touchend', onEnd);
+  document.addEventListener('mouseup',     onEnd);
+  document.addEventListener('touchend',    onEnd);
+  document.addEventListener('touchcancel', onCancel);
+  window.addEventListener('blur',          onCancel);
 }
 
 // ─── エントリポイント ────────────────────────────────────────────────────────
