@@ -14,9 +14,11 @@
 
 import { formations, getFormationName, formationSliderMap } from './formations.js';
 import { getLineup } from './config.js';
+import { commit } from './bus.js';
 import {
   readPlayersFromForm,
   placePlayers,
+  resetManualPositions,
   applyFormation,
   wingStick,
   compressStick,
@@ -143,6 +145,7 @@ export function selectHomeFormation(formation) {
   formationState.home.key = key;
   syncFormationSliders(key);
   drawHome(key, true);
+  commit();
 }
 
 /** アウェイのフォーメーションを明示的に選択する */
@@ -151,6 +154,38 @@ export function selectAwayFormation(formation) {
   if (!formations(key)) return;
   formationState.away.key = key;
   drawAway(key, true);
+  commit();
+}
+
+/**
+ * 保存状態の復元用：フォーメーション名だけをセットする（描画しない）。
+ * スライダーは呼び出し側で先に合わせておくこと。
+ */
+export function setFormationKeys({ home, away } = {}) {
+  if (home && formations(home)) {
+    formationState.home.key = home;
+    formationState.home.sliderSnapshot = readFormationSliders();
+  }
+  if (away && formations(away)) formationState.away.key = away;
+}
+
+/** アウェイを現在のフォーメーションで描き直す */
+export function redrawAway({ resetManual = false } = {}) {
+  if (formationState.away.key) drawAway(formationState.away.key, resetManual);
+}
+
+/** 両チームを描き直す（手動配置は維持） */
+export function redrawBoth() {
+  redrawAllPlayers();
+  redrawAway();
+}
+
+/** ドラッグや局面呼び出しで固定した位置をすべて解除する */
+export function clearManualPositions() {
+  resetManualPositions('home');
+  resetManualPositions('away');
+  redrawBoth();
+  commit();
 }
 
 /**
@@ -190,6 +225,7 @@ export function applySquadNumbers(isHome) {
   } else if (formationState.away.key) {
     drawAway(formationState.away.key, false);
   }
+  commit();
 }
 
 // ─── フォーメーションボタン ───────────────────────────────────────────────────
@@ -289,10 +325,25 @@ function requestRedraw() {
  * @param {string}              knobId
  * @param {{x:number,y:number}} targetStick
  */
+const joysticks = [];
+
+/** スティックの値に合わせてノブの表示位置を更新する（状態復元用） */
+export function syncJoystickKnobs() {
+  for (const { area, knob, stick } of joysticks) {
+    const w = area.clientWidth;
+    const h = area.clientHeight;
+    if (!w || !h) continue;   // 非表示中（ドロワーが閉じている等）
+    const r = Math.max(1, w / 2 - 20);
+    knob.style.left = `${w / 2 + stick.x * r}px`;
+    knob.style.top  = `${h / 2 - stick.y * r}px`;
+  }
+}
+
 function initJoystick(areaId, knobId, targetStick) {
   const area = document.getElementById(areaId);
   const knob = document.getElementById(knobId);
   if (!area || !knob) return;
+  joysticks.push({ area, knob, stick: targetStick });
 
   area.style.touchAction = 'none';
   let activePointerId = null;
@@ -330,7 +381,12 @@ function initJoystick(areaId, knobId, targetStick) {
   area.addEventListener('pointermove', e => {
     if (activePointerId === e.pointerId) applyMove(e.clientX, e.clientY);
   });
-  const release = e => { if (activePointerId === e.pointerId) activePointerId = null; };
+  const release = e => {
+    if (activePointerId !== e.pointerId) return;
+    activePointerId = null;
+    syncJoystickKnobs();   // PC / SP の両ノブをそろえる
+    commit();
+  };
   area.addEventListener('pointerup',     release);
   area.addEventListener('pointercancel', release);
 }

@@ -19,6 +19,7 @@
 import { TEAM_CATALOG, TEAMS, information, getSeasons, getLineups, getLineup } from './config.js';
 import { createInputs, selectHomeFormation, selectAwayFormation } from './ui-events.js';
 import { onPlayerNodeCreated } from './players.js';
+import { commit } from './bus.js';
 
 // ─── 状態 ────────────────────────────────────────────────────────────────────
 
@@ -289,6 +290,35 @@ export function switchUniformMode(isHome, mode) {
 
   uniformMode[side] = mode;
   applyUniform(isHome, lineup);
+  commit();
+}
+
+/** 現在のユニフォームモード */
+export function getUniformMode(isHome) {
+  return uniformMode[isHome ? 'home' : 'away'];
+}
+
+/**
+ * チーム・年度・試合をまとめて選択する（状態復元用）。
+ * 存在しない ID は先頭の候補にフォールバックする。
+ */
+export function setTeamSelection(isHome, { teamId, seasonId, lineupId, mode = 'home' } = {}) {
+  const side     = isHome ? 'home' : 'away';
+  const teamEl   = document.querySelector(`.${side}-team-select`);
+  const seasonEl = document.querySelector(`.${side}-season-select`);
+  const lineupEl = document.querySelector(`.${side}-lineup-select`);
+  if (!teamEl || !seasonEl || !lineupEl) return;
+
+  if (teamId && teamEl.querySelector(`option[value="${CSS.escape(teamId)}"]`)) teamEl.value = teamId;
+  rebuildSeasonSelect(seasonEl, teamEl.value, seasonId);
+  rebuildLineupSelect(lineupEl, teamEl.value, seasonEl.value, lineupId);
+  applyLineup(isHome, teamEl.value, seasonEl.value, lineupEl.value);
+
+  const lineup = getLineup(teamEl.value, seasonEl.value, lineupEl.value);
+  if (mode === 'away' && lineup?.away) {
+    uniformMode[side] = 'away';
+    applyUniform(isHome, lineup);
+  }
 }
 
 /**

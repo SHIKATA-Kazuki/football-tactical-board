@@ -10,7 +10,9 @@
  *   4. スライダー input イベント登録
  *   5. フォーム submit イベント登録（番号反映）
  *   6. initPlayerNameToggle()       — フィールド長押しで選手名を表示/非表示
- *   7. redrawAllPlayers()           — 初期描画（フリック UI の選択表示もここで同期）
+ *   7. 追加機能（描画レイヤー・ボール・距離表示・道具レール）
+ *   8. redrawAllPlayers()           — 初期描画（フリック UI の選択表示もここで同期）
+ *   9. 共有リンクからの復元 → 履歴の開始
  */
 
 import { initializeTeamSelects } from './team-colors.js';
@@ -22,6 +24,13 @@ import {
   getCurrentFormation,
 } from './ui-events.js';
 import { initFlickFormationUI } from './formation-flick-ui.js';
+import { initDrawing } from './drawing.js';
+import { initBall } from './ball.js';
+import { initAnalysis } from './analysis.js';
+import { initToolbar } from './toolbar.js';
+import { restoreFromUrl } from './share.js';
+import { initHistory } from './history.js';
+import { commit } from './bus.js';
 
 // ─── 選手名トグル ─────────────────────────────────────────────────────────────
 
@@ -54,6 +63,7 @@ function initPlayerNameToggle() {
     pressTimer = setTimeout(() => {
       field.classList.toggle('field-show-names');
       pressTimer = null;
+      commit();
     }, LONG_PRESS_MS);
   });
   field.addEventListener('pointermove', e => {
@@ -71,7 +81,7 @@ function initPlayerNameToggle() {
 
 // ─── 初期化 ──────────────────────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const formsWrapper = document.querySelector('.forms-wrapper.infopart');
   if (formsWrapper) formsWrapper.style.display = 'flex';
 
@@ -84,7 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 4. スライダー変更 → 再描画（ボタンのアクティブ表示も redraw 内で更新）
   document.querySelectorAll('#forPC input[type="range"]').forEach(slider => {
-    slider.addEventListener('input', () => redrawAllPlayers());
+    slider.addEventListener('input', () => {
+      redrawAllPlayers();
+      commit({ debounce: true });
+    });
   });
 
   // 5. 番号反映（ホーム・アウェイ両方のフォーム）
@@ -100,8 +113,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. 長押しで選手名トグル
   initPlayerNameToggle();
 
-  // 7. 初期描画（フリック UI はチーム初期化より後に作られるので、選択表示をここで同期）
+  // 7. 追加機能
+  initDrawing();
+  initBall();
+  initAnalysis();
+  initToolbar();
+
+  // 8. 初期描画（フリック UI はチーム初期化より後に作られるので、選択表示をここで同期）
   redrawAllPlayers();
   const awayKey = getCurrentFormation('away');
   if (awayKey) updateFormationButtons(awayKey, 'away');
+
+  // 9. 共有リンク（#b=...）があれば盤面を復元し、そこから履歴を始める
+  await restoreFromUrl();
+  initHistory();
 });

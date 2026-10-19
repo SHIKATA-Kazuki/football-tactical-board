@@ -14,6 +14,8 @@
  *   onPlayerNodeCreated(callback)  — 新規 .player ノード生成時に呼ばれるフックを登録
  */
 
+import { emit, commit } from './bus.js';
+
 // ─── ジョイスティック状態 ────────────────────────────────────────────────────
 
 /** @type {{x:number, y:number}} */
@@ -112,6 +114,33 @@ function applyTacticalAdjustments(squadNum, pos, isOpponent) {
   return [x, y];
 }
 
+// ─── ボール連動 ──────────────────────────────────────────────────────────────
+//
+// ボール位置に合わせてブロック全体をスライドさせる。
+// 両チームとも「ボール側へ寄る・ボールの縦位置へ押し上げ／押し下げ」を行う。
+// GK は横方向に少しだけ動き、縦位置は固定。
+
+const ballLink = { enabled: false, x: 50, y: 50 };
+
+/** @param {boolean} enabled @param {number} x @param {number} y */
+export function setBallLink(enabled, x = ballLink.x, y = ballLink.y) {
+  ballLink.enabled = enabled;
+  ballLink.x = x;
+  ballLink.y = y;
+}
+
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+function applyBallInfluence(index, x, y) {
+  if (!ballLink.enabled) return [x, y];
+  const dx = ballLink.x - 50;
+  const dy = ballLink.y - 50;
+  if (index === 0) return [clamp(x + dx * 0.15, 30, 70), y];
+  const nx = x + dx * 0.3 + (ballLink.x - x) * 0.12;   // ボールサイドへ寄せる＋絞る
+  const ny = y + dy * 0.3;                              // ボールの高さへスライド
+  return [clamp(nx, 3, 97), clamp(ny, 3, 97)];
+}
+
 // ─── 手動移動の記憶 ──────────────────────────────────────────────────────────
 
 // ドラッグで動かしたノードの位置を保持する Map
@@ -124,6 +153,27 @@ const manualPositions = {
 /** 手動移動フラグをリセット */
 export function resetManualPositions(side) {
   manualPositions[side].clear();
+}
+
+/**
+ * 手動配置を数値配列で取り出す（保存・共有用）。
+ * @returns {[number, number, number][]}  [index, x%, y%]
+ */
+export function getManualPositions(side) {
+  return [...manualPositions[side]].map(([i, p]) => [i, parseFloat(p.left), parseFloat(p.top)]);
+}
+
+/** @param {'home'|'away'} side @param {[number, number, number][]} list */
+export function setManualPositions(side, list = []) {
+  manualPositions[side].clear();
+  for (const [i, x, y] of list) {
+    manualPositions[side].set(i, { left: `${x}%`, top: `${y}%` });
+  }
+}
+
+/** 現在表示中の選手要素 */
+export function getPlayerElements(side) {
+  return side === 'away' ? [...awayPlayers] : [...homePlayers];
 }
 
 // ─── ドラッグ操作 ────────────────────────────────────────────────────────────
@@ -157,6 +207,7 @@ function attachDrag(el, sideKey, index) {
       el.style.left = `${x}%`;
       el.style.top  = `${y}%`;
       manualPositions[sideKey].set(index, { left: `${x}%`, top: `${y}%` });
+      emit('players:placed');
     };
 
     // 【修正】pointercancel（OS のジェスチャ割り込み等）でも確実に解除する
@@ -167,6 +218,7 @@ function attachDrag(el, sideKey, index) {
       el.onpointermove    = null;
       el.onpointerup      = null;
       el.onpointercancel  = null;
+      commit();
     };
     el.onpointerup     = end;
     el.onpointercancel = end;
@@ -233,7 +285,8 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
       el.style.left = manual.left;
       el.style.top  = manual.top;
     } else if (positions[i]) {
-      const [x, y] = applyTacticalAdjustments(i + 1, positions[i], isOpponent);
+      const [tx, ty] = applyTacticalAdjustments(i + 1, positions[i], isOpponent);
+      const [x, y]   = applyBallInfluence(i, tx, ty);
       el.style.left = `${x}%`;
       el.style.top  = `${y}%`;
     }
@@ -258,6 +311,7 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
   }
 
   if (isOpponent) { awayPlayers = arr; } else { homePlayers = arr; }
+  emit('players:placed');
 }
 
 /**
