@@ -135,6 +135,7 @@ const UNI = {
   kobe_2627: {
     chip:    { color: 'rgba(165, 21, 50, 0.92)', text: '#fff' },
     home: { style: 'linear-gradient(40deg,rgba(163, 17, 47, 0.92) 40% ,rgba(241, 20, 64, 0.92) 100%)', color: 'rgba(160, 17, 46, 0.92)', text: '#b9921d', shadowsize: 0, circle: '#b9921d'},
+    away: { style: 'linear-gradient(40deg,rgba(255, 255, 255, 0.92) 40% ,rgba(221, 221, 221, 0.92) 100%)', color: 'rgba(255, 255, 255, 0.92)', text: '#0a0a08', shadowsize: 0, circle: '#1d1910'},
     // home: {style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5, circle: 'rgb(255, 255, 255)' },
   },
   england: {
@@ -321,7 +322,7 @@ export const TEAM_CATALOG = {
             { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
           Oct_18: entry('岡山戦(A)', KOBE_MEMBERS2627, 'kobe_2627',
             ['4123'], [71,24,4,16,15,25,11,7,10,94,41],
-            { formation: ['4123'], bestMember: [1,24,4,3,41,6,11,7,29,5,13] }),
+            { formation: ['4123'], bestMember: [71,24,4,16,15,25,11,7,10,94,41] }),
           u21: entry('U-21', KOBE_MEMBERS2627, 'kobe_2627',
             ['4123'], [39,38,43,16,57,33,58,35,45,28,51],
             { formation: ['4123'], bestMember: [39,38,43,16,57,33,58,35,45,28,51] }),
