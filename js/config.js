@@ -135,7 +135,7 @@ const UNI = {
   kobe_2627: {
     chip:    { color: 'rgba(165, 21, 50, 0.92)', text: '#fff' },
     home: { style: 'linear-gradient(40deg,rgba(163, 17, 47, 0.92)   40% ,rgba(241, 20, 64, 0.92) 100%)',   color: 'rgba(160, 17, 46, 0.92)',   text: '#b9921d', shadowsize: 0, circle: '#b9921d'},
-    away: { style: 'linear-gradient(40deg,rgba(255, 255, 255, 0.92) 40% ,rgba(221, 221, 221, 0.92) 100%)', color: 'rgba(255, 255, 255, 0.92)', text: '#0a0a08', shadowsize: 0, circle: '#1d1910'},
+    away: { style: 'linear-gradient(40deg,rgba(202, 202, 202, 0.92) 40% ,rgba(141, 140, 140, 0.92) 100%)', color: '#b9921d', text: '#0a0a08', shadowsize: 0.2, circle: '#1d1910'},
     // home: {style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5, circle: 'rgb(255, 255, 255)' },
   },
   england: {
