@@ -14,6 +14,8 @@
 import {
   getCurrentFormation,
   setFormationKeys,
+  getFlipState,
+  setFlipState,
   setSliderValue,
   syncJoystickKnobs,
   redrawBoth,
@@ -54,6 +56,7 @@ export function serializeState() {
     team:   { home: team(true), away: team(false) },
     num:    { home: readNumbers('inputsHome'), away: readNumbers('inputsAway') },
     f:      { home: getCurrentFormation('home'), away: getCurrentFormation('away') },
+    flip:   getFlipState(),
     s:      SLIDERS.map(id => sliderVal(id)),
     wing:   [round(wingStick.x), round(wingStick.y)],
     comp:   [round(compressStick.x), round(compressStick.y)],
@@ -100,6 +103,7 @@ export function restoreState(state) {
 
   // 4. フォーメーション・手動配置・ボール
   setFormationKeys(state.f ?? {});
+  setFlipState(state.flip ?? {});
   setManualPositions('home', state.manual?.home);
   setManualPositions('away', state.manual?.away);
   setBallState(state.ball ?? {}, { redraw: false });

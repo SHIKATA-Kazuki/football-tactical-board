@@ -245,3 +245,78 @@
 @media (prefers-reduced-motion: reduce) {
   .player, .ball, #board-toast { transition: none !important; }
 }
+
+/* ── 左右の割り当てパネル ────────────────────────────────────────────────── */
+
+.flip-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 8px 12px 9px;
+  background: var(--filter_back_color);
+  border-radius: 10px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.flip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.flip-title { font-weight: 700; font-size: 12px; }
+
+.flip-units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+.flip-panel.is-empty .flip-units { display: none; }
+
+.flip-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.flip-label { font-size: 12px; min-width: 5.5em; }
+
+.flip-seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: rgba(10, 18, 16, 0.55);
+}
+.flip-seg button {
+  min-width: 40px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.flip-seg button:hover:not([aria-pressed="true"]) { background: rgba(255, 255, 255, 0.08); }
+.flip-seg button[aria-pressed="true"] {
+  background: var(--tool-accent);
+  color: var(--tool-accent-ink);
+  font-weight: 700;
+}
+.flip-seg button:focus-visible { outline: 2px solid #ffd23f; outline-offset: 1px; }
+
+.flip-hint {
+  margin: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.62);
+}
+.flip-hint[hidden] { display: none; }
+
+@media (max-width: 600px) {
+  .flip-panel { width: 95vw; margin-top: 6px; margin-bottom: 6px; padding: 7px 9px; }
+  .flip-seg button { padding: 6px 10px; }   /* 指で押しやすく */
+}

@@ -17,7 +17,7 @@
  */
 
 import { TEAM_CATALOG, TEAMS, information, getSeasons, getLineups, getLineup } from './config.js';
-import { createInputs, selectHomeFormation, selectAwayFormation } from './ui-events.js';
+import { createInputs, selectHomeFormation, selectAwayFormation, setTeamFlips } from './ui-events.js';
 import { onPlayerNodeCreated } from './players.js';
 import { commit } from './bus.js';
 
@@ -208,6 +208,9 @@ function applyLineup(isHome, teamId, seasonId, lineupId) {
   // スクワッド入力フィールドを更新
   createInputs(isHome ? 'inputsHome'    : 'inputsAway',    lineup.bestMember, isHome);
   createInputs(isHome ? 'inputsHome-sp' : 'inputsAway-sp', lineup.bestMember, isHome);
+
+  // 左右反転の既定値（config.js で lineup に flips: { SB: '左' } のように書ける）
+  setTeamFlips(isHome, lineup.flips);
 
   const formation = resolveFormation(lineup, 'home');
   if (!formation) return;

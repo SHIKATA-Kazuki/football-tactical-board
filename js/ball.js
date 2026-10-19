@@ -12,7 +12,7 @@
  */
 
 import { setBallLink } from './players.js';
-import { redrawBoth } from './ui-events.js';
+import { redrawBoth, notifyBallPosition } from './ui-events.js';
 import { commit } from './bus.js';
 
 const state = { show: false, link: false, x: 50, y: 50 };
@@ -33,6 +33,7 @@ export function setBallState(next = {}, { redraw = true } = {}) {
   if (!state.show) state.link = false;
   setBallLink(state.link, state.x, state.y);
   render();
+  notifyBallPosition(state);   // 左右反転の「ボール側」モード用
   if (redraw) redrawBoth();
   listeners.forEach(cb => cb(getBallState()));
 }
@@ -85,6 +86,7 @@ export function initBall() {
     state.x = Math.round(Math.min(100, Math.max(0, (e.clientX - rect.left) / rect.width  * 100)) * 10) / 10;
     state.y = Math.round(Math.min(100, Math.max(0, (e.clientY - rect.top)  / rect.height * 100)) * 10) / 10;
     render();
+    notifyBallPosition(state);
     if (state.link && !frame) {
       frame = requestAnimationFrame(() => {
         frame = 0;

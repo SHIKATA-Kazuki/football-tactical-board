@@ -10,15 +10,24 @@
  *   - チーム変更時の再描画
  *   - ジョイスティック初期化
  *   - スクワッド入力フィールドの生成・番号反映
+ *   - 左右反転ユニットの選択（手動 / 自動 / ボール側）
  */
 
-import { formations, getFormationName, formationSliderMap } from './formations.js';
+import {
+  formations,
+  getFormationName,
+  formationSliderMap,
+  getMirrorUnits,
+  mirrorSources,
+} from './formations.js';
 import { getLineup } from './config.js';
-import { commit } from './bus.js';
+import { commit, emit } from './bus.js';
 import {
   readPlayersFromForm,
   placePlayers,
   resetManualPositions,
+  clearManualFor,
+  getPlayerElements,
   applyFormation,
   wingStick,
   compressStick,
@@ -34,7 +43,9 @@ import {
 // backs / DMF / Top スライダーが実際に動かされたときだけ切り替える。
 
 const formationState = {
-  home: { key: null, sliderSnapshot: null },
+  // flips: ユニット ID → 'R' | 'L'（formations.js の「左右反転ユニット」参照）
+  // flipMode: 'manual' = 手動、'auto' = 移動が少ない方、'ball' = ボール側
+  home: { key: null, sliderSnapshot: null, flips: {}, flipMode: 'manual' },
   away: { key: null },
 };
 
@@ -111,17 +122,48 @@ function normalizeKey(formation) {
   return Array.isArray(formation) ? formation[0] : formation;
 }
 
+// ─── 幅取り役（ウイングスティックの対象）────────────────────────────────────
+//
+// 以前 players.js で背番号を使って決めていた条件を「スロット」（反転前の役割の位置）
+// として表したもの。反転後は、そのスロットの位置（または鏡像）に立つ選手が対象になる。
+
+function wideSlots() {
+  const b = sliderVal('backsSlider');
+  const v = sliderVal('volanteSlider');
+  const t = sliderVal('topSlider');
+  const W = new Set();
+  if (b > 0.5)                       { W.add(6); W.add(10); }  // RWG / LWG
+  if (b < 0.5 && v > 0.5 && t < 0.5) { W.add(9); W.add(10); }  // 3421 の 2 シャドー
+  if (b < 0.5 && t > 0.5)            { W.add(5); W.add(7); }   // 352 の 2 ボランチ
+  if (b + v + t < 0.1)               { W.add(1); W.add(4); }   // 343◇ の SB
+  return W;
+}
+
+/**
+ * ホームの座標と、選手ごとの幅取りの向きを計算する。
+ * @param {string} key
+ * @param {Record<string,'R'|'L'>} [flips]
+ */
+function homeLayout(key, flips = formationState.home.flips) {
+  const { cx, cy, DF_line, FW_line, SBvalue } = readTacticalSliders();
+  const pos = formations(key, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue, flips });
+  if (!pos) return null;
+  const W = wideSlots();
+  const wide = mirrorSources(key, flips).map(({ src }, i) =>
+    (i === 0 || !W.has(src)) ? 0 : (pos[i][0] - cx > 0 ? 1 : -1));
+  return { pos, wide };
+}
+
 // ─── 描画 ────────────────────────────────────────────────────────────────────
 
 function drawHome(key, resetManual) {
-  const { cx, cy, DF_line, FW_line, SBvalue } = readTacticalSliders();
-  const pos = formations(key, { anchor: [cx, cy], DF: DF_line, FW: FW_line, SB: SBvalue });
-  if (!pos) {
+  const layout = homeLayout(key);
+  if (!layout) {
     console.warn(`[ui-events] 未定義のフォーメーション: ${key}`);
     return;
   }
   const members = getCurrentLineup(true)?.members ?? {};
-  applyFormation(pos, resetManual, members);
+  applyFormation(layout.pos, resetManual, members, { wide: layout.wide });
   updateFormationButtons(key, 'home');
 }
 
@@ -138,13 +180,157 @@ function drawAway(key, resetManual) {
   updateFormationButtons(key, 'away');
 }
 
+// ─── 左右反転ユニット ────────────────────────────────────────────────────────
+
+const SIDE_ALIASES = { R: 'R', L: 'L', right: 'R', left: 'L', '右': 'R', '左': 'L' };
+
+/** config.js などで書かれた値（'左' / 'left' / 'L'）を 'R' | 'L' にそろえる */
+function normalizeFlips(raw = {}) {
+  const out = {};
+  for (const [id, v] of Object.entries(raw ?? {})) {
+    const side = SIDE_ALIASES[String(v).trim()];
+    if (side) out[id] = side;
+  }
+  return out;
+}
+
+/** ユニットが今どちら側になっているか */
+export function getUnitSide(unit, side = 'home') {
+  return formationState[side].flips?.[unit.id] ?? unit.sides[0];
+}
+
+/** 現在のホームのフォーメーションにあるユニット */
+export function getCurrentUnits() {
+  const key = formationState.home.key;
+  return key ? getMirrorUnits(key) : [];
+}
+
+export function getFlipState() {
+  const st = formationState.home;
+  return { flips: { ...st.flips }, mode: st.flipMode };
+}
+
+/** 状態の復元用（描画しない） */
+export function setFlipState({ flips = {}, mode = 'manual' } = {}) {
+  formationState.home.flips    = normalizeFlips(flips);
+  formationState.home.flipMode = ['manual', 'auto', 'ball'].includes(mode) ? mode : 'manual';
+  emit('flips:change');
+}
+
+/** チームを選んだときの既定値（config.js の lineup.flips）。チーム変更でリセット */
+export function setTeamFlips(isHome, raw) {
+  if (!isHome) return;   // アウェイへの適用は今後
+  formationState.home.flips = normalizeFlips(raw);
+  emit('flips:change');
+}
+
+/**
+ * ユニットの側を切り替える（UI のスイッチから）。
+ * ボール側モード中に手で選んだら手動モードへ切り替える。
+ */
+export function setUnitSide(unitId, sideValue) {
+  const st   = formationState.home;
+  const unit = getCurrentUnits().find(u => u.id === unitId);
+  if (!unit) return;
+  if (getUnitSide(unit) === sideValue) {
+    // 自動で選ばれている側を押した＝その側で固定したい、とみなす
+    if (st.flipMode === 'ball') {
+      st.flipMode = 'manual';
+      emit('flips:change');
+      commit();
+    }
+    return;
+  }
+
+  st.flips = { ...st.flips, [unitId]: sideValue };
+  if (st.flipMode === 'ball') st.flipMode = 'manual';
+  clearManualFor('home', unit.members);   // 入れ替わる選手は固定を外して動かす
+  drawHome(st.key, false);
+  emit('flips:change');
+  commit();
+}
+
+export function setFlipMode(mode) {
+  const st = formationState.home;
+  if (st.flipMode === mode) return;
+  st.flipMode = mode;
+  if (mode === 'ball' && chooseBallSide()) drawHome(st.key, false);
+  if (mode === 'auto' && st.key && chooseLeastMovement(st.key)) drawHome(st.key, false);
+  emit('flips:change');
+  commit();
+}
+
+/** 全組み合わせのうち、今の位置からの移動距離（m 換算）の合計が最も小さいものを選ぶ */
+function chooseLeastMovement(key) {
+  const st    = formationState.home;
+  const units = getMirrorUnits(key);
+  const nodes = getPlayerElements('home');
+  if (!units.length || nodes.length !== 11) return false;
+  const current = nodes.map(n => [parseFloat(n.style.left), parseFloat(n.style.top)]);
+  if (current.some(([x, y]) => !Number.isFinite(x) || !Number.isFinite(y))) return false;
+
+  const cost = flips => homeLayout(key, flips).pos.reduce((sum, [x, y], i) =>
+    sum + ((x - current[i][0]) * 0.68) ** 2 + ((y - current[i][1]) * 1.05) ** 2, 0);
+
+  let best = st.flips;
+  let bestCost = cost(st.flips);   // 同点なら今の選択を維持
+  for (let c = 0; c < (1 << units.length); c++) {
+    const candidate = { ...st.flips };
+    units.forEach((u, i) => { candidate[u.id] = u.sides[(c >> i) & 1]; });
+    const v = cost(candidate);
+    if (v < bestCost - 1e-6) { best = candidate; bestCost = v; }
+  }
+  const changed = units.some(u => (best[u.id] ?? u.sides[0]) !== getUnitSide(u));
+  st.flips = best;
+  if (changed) emit('flips:change');
+  return changed;
+}
+
+// ── ボール側 ──────────────────────────────────────────────────────────────────
+let lastBall = { show: false, x: 50, y: 50 };
+const BALL_DEADZONE = 8;   // 中央 ±8% では切り替えない（ちらつき防止）
+
+/**
+ * ボールの位置が変わったときに ball.js から呼ばれる。
+ * ボール側モードなら、高い位置を取る側（＝後ろに残る側の反対）をボール側にそろえる。
+ */
+export function notifyBallPosition(ball) {
+  lastBall = { ...ball };
+  if (formationState.home.flipMode !== 'ball') return;
+  if (chooseBallSide()) {
+    drawHome(formationState.home.key, false);
+    emit('flips:change');
+  }
+}
+
+function chooseBallSide() {
+  const st = formationState.home;
+  if (st.flipMode !== 'ball' || !lastBall.show || !st.key) return false;
+  const ballSide = lastBall.x > 50 + BALL_DEADZONE ? 'R'
+                 : lastBall.x < 50 - BALL_DEADZONE ? 'L' : null;
+  if (!ballSide) return false;
+  const stay = ballSide === 'R' ? 'L' : 'R';
+
+  let changed = false;
+  for (const unit of getMirrorUnits(st.key)) {
+    if (!unit.lead || getUnitSide(unit) === stay) continue;
+    st.flips = { ...st.flips, [unit.id]: stay };
+    clearManualFor('home', unit.members);
+    changed = true;
+  }
+  return changed;
+}
+
 /** ホームのフォーメーションを明示的に選択する（ボタン・フリック・チーム変更） */
 export function selectHomeFormation(formation) {
   const key = normalizeKey(formation);
   if (!formations(key)) return;
   formationState.home.key = key;
   syncFormationSliders(key);
+  if (formationState.home.flipMode === 'auto') chooseLeastMovement(key);
+  if (formationState.home.flipMode === 'ball') chooseBallSide();
   drawHome(key, true);
+  emit('flips:change');
   commit();
 }
 
@@ -199,7 +385,12 @@ export function redrawAllPlayers({ resetManual = false } = {}) {
 
   if (!key || !sameSnapshot(sliders, formationState.home.sliderSnapshot)) {
     const sliderKey = getFormationName(sliders.backs, sliders.volante, sliders.top);
-    if (sliderKey !== key) resetManual = true;   // 形が変わったら手動配置は破棄
+    if (sliderKey !== key) {
+      resetManual = true;   // 形が変わったら手動配置は破棄
+      if (formationState.home.flipMode === 'auto') chooseLeastMovement(sliderKey);
+      if (formationState.home.flipMode === 'ball') { formationState.home.key = sliderKey; chooseBallSide(); }
+      queueMicrotask(() => emit('flips:change'));
+    }
     key = sliderKey;
     formationState.home.key = key;
     formationState.home.sliderSnapshot = sliders;

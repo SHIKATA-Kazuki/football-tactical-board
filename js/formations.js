@@ -306,7 +306,7 @@ function applySwap(base, rule) {
  * @param {number}          [options.SB=0.3]         SBスライダー値
  * @returns {[number,number][] | undefined}
  */
-export function formations(formation, { anchor = [50, 50], DF = 26, FW = -22, SB = 0.3 } = {}) {
+function relativeCoords(formation, { DF = 26, FW = -22, SB = 0.3 } = {}) {
   const sb = (SB - 0.3) * (5 / 0.3) + DF * 0.2;
   const wb = 2.3 * (SB - 0.3) * (5 / 0.3) + FW * 0.2;
 
@@ -318,22 +318,186 @@ export function formations(formation, { anchor = [50, 50], DF = 26, FW = -22, SB
   let base = coords[formation];
 
   if (!base) {
-    // 末尾から既知バリアントサフィックスを切り出して照合
     for (const [baseName, variants] of Object.entries(SWAP_RULES)) {
       for (const [suffix, rule] of Object.entries(variants)) {
         if (formation === baseName + suffix) {
           const baseCoords = coords[baseName];
-          if (baseCoords) {
-            base = applySwap(baseCoords, rule);
-          }
+          if (baseCoords) base = applySwap(baseCoords, rule);
           break;
         }
       }
       if (base) break;
     }
   }
+  return base?.map(([dx, dy]) => [dx, dy]);
+}
 
-  return base?.map(([dx, dy]) => [anchor[0] + dx, anchor[1] + dy]);
+/**
+ * 指定フォーメーションの絶対座標配列を返す。
+ *
+ * @param {string} formation フォーメーション名（例: '352M', '352Mjp', '4231jp'）
+ * @param {Object} [options]
+ * @param {[number,number]} [options.anchor=[50,50]] フィールド上の基準点（%）
+ * @param {number}          [options.DF=26]          DFラインの高さ
+ * @param {number}          [options.FW=-22]         FWラインの高さ
+ * @param {number}          [options.SB=0.3]         SBスライダー値
+ * @param {Record<string,'R'|'L'>} [options.flips]   左右反転ユニットの選択（下記参照）
+ * @returns {[number,number][] | undefined}
+ */
+export function formations(formation, { anchor = [50, 50], DF = 26, FW = -22, SB = 0.3, flips = null } = {}) {
+  let rel = relativeCoords(formation, { DF, FW, SB });
+  if (!rel) return undefined;
+  if (flips) rel = applyMirror(rel, mirrorSources(formation, flips));
+  return rel.map(([dx, dy]) => [anchor[0] + dx, anchor[1] + dy]);
+}
+
+// ─── 左右反転ユニット ────────────────────────────────────────────────────────
+//
+// フォーメーションの「形」（10 か所の立ち位置）は左右対称だが、
+// 「誰がどこに立つか」は非対称なことが多い（例: 3421 で右 SB だけが CB に残る）。
+// この非対称な部分を「ユニット」として切り出し、左右反転を選べるようにする。
+//
+// 反転の規則:
+//   - 左右で対になる役割（RB↔LB, CB3↔CB4, RWG↔LWG）は、相手の位置の鏡像へ
+//   - 対のない役割（AC, BtB, ST, #10）は、自分の位置の鏡像へ
+//
+// ユニットは座標から自動で求める（手で定義しない）:
+//   1. 対になる役割は両方含む
+//   2. ユニットが占める場所の集合が左右対称（反転しても他の選手とぶつからない）
+//   3. 反転すると実際に位置が変わる
+//   4. それ以上分けられない最小のもの
+//
+// 選択はユニット ID ごとに「どちら側か」（'R' / 'L'）で持つ。0/1 ではなく側で持つので、
+// 3421 で「左SBが残る」を選んだあと 352W に切り替えても同じ意味が引き継がれる。
+
+/** 役割名（インデックス = 背番号 − 1） */
+export const ROLE_NAMES = ['GK', 'RB', 'CB3', 'CB4', 'LB', 'AC', 'RWG', 'BtB', 'ST', '#10', 'LWG'];
+
+/** 左右で対になる役割（インデックス）。ここにないものは自分自身と対 */
+export const MIRROR_PARTNER = [0, 4, 3, 2, 1, 5, 10, 7, 8, 9, 6];
+
+const PAIR_UNITS = {
+  'RB-LB':   { id: 'SB', label: '残るSB' },     // 深い位置（CB 側）に残る SB の側
+  'RWG-LWG': { id: 'WG', label: '下がるWG' },
+  'CB3-CB4': { id: 'CB', label: '下がるCB' },
+};
+const FEATURE_PRIORITY = ['#10', 'AC', 'ST', 'BtB'];
+
+/**
+ * @typedef {Object} MirrorUnit
+ * @property {string}   id       ユニット ID（例 'SB', 'AC-BtB'）
+ * @property {number[]} members  反転で位置が変わる選手のインデックス
+ * @property {string}   label    UI 表示名（例 '残るSB', 'AC の位置'）
+ * @property {['R'|'L','R'|'L']} sides  [座標どおりの側, 反転したときの側]
+ * @property {[number,number]|null} lead  側を決める対（例 RB/LB）。ない場合 null
+ */
+
+const unitCache = new Map();
+const r1 = v => Math.round(v * 10) / 10 || 0;
+const posKey = ([x, y]) => `${r1(x)},${r1(y)}`;
+const sideOf = x => (x > 0 ? 'R' : 'L');
+const otherSide = s => (s === 'R' ? 'L' : 'R');
+
+/**
+ * フォーメーションの左右反転ユニットを返す（座標から自動導出・キャッシュ）。
+ * @param {string} formation
+ * @returns {MirrorUnit[]}
+ */
+export function getMirrorUnits(formation) {
+  if (unitCache.has(formation)) return unitCache.get(formation);
+  const p = relativeCoords(formation);
+  if (!p) return [];
+
+  const P = MIRROR_PARTNER;
+  const changes = i => posKey([-p[P[i]][0], p[P[i]][1]]) !== posKey(p[i]);
+
+  // 条件 1〜3 を満たす集合を総当たりし、「位置が変わる選手」の集合として集める
+  const candidates = new Map();
+  for (let mask = 1; mask < (1 << 10); mask++) {
+    const S = [];
+    for (let i = 0; i < 10; i++) if (mask >> i & 1) S.push(i + 1);
+    if (S.some(i => !S.includes(P[i]))) continue;
+    const orig = S.map(i => posKey(p[i])).sort().join('|');
+    const mirr = S.map(i => posKey([-p[i][0], p[i][1]])).sort().join('|');
+    if (orig !== mirr) continue;
+    const changed = S.filter(changes);
+    if (changed.length) candidates.set(changed.join(','), changed);
+  }
+
+  // 条件 4: 他の候補を真に含むものを除き、重ならないものだけ採用
+  const sorted = [...candidates.values()].sort((a, b) => a.length - b.length);
+  const atoms = [];
+  for (const S of sorted) {
+    if (atoms.some(A => A.some(i => S.includes(i)))) continue;
+    atoms.push(S);
+  }
+
+  const units = atoms.map(members => describeUnit(members, p));
+  unitCache.set(formation, units);
+  return units;
+}
+
+function describeUnit(members, p) {
+  const P = MIRROR_PARTNER;
+  const pairs = members.filter(i => P[i] !== i && i < P[i]).map(i => [i, P[i]]);
+
+  if (pairs.length) {
+    // 側を決める対: RB/LB が非対称ならそれを優先、なければ縦の差が最も大きい対
+    const ydiff = ([a, b]) => Math.abs(p[a][1] - p[b][1]);
+    const asym  = ([a, b]) => posKey([-p[b][0], p[b][1]]) !== posKey(p[a]);
+    const lead = pairs.find(([a, b]) => a === 1 && b === 4 && asym([a, b]))
+      ?? [...pairs].sort((x, y) => ydiff(y) - ydiff(x))[0];
+    const name = `${ROLE_NAMES[lead[0]]}-${ROLE_NAMES[lead[1]]}`;
+    const meta = PAIR_UNITS[name] ?? { id: name, label: `${name} の深い側` };
+    // 後ろに残る方: より自陣寄り（y が大きい）、同じ深さなら中央寄り
+    const [a, b] = lead;
+    const stays = (r1(p[a][1]) !== r1(p[b][1]))
+      ? (p[a][1] > p[b][1] ? a : b)
+      : (Math.abs(p[a][0]) <= Math.abs(p[b][0]) ? a : b);
+    const deeper = stays;
+    const s0 = sideOf(p[deeper][0]);
+    return { id: meta.id, members, label: meta.label, sides: [s0, otherSide(s0)], lead };
+  }
+
+  const roleOf = i => ROLE_NAMES[i];
+  const featured = FEATURE_PRIORITY.map(n => ROLE_NAMES.indexOf(n))
+    .find(i => members.includes(i) && Math.abs(p[i][0]) > 0.5)
+    ?? members.find(i => Math.abs(p[i][0]) > 0.5) ?? members[0];
+  const s0 = sideOf(p[featured][0]);
+  return {
+    id: members.map(roleOf).join('-'),
+    members,
+    label: `${roleOf(featured)} の位置`,
+    sides: [s0, otherSide(s0)],
+    lead: null,
+  };
+}
+
+/** 選択（'R'/'L'）がそのユニットを反転させるかどうか */
+export function isUnitFlipped(unit, flips) {
+  const want = flips?.[unit.id];
+  return !!want && want !== unit.sides[0];
+}
+
+/**
+ * 各選手が「どのスロットの鏡像に立つか」を返す。
+ * 反転していない選手は自分のスロット（mirror=false）。
+ * @returns {{ src:number, mirror:boolean }[]}
+ */
+export function mirrorSources(formation, flips) {
+  const src = Array.from({ length: 11 }, (_, i) => ({ src: i, mirror: false }));
+  for (const unit of getMirrorUnits(formation)) {
+    if (!isUnitFlipped(unit, flips)) continue;
+    for (const i of unit.members) src[i] = { src: MIRROR_PARTNER[i], mirror: true };
+  }
+  return src;
+}
+
+function applyMirror(rel, sources) {
+  return sources.map(({ src, mirror }) => {
+    const [x, y] = rel[src];
+    return mirror ? [-x, y] : [x, y];
+  });
 }
 
 /**

@@ -28,6 +28,7 @@ import { initDrawing } from './drawing.js';
 import { initBall } from './ball.js';
 import { initAnalysis } from './analysis.js';
 import { initToolbar } from './toolbar.js';
+import { initFlipUI } from './flip-ui.js';
 import { restoreFromUrl } from './share.js';
 import { initHistory } from './history.js';
 import { commit } from './bus.js';
@@ -118,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initBall();
   initAnalysis();
   initToolbar();
+  initFlipUI();
 
   // 8. 初期描画（フリック UI はチーム初期化より後に作られるので、選択表示をここで同期）
   redrawAllPlayers();

@@ -56,37 +56,24 @@ export function sliderVal(id) {
  * ウィング幅・圧縮スティックを反映して座標を補正する。
  * 自チーム（isOpponent=false）のみ適用。
  *
- * @param {number}           squadNum  1〜11
+ * 【変更】以前は「7 番と 11 番」のように背番号で幅取り役を決めていたが、
+ * 左右反転で立ち位置が入れ替わるとずれるため、ui-events.js が
+ * 「反転後に幅取りの位置にいる選手」と外側の向きを wideDir で渡すようにした。
+ *
+ * @param {number}           index     0〜10（0 = GK）
  * @param {[number,number]}  pos       フォーメーション由来の [x, y]
  * @param {boolean}          isOpponent
+ * @param {number}           [wideDir=0]  +1 = 右へ広げる、-1 = 左へ広げる、0 = 対象外
  * @returns {[number,number]}
  */
-function applyTacticalAdjustments(squadNum, pos, isOpponent) {
+function applyTacticalAdjustments(index, pos, isOpponent, wideDir = 0) {
   if (isOpponent) return pos;   // 相手チームは補正しない
 
   let [x, y] = pos;
 
-  const backsVal  = sliderVal('backsSlider');
-  const volante   = sliderVal('volanteSlider');
-  const top       = sliderVal('topSlider');
-
-  // ウィング幅補正（特定の選手番号・スライダー条件に合致する場合のみ）
-  const wingShouldAdjust =
-    (squadNum === 7  && backsVal > 0.5) ||
-    (squadNum === 11 && backsVal > 0.5) ||
-    (squadNum === 10 && backsVal < 0.5 && volante > 0.5 && top < 0.5) ||
-    (squadNum === 11 && backsVal < 0.5 && volante > 0.5 && top < 0.5) ||
-    (squadNum === 6  && backsVal < 0.5 && top > 0.5) ||
-    (squadNum === 8  && backsVal < 0.5 && top > 0.5) ||
-    (squadNum === 2  && backsVal + volante + top < 0.1) ||
-    (squadNum === 5  && backsVal + volante + top < 0.1);
-
-  if (wingShouldAdjust) {
-    const wingW = wingStick.x * 15;
-    const wingH = wingStick.y * 15;
-    if ([7, 10, 8, 2].includes(squadNum)) x += wingW;
-    if ([11, 6, 5].includes(squadNum))    x -= wingW;
-    y -= wingH;
+  if (wideDir) {
+    x += wideDir * wingStick.x * 15;
+    y -= wingStick.y * 15;
   }
 
   // 圧縮スティック補正
@@ -101,7 +88,7 @@ function applyTacticalAdjustments(squadNum, pos, isOpponent) {
       : cx * COMPRESS_MAX * (x / 100);
     x += xOffset;
 
-    if (squadNum !== 1) {
+    if (index !== 0) {
       const yOffset = cy >= 0
         ? +1.6 * cy * COMPRESS_Y * (1.7 - y / 60)
         : +2.5 * cy * COMPRESS_Y * (y / 100);
@@ -159,6 +146,10 @@ export function resetManualPositions(side) {
  * 手動配置を数値配列で取り出す（保存・共有用）。
  * @returns {[number, number, number][]}  [index, x%, y%]
  */
+export function clearManualFor(side, indices) {
+  indices.forEach(i => manualPositions[side].delete(i));
+}
+
 export function getManualPositions(side) {
   return [...manualPositions[side]].map(([i, p]) => [i, parseFloat(p.left), parseFloat(p.top)]);
 }
@@ -255,8 +246,9 @@ export function readPlayersFromForm(formEl) {
  * @param {boolean}                        isOpponent  true = アウェイチーム
  * @param {boolean}                        [resetManual=false]
  * @param {Record<number,string>}          [members={}]  背番号→名前の辞書（名前バッジ用）
+ * @param {{ wide?: number[] }}            [opts]  wide: 選手ごとの幅取りの向き（+1 / -1 / 0）
  */
-export function placePlayers(players, positions, isOpponent, resetManual = false, members = {}) {
+export function placePlayers(players, positions, isOpponent, resetManual = false, members = {}, opts = {}) {
   const field   = document.getElementById('field');
   const arr     = isOpponent ? awayPlayers : homePlayers;
   const sideKey = isOpponent ? 'away' : 'home';
@@ -285,7 +277,7 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
       el.style.left = manual.left;
       el.style.top  = manual.top;
     } else if (positions[i]) {
-      const [tx, ty] = applyTacticalAdjustments(i + 1, positions[i], isOpponent);
+      const [tx, ty] = applyTacticalAdjustments(i, positions[i], isOpponent, opts.wide?.[i] ?? 0);
       const [x, y]   = applyBallInfluence(i, tx, ty);
       el.style.left = `${x}%`;
       el.style.top  = `${y}%`;
@@ -319,8 +311,9 @@ export function placePlayers(players, positions, isOpponent, resetManual = false
  * @param {[number,number][]}     positions
  * @param {boolean}               [resetManual=false]
  * @param {Record<number,string>} [members={}]
+ * @param {{ wide?: number[] }}    [opts]
  */
-export function applyFormation(positions, resetManual = false, members = {}) {
+export function applyFormation(positions, resetManual = false, members = {}, opts = {}) {
   const players = readPlayersFromForm(document.getElementById('playerFormHome'));
-  placePlayers(players, positions, false, resetManual, members);
+  placePlayers(players, positions, false, resetManual, members, opts);
 }
