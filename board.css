@@ -373,3 +373,70 @@ html, body { overscroll-behavior: none; }
   #flip-panel-drawer { display: flex; width: 100%; margin: 0 0 10px; }
 }
 
+
+/* =========================================================================
+   iPad / PC のレイアウト（601px 以上）
+   フィールドを最優先で画面の高さいっぱいに取り、残りにコントロールを並べる。
+   index.html 内の <style> の .main より後勝ちさせるため、セレクタを html body で強めている。
+   寸法（--pitch-*、--controls-w、--avail-h、--joy-size）は layout.js が計算する。
+   ========================================================================= */
+
+@media (min-width: 601px) {
+  body { padding: 0; }
+
+  html body .main {
+    display: grid;
+    grid-template-columns: auto auto var(--controls-w, 460px);
+    grid-template-areas: "field tools info";
+    justify-content: center;
+    align-items: center;
+    column-gap: 14px;
+    padding: var(--main-top, 72px) 12px 10px;
+  }
+  html body .main > #field { grid-area: field; margin: 0; }
+  html body .main > #board-tools { grid-area: tools; }
+  html body .main > #info {
+    grid-area: info;
+    align-self: center;
+    width: var(--controls-w, 460px);
+    max-height: var(--avail-h, none);
+    margin: 0;
+    overflow-y: auto;               /* 最後の手段：盤面ではなくコントロール欄の中だけで逃がす */
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #info .infopart { width: auto; margin: 0 0 10px; }
+  #info .infopart:last-child { margin-bottom: 0; }
+  #forPC .sliderpart { min-width: 0; }
+
+  .joystick-circle { width: var(--joy-size, 150px); height: var(--joy-size, 150px); }
+}
+
+/* iPad 縦：フィールドと道具を上に、コントロールを下に 2 列で */
+@media (min-width: 601px) and (orientation: portrait) {
+  html body .main {
+    grid-template-columns: minmax(0, 1fr) auto auto minmax(0, 1fr);
+    grid-template-areas:
+      ".    field tools ."
+      "info info  info  info";
+    justify-content: stretch;
+    row-gap: 10px;
+    align-content: start;
+  }
+  html body .main > #info {
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    justify-self: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "grid pc"
+      "flip pc";
+    column-gap: 12px;
+    align-items: start;
+  }
+  #formation-buttons-touch { grid-area: grid; }
+  #flip-panel { grid-area: flip; }
+  #forPC { grid-area: pc; }
+}

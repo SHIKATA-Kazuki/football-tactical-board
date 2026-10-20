@@ -1,72 +1,138 @@
 /**
  * layout.js
  *
- * 画面にぴったり収める。
- * フィールドの大きさは本来 CSS（幅基準 / 75vh 基準）で決まるが、画面の高さが足りないと
- * ページがスクロールし、選手を動かそうとして画面が動いてしまう。
- * そこで、はみ出す分だけフィールドを縦横比を保ったまま縮める。
+ * 画面にぴったり収める（ページをスクロールさせない）。
  *
- *   スマホ            : 縦積み（フィールド → 道具の帯 → フォーメーション）を画面の高さに収める
- *   iPad / PC（横長） : フィールドとコントロールを 1 行に並べ、画面の高さに収める
- *   iPad（縦長）      : 元のレイアウトのまま（縮めるとフィールドが小さくなりすぎるため）
- *
- * 縮めるだけで、CSS の既定サイズより大きくはしない。
+ *   スマホ（〜600px）: 縦積み（フィールド → 道具の帯 → フォーメーション）。
+ *                      はみ出す分だけフィールドを縦横比を保って縮める。
+ *   iPad / PC 横     : [フィールド][道具][コントロール] の 3 列。
+ *                      フィールドを画面の高さいっぱいに取り、コントロール欄が
+ *                      入りきらなければジョイスティックを小さくする。
+ *   iPad / PC 縦     : フィールドと道具を上、コントロールを下に 2 列。
+ *                      コントロールの高さを引いた残りをフィールドに使う。
  */
 
-const MIN_PITCH_HEIGHT = 300;   // これ以上は縮めない（それでも入らない画面はスクロールを許す）
+import { syncJoystickKnobs } from './ui-events.js';
+
 const ROOT = document.documentElement;
+const MIN_PITCH_HEIGHT = 300;
+const MAX_PITCH_HEIGHT = 1100;
+const PITCH_RATIO = 4 / 6;          // iPad / PC のフィールドの縦横比（field.css と同じ）
+const JOY_MAX = 170;
+const JOY_MIN = 96;
 
 let field = null;
 let info  = null;
+let tools = null;
+let header = null;
 let frame = 0;
+
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const setVar = (name, px) => ROOT.style.setProperty(name, `${Math.round(px)}px`);
 
 function isPhone() {
   return window.matchMedia('(max-width: 600px)').matches;
 }
 
 function setPitch(h, ratio) {
-  ROOT.style.setProperty('--pitch-height', `${h}px`);
-  ROOT.style.setProperty('--pitch-width',  `${h * ratio}px`);
+  setVar('--pitch-height', h);
+  setVar('--pitch-width',  h * ratio);
 }
 
-function clearPitch() {
-  ROOT.style.removeProperty('--pitch-height');
-  ROOT.style.removeProperty('--pitch-width');
+function clearVars() {
+  for (const v of ['--pitch-height', '--pitch-width', '--controls-w', '--avail-h', '--main-top', '--joy-size']) {
+    ROOT.style.removeProperty(v);
+  }
 }
 
-/** 縦にはみ出している量（px） */
 function overflowY() {
   return Math.ceil(ROOT.scrollHeight - window.innerHeight);
 }
 
-/** iPad / PC でコントロールがフィールドの下に回り込んでいるか */
-function wrapped() {
-  if (!info) return false;
-  return info.getBoundingClientRect().top >= field.getBoundingClientRect().bottom - 4;
+// ─── スマホ ──────────────────────────────────────────────────────────────────
+
+function fitPhone() {
+  let h = field.offsetHeight;
+  const ratio = field.offsetWidth / h;
+  if (!h || !ratio) return;
+  for (let i = 0; i < 12 && overflowY() > 0 && h > MIN_PITCH_HEIGHT; i++) {
+    h = Math.max(MIN_PITCH_HEIGHT, Math.floor(h - overflowY() - 2));
+    setPitch(h, ratio);
+  }
+}
+
+// ─── iPad / PC ───────────────────────────────────────────────────────────────
+
+function fitWide() {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const top = Math.ceil(header?.getBoundingClientRect().bottom ?? 60) + 8;
+  const bottomPad = 10;
+  const sidePad = 24;
+  const gap = 14;
+  const toolsW = tools?.offsetWidth || 50;
+  setVar('--main-top', top);
+
+  const availH = H - top - bottomPad - 2;   // 小数の丸め分の余裕
+  setVar('--avail-h', availH);
+
+  if (W > H) {
+    // 横：フィールドを最優先で高さいっぱいに
+    const controlsW = clamp(Math.round(W * 0.4), 300, 520);
+    setVar('--controls-w', controlsW);
+    const maxFieldW = W - controlsW - toolsW - gap * 2 - sidePad;
+    let h = clamp(Math.min(availH, maxFieldW / PITCH_RATIO), MIN_PITCH_HEIGHT, MAX_PITCH_HEIGHT);
+    setPitch(h, PITCH_RATIO);
+    h = trimOverflow(h);   // コーナーアークの張り出しなど、実際のはみ出し分を詰める
+
+    // コントロール欄が入りきらなければジョイスティックを小さく
+    let joy = JOY_MAX;
+    setVar('--joy-size', joy);
+    while (info.scrollHeight > availH && joy > JOY_MIN) {
+      joy -= 8;
+      setVar('--joy-size', joy);
+    }
+    // 丸めなどで残った数 px は、コントロール欄の上限を下げて吸収する
+    let limit = availH;
+    for (let i = 0; i < 3 && overflowY() > 0; i++) {
+      limit -= overflowY();
+      setVar('--avail-h', limit);
+    }
+  } else {
+    // 縦：コントロールを下に置き、残りをフィールドに
+    setVar('--controls-w', W - sidePad);
+    let joy = JOY_MAX;
+    setVar('--joy-size', joy);
+    const fieldFor = () => Math.min(
+      availH - info.offsetHeight - 10,
+      (W - toolsW - gap - sidePad) / PITCH_RATIO,
+      MAX_PITCH_HEIGHT,
+    );
+    // フィールドが小さくなりすぎる場合はジョイスティックを詰める
+    while (fieldFor() < availH * 0.55 && joy > JOY_MIN) {
+      joy -= 8;
+      setVar('--joy-size', joy);
+    }
+    setPitch(Math.max(MIN_PITCH_HEIGHT, fieldFor()), PITCH_RATIO);
+    trimOverflow(field.offsetHeight);
+  }
+}
+
+/** 計算どおりに置いても残る縦のはみ出しを、フィールドを縮めて解消する */
+function trimOverflow(h) {
+  for (let i = 0; i < 4 && overflowY() > 0 && h > MIN_PITCH_HEIGHT; i++) {
+    h = Math.max(MIN_PITCH_HEIGHT, h - overflowY() - 1);
+    setPitch(h, PITCH_RATIO);
+  }
+  return h;
 }
 
 export function fitToScreen() {
   if (!field) return;
-  clearPitch();
-
-  const phone = isPhone();
-  const landscape = window.innerWidth > window.innerHeight;
-  if (!phone && !landscape) return;   // iPad 縦は元のまま
-
-  let h = field.offsetHeight;
-  const ratio = field.offsetWidth / h;
-  if (!h || !ratio) return;
-
-  const fits = () => overflowY() <= 0 && (phone || !wrapped());
-  if (fits()) return;
-
-  for (let i = 0; i < 12 && !fits() && h > MIN_PITCH_HEIGHT; i++) {
-    const over = overflowY();
-    // 回り込みは高さだけでは測れないので少しずつ、縦のはみ出しは差分だけ縮める
-    const next = (!phone && wrapped()) || over <= 0 ? h * 0.93 : h - over - 2;
-    h = Math.max(MIN_PITCH_HEIGHT, Math.floor(next));
-    setPitch(h, ratio);
-  }
+  clearVars();
+  if (isPhone()) fitPhone();
+  else fitWide();
+  syncJoystickKnobs();
   window.dispatchEvent(new Event('board:resized'));
 }
 
@@ -79,14 +145,15 @@ function schedule() {
 }
 
 export function initLayout() {
-  field = document.getElementById('field');
-  info  = document.getElementById('info');
-  if (!field) return;
+  field  = document.getElementById('field');
+  info   = document.getElementById('info');
+  tools  = document.getElementById('board-tools');
+  header = document.querySelector('header');
+  if (!field || !info) return;
 
   fitToScreen();
   window.addEventListener('resize', schedule);
   window.addEventListener('orientationchange', schedule);
-  // フォーメーション図などの画像が読み込まれて高さが変わることがある
-  window.addEventListener('load', schedule);
+  window.addEventListener('load', schedule);   // 画像の読み込みで高さが変わることがある
   document.fonts?.ready?.then(schedule);
 }
