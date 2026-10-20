@@ -1,8 +1,13 @@
 /**
  * toolbar.js
  *
- * フィールド横のツールレール（スマホではフィールド下の横並び）を組み立てる。
- * 各機能モジュールの状態変化を購読して、ボタンの表示を同期する。
+ * 道具は「よく使うものだけの細い帯」と「⋯ で開くシート」に分ける。
+ *   帯   : 動かす・パス・ラン・ドリブル・ゾーン・消す・色・戻す・やり直す・⋯
+ *          スマホはフィールドの下に 1 行、iPad / PC はフィールドの横に 1 列。
+ *   シート: ボール・連動・距離・選手名・局面・全消去・配置解除・リンク・画像
+ *          画面のレイアウトを押し広げないよう、上に重ねて表示する。
+ *
+ * どの画面でもスクロールなしで盤面を操作できることを優先している。
  */
 
 import { setTool, setColor, getTool, getColor, clearDrawings, onDrawingStateChange, DRAW_COLORS } from './drawing.js';
@@ -37,6 +42,8 @@ const ICONS = {
   save:     '<path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 19.5h15"/>',
   play:     '<path d="M8 5v14l11-7z" fill="currentColor"/>',
   stop:     '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor"/>',
+  more:     '<circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor"/>',
+  close:    '<path d="M6 6l12 12M18 6L6 18"/>',
 };
 
 const icon = name =>
@@ -44,103 +51,139 @@ const icon = name =>
 
 // ─── DOM ヘルパー ────────────────────────────────────────────────────────────
 
-function button({ id, label, caption = label, iconName, onClick, pressed }) {
+/** 帯のボタン（アイコンのみ。名前は aria-label と title） */
+function stripButton({ id, label, iconName, onClick, pressed }) {
   const b = document.createElement('button');
   b.type = 'button';
-  b.className = 'tool-btn';
+  b.className = 'strip-btn';
   if (id) b.dataset.id = id;
   b.setAttribute('aria-label', label);
   b.title = label;
   if (pressed !== undefined) b.setAttribute('aria-pressed', String(pressed));
-  b.innerHTML = `${icon(iconName)}<span class="tool-caption">${caption}</span>`;
+  b.innerHTML = icon(iconName);
   b.addEventListener('click', onClick);
   return b;
 }
 
-function group(title, children, extraClass = '') {
-  const section = document.createElement('section');
-  section.className = `tool-group ${extraClass}`.trim();
-  section.setAttribute('aria-label', title);
+/** シートのボタン（アイコン＋文字） */
+function sheetButton({ label, caption = label, iconName, onClick, pressed }) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sheet-btn';
+  b.setAttribute('aria-label', label);
+  b.title = label;
+  if (pressed !== undefined) b.setAttribute('aria-pressed', String(pressed));
+  b.innerHTML = `${icon(iconName)}<span>${caption}</span>`;
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+function section(title, children) {
+  const s = document.createElement('section');
+  s.className = 'sheet-section';
+  s.setAttribute('aria-label', title);
   const h = document.createElement('h3');
-  h.className = 'tool-title';
   h.textContent = title;
   const grid = document.createElement('div');
-  grid.className = 'tool-grid';
+  grid.className = 'sheet-grid';
   grid.append(...children);
-  section.append(h, grid);
-  return section;
+  s.append(h, grid);
+  return s;
+}
+
+function divider() {
+  const d = document.createElement('span');
+  d.className = 'strip-divider';
+  d.setAttribute('aria-hidden', 'true');
+  return d;
 }
 
 // ─── 組み立て ────────────────────────────────────────────────────────────────
 
 const TOOLS = [
-  { id: 'move',    label: '選手を動かす', caption: '動かす' },
-  { id: 'pass',    label: 'パスの矢印',   caption: 'パス' },
-  { id: 'run',     label: 'ランの矢印',   caption: 'ラン' },
-  { id: 'dribble', label: 'ドリブルの矢印', caption: 'ドリブル' },
-  { id: 'zone',    label: 'ゾーン',       caption: 'ゾーン' },
-  { id: 'eraser',  label: '消しゴム',     caption: '消す' },
+  { id: 'move',    label: '選手を動かす' },
+  { id: 'pass',    label: 'パスの矢印' },
+  { id: 'run',     label: 'ランの矢印' },
+  { id: 'dribble', label: 'ドリブルの矢印' },
+  { id: 'zone',    label: 'ゾーン' },
+  { id: 'eraser',  label: '消しゴム' },
 ];
-
 const COLOR_NAMES = ['白', '黄', '赤', '水色'];
 
 export function initToolbar() {
   const field = document.getElementById('field');
   if (!field) return;
 
-  const rail = document.createElement('aside');
-  rail.id = 'board-tools';
-  rail.setAttribute('aria-label', '作戦ボードの道具');
+  // ── 帯 ───────────────────────────────────────────────────────────────────────
+  const strip = document.createElement('div');
+  strip.id = 'board-tools';
+  strip.setAttribute('role', 'toolbar');
+  strip.setAttribute('aria-label', '作戦ボードの道具');
 
-  // ── 描く ─────────────────────────────────────────────────────────────────────
-  const toolButtons = TOOLS.map(t => button({
-    id: `tool-${t.id}`, label: t.label, caption: t.caption, iconName: t.id, pressed: t.id === getTool(),
+  const toolButtons = TOOLS.map(t => stripButton({
+    id: `tool-${t.id}`, label: t.label, iconName: t.id, pressed: t.id === getTool(),
     onClick: () => setTool(t.id),
   }));
 
-  const swatches = DRAW_COLORS.map((c, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'swatch';
-    b.style.setProperty('--swatch', c);
-    b.setAttribute('aria-label', `線の色: ${COLOR_NAMES[i]}`);
-    b.title = `線の色: ${COLOR_NAMES[i]}`;
-    b.setAttribute('aria-pressed', String(c === getColor()));
-    b.addEventListener('click', () => {
-      setColor(c);
-      if (getTool() === 'move' || getTool() === 'eraser') setTool('pass');
-    });
-    return b;
+  // 色は 1 つのボタンで順に切り替える（帯の幅を節約）
+  const colorBtn = document.createElement('button');
+  colorBtn.type = 'button';
+  colorBtn.className = 'strip-btn color-btn';
+  colorBtn.innerHTML = '<span class="color-dot" aria-hidden="true"></span>';
+  colorBtn.addEventListener('click', () => {
+    const i = DRAW_COLORS.indexOf(getColor());
+    setColor(DRAW_COLORS[(i + 1) % DRAW_COLORS.length]);
+    if (getTool() === 'move' || getTool() === 'eraser') setTool('pass');
   });
-  const swatchRow = document.createElement('div');
-  swatchRow.className = 'swatch-row';
-  swatchRow.append(...swatches);
+  const syncColor = () => {
+    const i = DRAW_COLORS.indexOf(getColor());
+    colorBtn.style.setProperty('--swatch', getColor());
+    colorBtn.setAttribute('aria-label', `線の色: ${COLOR_NAMES[i]}（押すと切り替え）`);
+    colorBtn.title = `線の色: ${COLOR_NAMES[i]}（押すと切り替え）`;
+  };
+  syncColor();
 
-  const clearBtn = button({ label: '線を全部消す', caption: '全消去', iconName: 'clear', onClick: clearDrawings });
+  const undoBtn = stripButton({ label: '元に戻す', iconName: 'undo', onClick: undo });
+  const redoBtn = stripButton({ label: 'やり直す', iconName: 'redo', onClick: redo });
+  undoBtn.disabled = true;
+  redoBtn.disabled = true;
 
-  // ── 表示 ─────────────────────────────────────────────────────────────────────
-  const ballBtn = button({
+  const moreBtn = stripButton({ label: 'その他の機能', iconName: 'more', onClick: () => toggleSheet() });
+  moreBtn.setAttribute('aria-haspopup', 'dialog');
+  moreBtn.setAttribute('aria-expanded', 'false');
+  moreBtn.classList.add('more-btn');
+
+  strip.append(...toolButtons, colorBtn, divider(), undoBtn, redoBtn, divider(), moreBtn);
+  field.after(strip);
+
+  // ── シート ───────────────────────────────────────────────────────────────────
+  const backdrop = document.createElement('div');
+  backdrop.className = 'sheet-backdrop';
+  backdrop.hidden = true;
+
+  const sheet = document.createElement('div');
+  sheet.id = 'board-more';
+  sheet.setAttribute('role', 'dialog');
+  sheet.setAttribute('aria-label', 'その他の機能');
+  sheet.hidden = true;
+
+  const ballBtn = sheetButton({
     label: 'ボール', iconName: 'ball', pressed: getBallState().show,
     onClick: () => setBallVisible(!getBallState().show),
   });
-  const linkBtn = button({
+  const linkBtn = sheetButton({
     label: 'ボール連動', caption: '連動', iconName: 'link', pressed: getBallState().link,
     onClick: () => setBallLinked(!getBallState().link),
   });
-  const measureBtn = button({
-    label: '距離', iconName: 'measure', pressed: isAnalysisVisible(),
+  const measureBtn = sheetButton({
+    label: '距離表示', caption: '距離', iconName: 'measure', pressed: isAnalysisVisible(),
     onClick: () => { setAnalysisVisible(!isAnalysisVisible()); commit(); },
   });
-  const namesBtn = button({
+  const namesBtn = sheetButton({
     label: '選手名', iconName: 'names', pressed: field.classList.contains('field-show-names'),
-    onClick: () => {
-      field.classList.toggle('field-show-names');
-      syncNames();
-      commit();
-    },
+    onClick: () => { field.classList.toggle('field-show-names'); commit(); },
   });
 
-  // ── 局面 ─────────────────────────────────────────────────────────────────────
   const slotButtons = Array.from({ length: PHASE_COUNT }, (_, i) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -153,59 +196,107 @@ export function initToolbar() {
   const slotRow = document.createElement('div');
   slotRow.className = 'phase-row';
   slotRow.append(...slotButtons);
+  const saveBtn = sheetButton({ label: '局面を保存', caption: '保存', iconName: 'save', onClick: savePhase });
+  const playBtn = sheetButton({
+    label: '再生', iconName: 'play',
+    onClick: () => { togglePlayback(); closeSheet(); },   // 再生中は盤面を見たいので閉じる
+  });
 
-  const saveBtn = button({ label: '局面を保存', caption: '保存', iconName: 'save', onClick: savePhase });
-  const playBtn = button({ label: '再生', iconName: 'play', onClick: togglePlayback });
-
-  // ── 操作 ─────────────────────────────────────────────────────────────────────
-  const undoBtn  = button({ label: '元に戻す', caption: '戻す', iconName: 'undo', onClick: undo });
-  const redoBtn  = button({ label: 'やり直す', iconName: 'redo', onClick: redo });
-  const unpinBtn = button({ label: '配置を戻す', caption: '配置解除', iconName: 'unpin', onClick: clearManualPositions });
-  undoBtn.disabled = true;
-  redoBtn.disabled = true;
+  const clearBtn = sheetButton({ label: '線を全部消す', caption: '線を全消去', iconName: 'clear', onClick: clearDrawings });
+  const unpinBtn = sheetButton({ label: '配置を戻す', caption: '配置解除', iconName: 'unpin', onClick: clearManualPositions });
   unpinBtn.title = 'ドラッグや局面で固定した位置を解除し、フォーメーションどおりに戻す';
 
-  // ── 書き出し ─────────────────────────────────────────────────────────────────
-  const shareBtn = button({ label: 'リンク', iconName: 'share', onClick: copyShareLink });
-  shareBtn.title = '盤面ごと共有できるリンクをコピー';
-  const imageBtn = button({ label: '画像保存', caption: '画像', iconName: 'image', onClick: saveFieldImage });
+  const shareBtn = sheetButton({ label: '共有リンクをコピー', caption: 'リンク', iconName: 'share', onClick: () => { closeSheet(); copyShareLink(); } });
+  const imageBtn = sheetButton({ label: '画像として保存', caption: '画像', iconName: 'image', onClick: () => { closeSheet(); saveFieldImage(); } });
 
-  rail.append(
-    group('描く', [...toolButtons, clearBtn], 'group-draw'),
-    group('線の色', [swatchRow], 'group-color'),
-    group('表示', [ballBtn, linkBtn, measureBtn, namesBtn], 'group-view'),
-    group('局面', [slotRow, saveBtn, playBtn], 'group-phase'),
-    group('操作', [undoBtn, redoBtn, unpinBtn], 'group-edit'),
-    group('書き出し', [shareBtn, imageBtn], 'group-export'),
+  const head = document.createElement('div');
+  head.className = 'sheet-head';
+  const title = document.createElement('span');
+  title.textContent = 'その他の機能';
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'sheet-close';
+  closeBtn.setAttribute('aria-label', '閉じる');
+  closeBtn.innerHTML = icon('close');
+  closeBtn.addEventListener('click', () => closeSheet());
+  head.append(title, closeBtn);
+
+  sheet.append(
+    head,
+    section('表示', [ballBtn, linkBtn, measureBtn, namesBtn]),
+    section('局面', [slotRow, saveBtn, playBtn]),
+    section('盤面', [clearBtn, unpinBtn, shareBtn, imageBtn]),
   );
+  document.body.append(backdrop, sheet);
 
-  field.after(rail);
+  // ── 開閉 ─────────────────────────────────────────────────────────────────────
+  function placeSheet() {
+    if (window.matchMedia('(max-width: 600px)').matches) {
+      sheet.style.left = sheet.style.top = '';   // スマホは CSS で下端に固定
+      return;
+    }
+    // iPad / PC: 帯の右横（入りきらなければ左横）に出す
+    const r = moreBtn.getBoundingClientRect();
+    const w = sheet.offsetWidth;
+    const h = sheet.offsetHeight;
+    const left = r.right + 10 + w <= window.innerWidth ? r.right + 10 : Math.max(8, r.left - 10 - w);
+    const top  = Math.min(Math.max(8, r.bottom - h), window.innerHeight - h - 8);
+    sheet.style.left = `${left}px`;
+    sheet.style.top  = `${top}px`;
+  }
+
+  function openSheet() {
+    sheet.hidden = false;
+    backdrop.hidden = false;
+    moreBtn.setAttribute('aria-expanded', 'true');
+    placeSheet();
+    closeBtn.focus({ preventScroll: true });
+  }
+  function closeSheet({ restoreFocus = true } = {}) {
+    if (sheet.hidden) return;
+    sheet.hidden = true;
+    backdrop.hidden = true;
+    moreBtn.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) moreBtn.focus({ preventScroll: true });
+  }
+  function toggleSheet() {
+    if (sheet.hidden) openSheet(); else closeSheet();
+  }
+  backdrop.addEventListener('pointerdown', e => { e.preventDefault(); closeSheet({ restoreFocus: false }); });
+  window.addEventListener('resize', () => { if (!sheet.hidden) placeSheet(); });
 
   // ── 状態の購読 ───────────────────────────────────────────────────────────────
-  onDrawingStateChange(({ tool, color }) => {
+  onDrawingStateChange(({ tool }) => {
     toolButtons.forEach((b, i) => b.setAttribute('aria-pressed', String(TOOLS[i].id === tool)));
-    swatches.forEach((b, i) => b.setAttribute('aria-pressed', String(DRAW_COLORS[i] === color)));
+    syncColor();
   });
+
+  const syncIndicators = () => {
+    // シート内の表示系がオンなら ⋯ に小さな点を付ける（閉じていても状態が分かるように）
+    const anyOn = getBallState().show || isAnalysisVisible() || field.classList.contains('field-show-names');
+    moreBtn.classList.toggle('has-active', anyOn);
+  };
 
   onBallStateChange(({ show, link }) => {
     ballBtn.setAttribute('aria-pressed', String(show));
     linkBtn.setAttribute('aria-pressed', String(link));
+    syncIndicators();
   });
-
-  onAnalysisChange(v => measureBtn.setAttribute('aria-pressed', String(v)));
-
-  function syncNames() {
+  onAnalysisChange(v => {
+    measureBtn.setAttribute('aria-pressed', String(v));
+    syncIndicators();
+  });
+  new MutationObserver(() => {
     namesBtn.setAttribute('aria-pressed', String(field.classList.contains('field-show-names')));
-  }
-  // 長押しや状態復元で切り替わった場合にも追従
-  new MutationObserver(syncNames).observe(field, { attributes: true, attributeFilter: ['class'] });
+    syncIndicators();
+  }).observe(field, { attributes: true, attributeFilter: ['class'] });
 
   const renderPhases = ({ phases, active, playing }) => {
     slotButtons.forEach((b, i) => {
       b.classList.toggle('is-filled', !!phases[i]);
       b.setAttribute('aria-pressed', String(i === active));
     });
-    playBtn.innerHTML = `${icon(playing ? 'stop' : 'play')}<span class="tool-caption">${playing ? '停止' : '再生'}</span>`;
+    playBtn.innerHTML = `${icon(playing ? 'stop' : 'play')}<span>${playing ? '停止' : '再生'}</span>`;
     playBtn.setAttribute('aria-label', playing ? '停止' : '再生');
     playBtn.title = playing ? '停止' : '保存した局面を順に再生';
   };
@@ -217,8 +308,9 @@ export function initToolbar() {
     redoBtn.disabled = !e.detail.canRedo;
   });
 
-  // Esc で「選手を動かす」に戻す
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && getTool() !== 'move') setTool('move');
+    if (e.key !== 'Escape') return;
+    if (!sheet.hidden) closeSheet();
+    else if (getTool() !== 'move') setTool('move');
   });
 }

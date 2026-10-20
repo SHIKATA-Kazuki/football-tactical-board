@@ -68,105 +68,167 @@
 #field.is-capturing .player,
 #field.is-capturing .ball { transition: none; }
 
-/* ── 道具レール ──────────────────────────────────────────────────────────── */
+/* ── 道具の帯 ────────────────────────────────────────────────────────────
+   iPad / PC: フィールドの横に細い 1 列（フィールドより高くならない）
+   スマホ   : フィールドの下に 1 行（board.css 末尾の @media）              */
 
 #board-tools {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 2px;
   align-self: center;
-  width: 116px;
-  padding: 10px 8px;
+  flex: none;
+  padding: 6px 4px;
   background: var(--tool-bg);
   border: 1px solid var(--tool-line);
   border-radius: 10px;
   color: var(--tool-ink);
-  scrollbar-width: thin;
 }
 
-.tool-group { display: flex; flex-direction: column; gap: 5px; }
-.tool-group + .tool-group { padding-top: 7px; border-top: 1px solid var(--tool-line); }
-.group-color { padding-top: 0 !important; border-top: 0 !important; }
-.group-color .tool-title { display: none; }
+.strip-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.strip-btn:hover:not(:disabled):not([aria-pressed="true"]) { background: rgba(255, 255, 255, 0.08); }
+.strip-btn[aria-pressed="true"] { background: var(--tool-accent); color: var(--tool-accent-ink); }
+.strip-btn:disabled { opacity: 0.3; cursor: default; }
 
-.tool-title {
-  margin: 0 2px;
+.color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--swatch, #fff);
+  border: 2px solid rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+/* シートの表示系がオンのとき ⋯ に点を付ける */
+.more-btn.has-active::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tool-accent);
+}
+.more-btn[aria-expanded="true"] { background: rgba(255, 255, 255, 0.14); }
+
+.strip-divider {
+  flex: none;
+  width: 24px;
+  height: 1px;
+  margin: 3px 0;
+  background: var(--tool-line);
+}
+
+.strip-btn:focus-visible,
+.sheet-btn:focus-visible,
+.sheet-close:focus-visible,
+.phase-slot:focus-visible {
+  outline: 2px solid #ffd23f;
+  outline-offset: 1px;
+}
+
+/* ── その他の機能シート（レイアウトを押し広げず、上に重ねる）──────────── */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 990;   /* フリックのプレビュー等より上 */
+  background: transparent;
+}
+.sheet-backdrop[hidden], #board-more[hidden] { display: none; }
+
+#board-more {
+  position: fixed;
+  z-index: 1000;
+  width: 252px;
+  padding: 8px 10px 10px;
+  background: #101b19;
+  border: 1px solid var(--tool-line);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  color: var(--tool-ink);
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tool-muted);
+}
+.sheet-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sheet-section + .sheet-section { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--tool-line); }
+.sheet-section h3 {
+  margin: 0 0 4px;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--tool-muted);
 }
 
-.tool-grid {
+.sheet-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 3px;
 }
 
-.tool-btn {
+.sheet-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 2px;
   min-width: 0;
-  min-height: 42px;
-  padding: 4px 2px 3px;
-  border: 1px solid transparent;
-  border-radius: 7px;
+  padding: 6px 2px 5px;
+  border: 0;
+  border-radius: 8px;
   background: transparent;
   color: inherit;
   font: inherit;
-  cursor: pointer;
-}
-.tool-btn:hover:not(:disabled):not([aria-pressed="true"]) { background: rgba(255, 255, 255, 0.08); }
-.tool-btn[aria-pressed="true"] {
-  background: var(--tool-accent);
-  color: var(--tool-accent-ink);
-}
-.tool-btn:disabled { opacity: 0.3; cursor: default; }
-
-.tool-caption {
-  font-size: 9.5px;
+  font-size: 10px;
   line-height: 1.15;
   white-space: nowrap;
-}
-
-.tool-btn:focus-visible,
-.swatch:focus-visible,
-.phase-slot:focus-visible {
-  outline: 2px solid #ffd23f;
-  outline-offset: 1px;
-}
-
-/* 色 */
-.swatch-row {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: space-between;
-  padding: 2px 6px 4px;
-}
-.swatch {
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.4);
-  background: var(--swatch);
   cursor: pointer;
 }
-.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--tool-bg), 0 0 0 4px var(--swatch); }
+.sheet-btn:hover:not([aria-pressed="true"]) { background: rgba(255, 255, 255, 0.08); }
+.sheet-btn[aria-pressed="true"] { background: var(--tool-accent); color: var(--tool-accent-ink); }
 
 /* 局面スロット */
 .phase-row {
-  grid-column: 1 / -1;
+  grid-column: span 2;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 3px;
 }
 .phase-slot {
-  position: relative;
-  height: 28px;
+  height: 24px;
   padding: 0;
   border: 1px dashed rgba(255, 255, 255, 0.3);
   border-radius: 6px;
@@ -211,78 +273,32 @@
 }
 #board-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
-/* ── スマホ：フィールド下に横並び ──────────────────────────────────────── */
-
-@media (max-width: 600px) {
-  #board-tools {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 8px;
-    width: 95vw;
-    max-height: none;
-    margin: 6px auto 4px;
-    padding: 6px 8px;
-  }
-  .tool-group + .tool-group { padding-top: 0; border-top: 0; }
-  .tool-title { display: none; }
-  .tool-grid { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; }
-  .tool-btn { width: 36px; min-height: 36px; padding: 3px; }
-  .tool-caption { display: none; }
-  .swatch-row { gap: 5px; padding: 0 4px; }
-  .phase-row { display: flex; gap: 3px; }
-  .phase-slot { width: 28px; height: 32px; }
-
-  /* 1 行目: 描く ／ 2 行目: 色・表示・書き出し ／ 3 行目: 局面・操作 */
-  .group-draw   { order: 1; }
-  .group-color  { order: 2; }
-  .group-view   { order: 3; }
-  .group-export { order: 4; }
-  .group-phase  { order: 5; }
-  .group-edit   { order: 6; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .player, .ball, #board-toast { transition: none !important; }
 }
 
-/* ── 左右の割り当てパネル ────────────────────────────────────────────────── */
+/* ── 左右の割り当てパネル（1 行に収める）──────────────────────────────── */
 
 .flip-panel {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
   margin-left: auto;
   margin-right: auto;
-  padding: 8px 12px 9px;
+  padding: 5px 10px;
   background: var(--filter_back_color);
   border-radius: 10px;
   text-align: left;
-  font-size: 13px;
+  font-size: 12px;
 }
-
-.flip-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+.flip-head, .flip-units { display: contents; }
 .flip-title { font-weight: 700; font-size: 12px; }
+.flip-title::after { content: ""; }
+.flip-head .flip-seg { order: 10; margin-left: auto; }   /* モードは右端 */
 
-.flip-units {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 18px;
-}
-.flip-panel.is-empty .flip-units { display: none; }
-
-.flip-unit {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.flip-label { font-size: 12px; min-width: 5.5em; }
+.flip-unit { display: flex; align-items: center; gap: 6px; }
+.flip-label { font-size: 12px; white-space: nowrap; }
 
 .flip-seg {
   display: inline-flex;
@@ -291,8 +307,8 @@
   background: rgba(10, 18, 16, 0.55);
 }
 .flip-seg button {
-  min-width: 40px;
-  padding: 4px 10px;
+  min-width: 34px;
+  padding: 3px 8px;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -302,21 +318,58 @@
   cursor: pointer;
 }
 .flip-seg button:hover:not([aria-pressed="true"]) { background: rgba(255, 255, 255, 0.08); }
-.flip-seg button[aria-pressed="true"] {
-  background: var(--tool-accent);
-  color: var(--tool-accent-ink);
-  font-weight: 700;
-}
+.flip-seg button[aria-pressed="true"] { background: var(--tool-accent); color: var(--tool-accent-ink); font-weight: 700; }
 .flip-seg button:focus-visible { outline: 2px solid #ffd23f; outline-offset: 1px; }
 
-.flip-hint {
-  margin: 0;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.62);
-}
-.flip-hint[hidden] { display: none; }
+/* 補足はレイアウトを増やさないよう、ツールチップ（title）にだけ出す */
+.flip-hint { display: none; }
+
+/* ドロワー内に置くもの（スマホ用）。PC / iPad では #info 側を使う */
+#flip-panel-drawer { display: none; }
+
+/* ── 盤面ではページをスクロールさせない ─────────────────────────────────
+   選手を動かそうとしてページが動く・引っぱって更新が起きる、を防ぐ        */
+#field { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+html, body { overscroll-behavior: none; }
+
+/* ── スマホ ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 600px) {
-  .flip-panel { width: 95vw; margin-top: 6px; margin-bottom: 6px; padding: 7px 9px; }
-  .flip-seg button { padding: 6px 10px; }   /* 指で押しやすく */
+  #board-tools {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0;
+    /* フィールドが縮んでもボタンは指で押せる大きさを保つ */
+    width: max(var(--pitch-width), min(95vw, 350px));
+    margin: 2px auto 0;
+    padding: 2px 3px;
+    border-radius: 9px;
+  }
+  .strip-btn { flex: none; width: 34px; height: 36px; }
+  .strip-divider { width: 1px; height: 22px; margin: 0 1px; }
+
+  /* 道具の帯のぶん、フォーメーション下の余白を詰める（フィールドを小さくしないため） */
+  body { padding-bottom: 6px; }
+
+  /* フィールドが小さくなったときも中央にそろえる */
+  #field { margin-left: auto !important; margin-right: auto !important; }
+
+  /* シートは画面下からせり上げる */
+  #board-more {
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    width: auto;
+    padding: 8px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-radius: 14px 14px 0 0;
+  }
+  .sheet-backdrop { background: rgba(0, 0, 0, 0.35); }
+  .sheet-btn { padding: 8px 2px 6px; font-size: 11px; }
+  .phase-slot { height: 30px; }
+
+  /* 左右パネルは #info からドロワーへ */
+  #flip-panel { display: none; }
+  #flip-panel-drawer { display: flex; width: 100%; margin: 0 0 10px; }
 }
+

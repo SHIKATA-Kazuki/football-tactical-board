@@ -29,6 +29,7 @@ import { initBall } from './ball.js';
 import { initAnalysis } from './analysis.js';
 import { initToolbar } from './toolbar.js';
 import { initFlipUI } from './flip-ui.js';
+import { initLayout } from './layout.js';
 import { restoreFromUrl } from './share.js';
 import { initHistory } from './history.js';
 import { commit } from './bus.js';
@@ -129,4 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 9. 共有リンク（#b=...）があれば盤面を復元し、そこから履歴を始める
   await restoreFromUrl();
   initHistory();
+
+  // 10. 画面にぴったり収める（スクロールさせない）
+  initLayout();
 });

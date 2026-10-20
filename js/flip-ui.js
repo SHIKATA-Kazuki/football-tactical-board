@@ -3,7 +3,9 @@
  *
  * 「左右」パネル。現在のホームのフォーメーションにある左右反転ユニットごとに
  * 左／右の切り替えを並べ、選び方のモード（手動・自動・ボール側）を切り替える。
- * フォーメーショングリッドの下に置く（PC・スマホ共通）。
+ * iPad / PC はフォーメーショングリッドの下に 1 行で、
+ * スマホは画面を圧迫しないようドロワー（戦術スライダーと同じ場所）に置く。
+ * 補足説明は高さを増やさないよう title（ツールチップ）に入れる。
  */
 
 import {
@@ -22,7 +24,8 @@ const MODES = [
 ];
 const SIDE_LABEL = { L: '左', R: '右' };
 
-let panel = null;
+/** @type {HTMLElement[]} */
+const panels = [];
 
 function segmented(options, current, onPick, ariaLabel) {
   const group = document.createElement('div');
@@ -52,8 +55,7 @@ function hintText(units, mode) {
   return '';
 }
 
-function render() {
-  if (!panel) return;
+function buildPanelContent() {
   const units = getCurrentUnits();
   const { mode } = getFlipState();
 
@@ -61,7 +63,7 @@ function render() {
   head.className = 'flip-head';
   const title = document.createElement('span');
   title.className = 'flip-title';
-  title.textContent = '左右の割り当て';
+  title.textContent = '左右';
   head.append(title, segmented(MODES, mode, setFlipMode, '選び方'));
 
   const list = document.createElement('div');
@@ -76,14 +78,22 @@ function render() {
     row.append(label, segmented(sides, getUnitSide(unit), side => setUnitSide(unit.id, side), unit.label));
     list.appendChild(row);
   }
+  if (!units.length) {
+    const none = document.createElement('span');
+    none.className = 'flip-label flip-none';
+    none.textContent = '左右対称の形です';
+    list.appendChild(none);
+  }
+  return { nodes: [head, list], hint: hintText(units, mode), empty: !units.length };
+}
 
-  const hint = document.createElement('p');
-  hint.className = 'flip-hint';
-  hint.textContent = hintText(units, mode);
-  hint.hidden = !hint.textContent;
-
-  panel.classList.toggle('is-empty', !units.length);
-  panel.replaceChildren(head, list, hint);
+function render() {
+  for (const panel of panels) {
+    const { nodes, hint, empty } = buildPanelContent();
+    panel.classList.toggle('is-empty', empty);
+    panel.title = hint;
+    panel.replaceChildren(...nodes);
+  }
 }
 
 let frame = 0;
@@ -92,15 +102,21 @@ function scheduleRender() {
   frame = requestAnimationFrame(() => { frame = 0; render(); });
 }
 
-export function initFlipUI() {
-  const anchor = document.getElementById('formation-buttons-touch');
-  if (!anchor) return;
-
-  panel = document.createElement('section');
-  panel.id = 'flip-panel';
+function createPanel(id) {
+  const panel = document.createElement('section');
+  panel.id = id;
   panel.className = 'flip-panel infopart';
   panel.setAttribute('aria-label', '左右の割り当て');
-  anchor.after(panel);
+  panels.push(panel);
+  return panel;
+}
+
+export function initFlipUI() {
+  const anchor = document.getElementById('formation-buttons-touch');
+  if (anchor) anchor.after(createPanel('flip-panel'));
+
+  const drawerSquad = document.querySelector('#drawer .squadnum');
+  if (drawerSquad) drawerSquad.before(createPanel('flip-panel-drawer'));
 
   document.addEventListener('flips:change', scheduleRender);
   document.querySelector('.home-formations')?.addEventListener('formation:change', scheduleRender);
