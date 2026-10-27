@@ -511,6 +511,24 @@ function attachInteraction({ grid, popup, hiddenWrap, previewImg, previewLabel, 
  * ホーム / アウェイの両コンテナにフリック UI を構築する。
  * main.js の DOMContentLoaded 内で initializeFormationButtons() より先に呼ぶこと。
  */
+/**
+ * フォーメーション名から、それが属するフリックキーと各方向の形を返す（2 本指ジェスチャー用）。
+ * 基本形（center）として登録されているキーを優先する。
+ * @param {string} name
+ * @param {string} [preferKey]  直前に使っていたキーのラベル（同じ形が複数キーにある場合の優先）
+ * @returns {{ key:string, at:'center'|'top'|'bottom'|'left'|'right', byDir:Record<string,string|null> } | null}
+ */
+export function getFlickNeighbors(name, preferKey = null) {
+  const has = k => k.formations.some(f => f.name === name);
+  const key = (preferKey && FLICK_KEYS.find(k => k.label === preferKey && has(k)))
+    ?? FLICK_KEYS.find(k => k.formations.some(f => f.dir === 'center' && f.name === name))
+    ?? FLICK_KEYS.find(has);
+  if (!key) return null;
+  const byDir = Object.fromEntries(key.formations.map(f => [f.dir, f.name]));
+  const at = key.formations.find(f => f.name === name)?.dir ?? 'center';
+  return { key: key.label, at, byDir };
+}
+
 export function initFlickFormationUI() {
   injectCSS();
 

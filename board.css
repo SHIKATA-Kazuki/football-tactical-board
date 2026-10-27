@@ -440,3 +440,90 @@ html, body { overscroll-behavior: none; }
   #flip-panel { grid-area: flip; }
   #forPC { grid-area: pc; }
 }
+
+/* ── GK の色 ─────────────────────────────────────────────────────────────
+   チームのユニフォームの inline style より優先させるため !important を使う */
+
+.player.gk-custom {
+  background: var(--gk-bg) !important;
+  background-image: none !important;
+  color: var(--gk-text) !important;
+  text-shadow: none !important;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.player.gk-custom::before { display: none; }   /* 内側リングも消す */
+
+.gk-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+.gk-label { width: 4.4em; flex: none; font-size: 10px; white-space: nowrap; color: var(--tool-muted); }
+.gk-swatch {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.45);
+  border-radius: 50%;
+  background: var(--swatch, transparent);
+  color: var(--tool-ink);
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gk-swatch.gk-team { border: 1px solid rgba(255, 255, 255, 0.45); }
+.gk-swatch[aria-pressed="true"],
+.gk-custom-pick.is-on {
+  box-shadow: 0 0 0 2px #101b19, 0 0 0 4px var(--tool-accent);
+}
+/* 好きな色：虹色の輪。選択中はその色で塗る */
+.gk-custom-pick {
+  border: 0;
+  background:
+    radial-gradient(circle, var(--swatch, transparent) 0 55%, transparent 56%),
+    conic-gradient(#ff5a5f, #ffd23f, #2ecc71, #4cc9f0, #7d4cdb, #ff5a5f);
+}
+.gk-custom-pick input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .gk-row { gap: 7px; margin-top: 6px; }
+  .gk-swatch { width: 26px; height: 26px; }   /* 指で押しやすく */
+  .gk-label { font-size: 11px; }
+}
+
+/* ── 2 本指ジェスチャーの表示 ─────────────────────────────────────────── */
+
+.gesture-hud {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  z-index: 80;
+  transform: translate(-50%, -50%);
+  min-width: 9em;
+  padding: 10px 16px;
+  white-space: nowrap;
+  border-radius: 12px;
+  background: rgba(8, 18, 16, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+.gesture-hud[hidden] { display: none; }
+.gesture-hud-main { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.gesture-hud-sub { margin-top: 2px; font-size: 12px; color: rgba(255, 255, 255, 0.72); }
+.gesture-hud.is-muted .gesture-hud-main { color: rgba(255, 255, 255, 0.6); }
+#field.is-capturing .gesture-hud { display: none; }

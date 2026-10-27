@@ -19,6 +19,7 @@ import { clearManualPositions } from './ui-events.js';
 import { copyShareLink } from './share.js';
 import { saveFieldImage } from './export-image.js';
 import { commit } from './bus.js';
+import { GK_PRESETS, getGkColors, setGkColor, onGkColorChange } from './gk-colors.js';
 
 // ─── アイコン（24×24、線は currentColor）──────────────────────────────────────
 
@@ -209,6 +210,75 @@ export function initToolbar() {
   const shareBtn = sheetButton({ label: '共有リンクをコピー', caption: 'リンク', iconName: 'share', onClick: () => { closeSheet(); copyShareLink(); } });
   const imageBtn = sheetButton({ label: '画像として保存', caption: '画像', iconName: 'image', onClick: () => { closeSheet(); saveFieldImage(); } });
 
+  // ── GK の色（ホーム・アウェイ） ──────────────────────────────────────────────
+  const gkRows = ['home', 'away'].map(side => {
+    const row = document.createElement('div');
+    row.className = 'gk-row';
+    const label = document.createElement('span');
+    label.className = 'gk-label';
+    label.textContent = side === 'home' ? 'ホーム' : 'アウェイ';
+    row.appendChild(label);
+
+    const team = document.createElement('button');
+    team.type = 'button';
+    team.className = 'gk-swatch gk-team';
+    team.dataset.color = '';
+    team.textContent = '同';
+    team.setAttribute('aria-label', `${label.textContent} GK：チームと同じユニフォーム`);
+    team.title = 'チームと同じユニフォーム';
+    row.appendChild(team);
+
+    for (const { color, name } of GK_PRESETS) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'gk-swatch';
+      b.dataset.color = color;
+      b.style.setProperty('--swatch', color);
+      b.setAttribute('aria-label', `${label.textContent} GK：${name}`);
+      b.title = name;
+      row.appendChild(b);
+    }
+
+    // 好きな色（端末の色選択）
+    const custom = document.createElement('label');
+    custom.className = 'gk-swatch gk-custom-pick';
+    custom.title = '好きな色を選ぶ';
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.value = '#ffffff';
+    input.setAttribute('aria-label', `${label.textContent} GK：好きな色`);
+    input.addEventListener('input', () => setGkColor(side, input.value));
+    custom.appendChild(input);
+    row.appendChild(custom);
+
+    row.addEventListener('click', e => {
+      const btn = e.target.closest('button.gk-swatch');
+      if (btn) setGkColor(side, btn.dataset.color || null);
+    });
+    return { side, row, team, custom, input };
+  });
+
+  const syncGk = colors => {
+    for (const { side, row, custom, input } of gkRows) {
+      const current = colors[side];
+      let matched = false;
+      row.querySelectorAll('button.gk-swatch').forEach(b => {
+        const on = (b.dataset.color || null) === current;
+        matched ||= on;
+        b.setAttribute('aria-pressed', String(on));
+      });
+      const isCustom = !!current && !matched;
+      custom.classList.toggle('is-on', isCustom);
+      custom.style.setProperty('--swatch', isCustom ? current : 'transparent');
+      if (isCustom) input.value = current;
+    }
+  };
+  onGkColorChange(syncGk);
+  syncGk(getGkColors());
+
+  const gkSection = section('GK の色', []);
+  gkSection.querySelector('.sheet-grid').replaceWith(...gkRows.map(r => r.row));
+
   const head = document.createElement('div');
   head.className = 'sheet-head';
   const title = document.createElement('span');
@@ -226,6 +296,7 @@ export function initToolbar() {
     section('表示', [ballBtn, linkBtn, measureBtn, namesBtn]),
     section('局面', [slotRow, saveBtn, playBtn]),
     section('盤面', [clearBtn, unpinBtn, shareBtn, imageBtn]),
+    gkSection,
   );
   document.body.append(backdrop, sheet);
 

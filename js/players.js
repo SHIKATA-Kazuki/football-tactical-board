@@ -177,6 +177,13 @@ export function getPlayerElements(side) {
  * @param {'home'|'away'} sideKey
  * @param {number} index
  */
+/** 進行中のドラッグ（2 本指ジェスチャーが始まったら取り消す） */
+const activeDrags = new Set();
+
+document.addEventListener('board:gesture-start', () => {
+  for (const drag of [...activeDrags]) drag.cancel();
+});
+
 function attachDrag(el, sideKey, index) {
   el.style.cursor      = 'grab';
   el.style.touchAction = 'none';   // スクロール待機をキャンセル
@@ -191,6 +198,8 @@ function attachDrag(el, sideKey, index) {
 
     const field = document.getElementById('field');
     const rect  = field.getBoundingClientRect();   // ドラッグ開始時に 1 回だけ計測
+    // 取り消し用に、ドラッグ前の状態を覚えておく
+    const before = { left: el.style.left, top: el.style.top, manual: manualPositions[sideKey].get(index) };
 
     el.onpointermove = (ev) => {
       const x = Math.min(100, Math.max(0, (ev.clientX - rect.left) / rect.width  * 100));
@@ -201,16 +210,32 @@ function attachDrag(el, sideKey, index) {
       emit('players:placed');
     };
 
-    // 【修正】pointercancel（OS のジェスチャ割り込み等）でも確実に解除する
-    const end = () => {
+    const release = () => {
       el.style.cursor     = 'grab';
       el.style.zIndex     = '';
       el.style.transition = '';
       el.onpointermove    = null;
       el.onpointerup      = null;
       el.onpointercancel  = null;
+      activeDrags.delete(drag);
+      if (el.hasPointerCapture?.(e.pointerId)) el.releasePointerCapture(e.pointerId);
+    };
+    // 【修正】pointercancel（OS のジェスチャ割り込み等）でも確実に解除する
+    const end = () => {
+      release();
       commit();
     };
+    const drag = {
+      cancel() {
+        release();
+        el.style.left = before.left;
+        el.style.top  = before.top;
+        if (before.manual) manualPositions[sideKey].set(index, before.manual);
+        else manualPositions[sideKey].delete(index);
+        emit('players:placed');
+      },
+    };
+    activeDrags.add(drag);
     el.onpointerup     = end;
     el.onpointercancel = end;
   };

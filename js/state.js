@@ -32,6 +32,7 @@ import { getBallState, setBallState } from './ball.js';
 import { getDrawings, setDrawings } from './drawing.js';
 import { isAnalysisVisible, setAnalysisVisible } from './analysis.js';
 import { getPhases, setPhases } from './phases.js';
+import { getGkColors, setGkColors } from './gk-colors.js';
 
 const VERSION = 1;
 const SLIDERS = ['backsSlider', 'volanteSlider', 'topSlider', 'sidbackUpDown', 'lineSlider'];
@@ -64,6 +65,7 @@ export function serializeState() {
     ball:   getBallState(),
     draw:   getDrawings(),
     phases: getPhases(),
+    gk:     getGkColors(),
     view:   {
       names:    document.getElementById('field')?.classList.contains('field-show-names') ?? false,
       analysis: isAnalysisVisible(),
@@ -112,6 +114,7 @@ export function restoreState(state) {
   // 5. 描画・局面・表示
   setDrawings(state.draw ?? []);
   setPhases(state.phases ?? []);
+  setGkColors(state.gk ?? {});
   document.getElementById('field')?.classList.toggle('field-show-names', !!state.view?.names);
   setAnalysisVisible(!!state.view?.analysis);
   return true;

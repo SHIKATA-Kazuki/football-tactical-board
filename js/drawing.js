@@ -189,6 +189,15 @@ function attachPointerHandlers() {
   };
   svg.addEventListener('pointerup',     finish);
   svg.addEventListener('pointercancel', finish);
+
+  // 2 本指ジェスチャーが始まったら、描きかけの線は捨てる
+  document.addEventListener('board:gesture-start', () => {
+    if (!draft) return;
+    if (pointerId !== null && svg.hasPointerCapture?.(pointerId)) svg.releasePointerCapture(pointerId);
+    draft = null;
+    pointerId = null;
+    layers.preview.replaceChildren();
+  });
 }
 
 // ─── 描画 ────────────────────────────────────────────────────────────────────

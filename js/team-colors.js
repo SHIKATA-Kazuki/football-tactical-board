@@ -20,6 +20,7 @@ import { TEAM_CATALOG, TEAMS, information, getSeasons, getLineups, getLineup } f
 import { createInputs, selectHomeFormation, selectAwayFormation, setTeamFlips } from './ui-events.js';
 import { onPlayerNodeCreated } from './players.js';
 import { commit } from './bus.js';
+import { setGkColor } from './gk-colors.js';
 
 // ─── 状態 ────────────────────────────────────────────────────────────────────
 
@@ -211,6 +212,8 @@ function applyLineup(isHome, teamId, seasonId, lineupId) {
 
   // 左右反転の既定値（config.js で lineup に flips: { SB: '左' } のように書ける）
   setTeamFlips(isHome, lineup.flips);
+  // GK の色の既定値（config.js で lineup に gk: '#f4d03f' のように書ける）
+  setGkColor(side, lineup.gk ?? null, { record: false });
 
   const formation = resolveFormation(lineup, 'home');
   if (!formation) return;

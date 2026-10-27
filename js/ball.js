@@ -104,4 +104,9 @@ export function initBall() {
   };
   ballEl.addEventListener('pointerup', end);
   ballEl.addEventListener('pointercancel', end);
+  document.addEventListener('board:gesture-start', () => {
+    if (!rect) return;
+    rect = null;
+    ballEl.classList.remove('is-dragging');
+  });
 }

@@ -30,6 +30,8 @@ import { initAnalysis } from './analysis.js';
 import { initToolbar } from './toolbar.js';
 import { initFlipUI } from './flip-ui.js';
 import { initLayout } from './layout.js';
+import { initGestures } from './gesture.js';
+import { initGkColors } from './gk-colors.js';
 import { restoreFromUrl } from './share.js';
 import { initHistory } from './history.js';
 import { commit } from './bus.js';
@@ -75,6 +77,7 @@ function initPlayerNameToggle() {
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(type =>
     field.addEventListener(type, cancelPress)
   );
+  document.addEventListener('board:gesture-start', cancelPress);   // 2 本指になったら長押しは無効
   // 長押しでスマホのコンテキストメニューが出ないようにする
   field.addEventListener('contextmenu', e => {
     if (!e.target.closest('.player')) e.preventDefault();
@@ -121,6 +124,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initAnalysis();
   initToolbar();
   initFlipUI();
+  initGestures();
+  initGkColors();
 
   // 8. 初期描画（フリック UI はチーム初期化より後に作られるので、選択表示をここで同期）
   redrawAllPlayers();

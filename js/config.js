@@ -47,7 +47,7 @@ const KOBE_MEMBERS2627 = {
   6: '扇原',  7: '井手口', 8: 'ｲﾆｴｽﾀ', 9: 'ｱﾝﾛﾍﾟ',  10: '大迫',
   11: '武藤', 12: 'MOVI', 13: '大樹', 15: 'ｼﾞｴｺﾞ',
   16: 'ｶｴﾀｰﾉ', 17: '吉田', 18: '井出', 20: '渡邉',
-  21: '新井', 22: '本山', 23: '広瀬',  24: '酒井', 25: '鍬先',
+  21: '新井', 22: '本山', 23: '岩本',  24: '酒井', 25: '鍬先',
   26: 'ﾊﾟﾄﾘｯｷ', 27: 'ｴﾘｷ', 28: '濱崎', 29: '小松', 30: '山内',
   31: '岩波', 32: 'ﾘｯｷ',  33: '橋本', 35: '富永', 38: '浦十藏', 39: '高山', 
   41: '永戸', 43: '山田', 44: '日高', 71: '権田', 80: 'ﾝﾄﾞｶ',
@@ -122,11 +122,13 @@ const UNI = {
   default_home: {
     chip:    { color: 'rgba(0, 0, 0, 0.92)', text: '#ffffff' },
     home: { style: 'linear-gradient(40deg,#222 0 50%,#000 50% 100%)', color: '#c0be38', text: '#ffffff', shadowsize: 0 },
+    gk: '#f4d03f'
   },
   default: {
     chip:    { color: 'rgba(255,255,255,0.92)', text: '#4b4040' },
     home: { svg: 'default', style: 'linear-gradient(40deg,#ccc 0 45%,#eee 25% 65%,#ccc 55% 100%)', color: '#eee', text: '#4b4040', shadowsize: 0.5 },
   },
+  gk: '#061b92',
   japan: {
     chip:    { color: 'rgba(0,0,200,0.9)', text: '#fff' },
     home: { svg: 'japan2026_home', style: 'linear-gradient(to bottom,red 0% 7%,white 7% 17%,blue 10% 100%)', color: 'blue', text: '#fff', shadowsize: 0.1 },
@@ -136,6 +138,7 @@ const UNI = {
     chip:    { color: 'rgba(165, 21, 50, 0.92)', text: '#fff' },
     home: { style: 'linear-gradient(40deg,rgba(163, 17, 47, 0.92)   40% ,rgba(241, 20, 64, 0.92) 100%)',   color: 'rgba(160, 17, 46, 0.92)',   text: '#b9921d', shadowsize: 0, circle: '#b9921d'},
     away: { style: 'linear-gradient(40deg,rgba(202, 202, 202, 0.92) 40% ,rgba(141, 140, 140, 0.92) 100%)', color: '#b9921d', text: '#0a0a08', shadowsize: 0.2, circle: '#1d1910'},
+    gk: '#80ecff'
     // home: {style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5, circle: 'rgb(255, 255, 255)' },
   },
   england: {
@@ -208,6 +211,7 @@ const UNI = {
     chip:    { color: 'rgba(81,48,143,0.92)', text: '#fff' },
     home: {style: 'rgb(81,48,143)', color: 'rgb(81,48,143)', text: '#fff', shadowsize: 0.5, circle: 'rgb(255, 255, 255)' },
     away: {style: 'white', color: null, text: '#000', shadowsize: 0, circle: 'rgb(81,48,143)'},
+    gk: '#f4d03f'
   },
   shimizu: {
     chip:    { color: 'rgb(240,146,5)', text: '#003D6B' },

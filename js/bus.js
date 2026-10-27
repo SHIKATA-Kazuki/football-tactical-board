@@ -20,7 +20,7 @@ export function commit({ debounce = false } = {}) {
 
 /** 画面下部に短いメッセージを出す */
 let toastTimer = null;
-export function toast(message) {
+export function toast(message, duration = 2200) {
   let el = document.getElementById('board-toast');
   if (!el) {
     el = document.createElement('div');
@@ -31,5 +31,5 @@ export function toast(message) {
   el.textContent = message;
   el.classList.add('is-visible');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2200);
+  toastTimer = setTimeout(() => el.classList.remove('is-visible'), duration);
 }
