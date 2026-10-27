@@ -273,6 +273,7 @@ export const TEAM_CATALOG = {
   // ── デフォルト（未選択）──────────────────────────────────────────────────────
   default_home: {
     label: '未選択',
+    gk: '#f4d03f',
     seasons: {
       '-': {
         label: '-',
@@ -291,6 +292,7 @@ export const TEAM_CATALOG = {
   },
   default: {
     label: '未選択',
+    gk: '#00028f',
     seasons: {
       '-': {
         label: '-',
@@ -311,6 +313,7 @@ export const TEAM_CATALOG = {
   // ── ヴィッセル神戸 ──────────────────────────────────────────────────────────
   kobe: {
     label: '神戸',
+    gk: '#32c6da',
     seasons: {
       '2627': {
         label: '26/27シーズン',
@@ -528,6 +531,7 @@ export const TEAM_CATALOG = {
   // ── サンフレッチェ広島 ──────────────────────────────────────────────────────
   hiroshima: {
     label: '広島',
+    gk: '#ffde5c',
     seasons: {
       '2025': {
         label: '2025',
